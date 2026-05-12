@@ -16,7 +16,7 @@ class AuthController extends AsyncNotifier<UserSession?> {
 
   Future<UserSession?> _loadSessionFromStorage() async {
     final isExpired = await SessionService.isTokenExpired();
-    if (isExpired) return null;
+    if (isExpired) return SessionService.clearSession().then((_) => null);
 
     final token = await SessionService.getToken();
     final id = await SessionService.getID();
@@ -32,41 +32,44 @@ class AuthController extends AsyncNotifier<UserSession?> {
       role: role ?? "",
       name: name ?? "",
       email: email ?? "",
+      createdAt:
+          "", // 🔥 createdAt is not stored, set to empty or handle as needed
     );
   }
 
-  Future<void> login({
+  Future<UserSession> login({
     required String email,
     required String password,
   }) async {
-    state = const AsyncLoading();
-    state = await AsyncValue.guard(() async {
-      final response = await ApiService.login(email: email, password: password);
-      final ok = response.statusCode == 200 && response.data["success"] == true;
+    final response = await ApiService.login(email: email, password: password);
 
-      if (!ok) {
-        throw DioException(
-          requestOptions: response.requestOptions,
-          message: response.data["message"]?.toString() ?? "Invalid credentials",
-        );
-      }
+    final ok = response.statusCode == 200 && response.data["success"] == true;
 
-      final session = UserSession.fromLoginResponse(
-        Map<String, dynamic>.from(response.data as Map),
-      );
+    if (!ok) {
+      throw Exception(response.data["message"] ?? "Invalid credentials");
+    }
 
-      await SessionService.saveSession(
-        token: session.token,
-        user: {
-          "id": session.id,
-          "role": session.role,
-          "name": session.name,
-          "email": session.email,
-        },
-      );
+    final session = UserSession.fromLoginResponse(
+      Map<String, dynamic>.from(response.data as Map),
+    );
 
-      return session;
-    });
+    print(
+      "this block is a auth controller , saving session for user: ${session.token}, ${session.email}",
+    );
+
+    // 🔥 SAVE SESSION HERE ONLY
+    await SessionService.saveSession(
+      token: session.token,
+      user: {
+        "id": session.id,
+        "role": session.role,
+        "name": session.name,
+        "email": session.email,
+        "createdAt": session.createdAt,
+      },
+    );
+
+    return session;
   }
 
   Future<void> logout() async {
@@ -94,4 +97,3 @@ class AuthController extends AsyncNotifier<UserSession?> {
     state = AsyncData(updated);
   }
 }
-

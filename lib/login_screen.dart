@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'company/Screens/company_fullreg.dart';
+import 'state/auth/auth_bloc.dart';
+import 'state/auth/auth_event.dart';
+import 'state/auth/auth_state.dart';
+import 'state/auth/auth_status.dart';
 
 import 'admin/dashboard_screen.dart';
 import 'company/Screens/c_dashboard_screen.dart';
 import 'forgot_password_screen.dart';
-import 'state/bloc/auth/auth_bloc.dart';
+import 'services/api_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,6 +24,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   final _formKey = GlobalKey<FormState>();
   bool isPasswordVisible = false;
+  bool valide = true;
 
   void login() {
     if (!_formKey.currentState!.validate()) return;
@@ -42,7 +48,17 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   @override
-  void dispose() {
+  void initState() {
+    super.initState();
+
+    ApiService.wakeUpServer();
+  
+  }
+
+ 
+
+  @override
+  void dispose() {// ✅ cancel the subscription
     emailController.dispose();
     passwordController.dispose();
     super.dispose();
@@ -53,9 +69,12 @@ class _LoginScreenState extends State<LoginScreen> {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, authState) {
         final session = authState.session;
+        print(
+          "Auth State Changed: ${authState.status}, Session: ${session?.email}, Role: ${session?.role}",
+        );
 
-        if (authState.status == AuthStatus.failure) {
-          showError(authState.errorMessage ?? 'Invalid credentials');
+        if (authState.status == AuthStatus.error) {
+          showError(authState.message ?? 'Invalid credentials');
           return;
         }
 
@@ -68,13 +87,24 @@ class _LoginScreenState extends State<LoginScreen> {
             context,
             MaterialPageRoute(builder: (_) => const DashboardScreen()),
           );
-        } else if (session.isCompanyLikeRole) {
-          Navigator.pushReplacement(
+        } else if (session.isCompanyRole) {
+          if(session.isProfileCompleted == false){ 
+             Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const ProfileCompletionScreen()),
+          );
+          }
+          else{
+             Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => const CDashboardScreen()),
           );
-        } else {
-          showError('Unsupported role');
+          }
+          }
+         
+         
+         else if (session.isHR || session.isEmployee) {
+          showError("Unauthorized role: ${session.role}");
         }
       },
       child: Scaffold(

@@ -1,25 +1,85 @@
-class Employee {
-  final int id;
-  final String name;
-  final String department;
-  final String role;
-  final double salary;
+/// ================= EMPLOYEE MODEL =================
 
-  Employee({
+class EmployeeModel {
+  final String id;
+  final String employeeCode;
+  final String firstName;
+  final String middleName;
+  final String lastName;
+  final String profilePhoto;
+  final String joiningDate;
+  final String status;
+  final String bgvStatus;
+
+  final DesignationModel designation;
+
+  EmployeeModel({
     required this.id,
-    required this.name,
-    required this.department,
-    required this.role,
-    required this.salary,
+    required this.employeeCode,
+    required this.firstName,
+    required this.middleName,
+    required this.lastName,
+    required this.profilePhoto,
+    required this.joiningDate,
+    required this.status,
+    required this.bgvStatus,
+    required this.designation,
   });
 
-  factory Employee.fromJson(Map<String, dynamic> json) {
-    return Employee(
-      id: json['id'],
-      name: json['name'],
-      department: json['department'],
-      role: json['role'],
-      salary: json['salary'].toDouble(),
+  factory EmployeeModel.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return EmployeeModel(
+      id: json["id"] ?? "",
+      employeeCode:
+          json["employeeCode"] ?? "",
+
+      firstName:
+          json["firstName"] ?? "",
+
+      middleName:
+          json["middleName"] ?? "",
+
+      lastName:
+          json["lastName"] ?? "",
+
+      profilePhoto:
+          json["profilePhoto"] ?? "",
+
+      joiningDate:
+          json["joiningDate"] ?? "",
+
+      status:
+          json["status"] ?? "",
+
+      bgvStatus:
+          json["bgvStatus"] ?? "",
+
+      designation:
+          DesignationModel.fromJson(
+        json["designation"] ?? {},
+      ),
+    );
+  }
+}
+
+/// ================= DESIGNATION MODEL =================
+
+class DesignationModel {
+  final String id;
+  final String title;
+
+  DesignationModel({
+    required this.id,
+    required this.title,
+  });
+
+  factory DesignationModel.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return DesignationModel(
+      id: json["id"] ?? "",
+      title: json["title"] ?? "",
     );
   }
 }

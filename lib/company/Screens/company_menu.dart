@@ -1,10 +1,14 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:goexperts/admin/subscreiption_plans.dart';
+import 'package:goexperts/company/Screens/employee_screen.dart';
 
 import '../../login_screen.dart';
-import '../../state/bloc/auth/auth_bloc.dart';
+import '../../state/auth/auth_bloc.dart';
+import '../../state/auth/auth_event.dart';
 import 'company_profile_screen.dart';
+import 'subscription_plans.dart';
 
 class CompanyDrawer extends StatelessWidget {
   const CompanyDrawer({super.key});
@@ -40,7 +44,7 @@ class CompanyDrawer extends StatelessWidget {
                     );
                   },
                 ),
-               
+
                 _menuTile(
                   context,
                   icon: Icons.workspace_premium,
@@ -59,6 +63,12 @@ class CompanyDrawer extends StatelessWidget {
                   icon: Icons.people,
                   title: 'Employees',
                   subtitle: 'Teams and staff records',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const EmployeeListScreen(),
+                    ),
+                  ),
                 ),
                 _menuTile(
                   context,
@@ -84,12 +94,14 @@ class CompanyDrawer extends StatelessWidget {
                   icon: Icons.subscriptions,
                   title: 'Subscription',
                   subtitle: 'Plan and billing status',
-                  onTap: () => { Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const SubscriptionPlansScreen()),
-
-                )},
-                 
+                  onTap: () => {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const SubscriptionPage(),
+                      ),
+                    ),
+                  },
                 ),
                 _menuTile(
                   context,
@@ -211,7 +223,11 @@ class CompanyDrawer extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
             tilePadding: const EdgeInsets.symmetric(horizontal: 16),
-            childrenPadding: const EdgeInsets.only(left: 16, right: 8, bottom: 8),
+            childrenPadding: const EdgeInsets.only(
+              left: 16,
+              right: 8,
+              bottom: 8,
+            ),
             children: subItems
                 .map(
                   (item) => ListTile(
@@ -222,7 +238,8 @@ class CompanyDrawer extends StatelessWidget {
                       style: const TextStyle(fontWeight: FontWeight.w500),
                     ),
                     onTap:
-                        item.onTap ?? () => _showComingSoon(context, item.title),
+                        item.onTap ??
+                        () => _showComingSoon(context, item.title),
                   ),
                 )
                 .toList(),
@@ -282,11 +299,7 @@ class CompanyDrawer extends StatelessWidget {
 }
 
 class _MenuSubItem {
-  const _MenuSubItem({
-    required this.icon,
-    required this.title,
-    this.onTap,
-  });
+  const _MenuSubItem({required this.icon, required this.title, this.onTap});
 
   final IconData icon;
   final String title;

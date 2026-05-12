@@ -1,11 +1,25 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
+import '../company/models/company_model.dart';
 import '../company/models/employee_model.dart';
+import '../company/models/plan_model.dart';
+import '../state/models/Employee_data_Model.dart';
 import 'api_client.dart';
 import 'dart:io';
 
 class ApiService {
+  // 🔥 OPTIONAL: Wake up server (Render fix)
+  static Future<void> wakeUpServer() async {
+    try {
+      final response = await ApiClient.dio.get("/");
+      print("Server awake: ${response.statusCode}");
+    } catch (e) {
+      print("Wake up error: $e");
+    }
+  }
+
   // 🔐 LOGIN
   static Future<Response> login({
     required String email,
@@ -42,13 +56,9 @@ class ApiService {
   static Future<Map<String, dynamic>> getCompanies() async {
     try {
       final response = await ApiClient.dio.get("company");
-
+      print("response: ${response.data}");
       if (response.statusCode == 200 && response.data["success"] == true) {
-        return {
-          "companies": response.data["data"] ?? [],
-
-          "count": response.data["count"] ?? 0,
-        };
+        return {"companies": response.data["data"] ?? []};
       } else {
         throw Exception("Failed to load companies");
       }
@@ -57,63 +67,64 @@ class ApiService {
     }
   }
 
-  static Future<List<Map<String, dynamic>>> getSubscriptionPlans() async {
+  // 🔵 GET ALL PLANS
+  static Future<List<Plan>> getSubscriptionPlans() async {
     final response = await ApiClient.dio.get("subscription/plans");
+    print("getSubscriptionPlans response: ${response.data}");
 
     if (response.statusCode == 200 && response.data["success"] == true) {
       final data = response.data["data"] ?? [];
-      return List<Map<String, dynamic>>.from(
-        (data as List).map((item) => Map<String, dynamic>.from(item as Map)),
-      );
+      print("getSubscriptionPlans data: $data");
+
+      return (data as List).map((e) => Plan.fromJson(e)).toList();
     }
 
-    throw Exception("Failed to load subscription plans");
+    throw Exception("Failed to load plans");
   }
 
+  // 🟢 CREATE PLAN
   static Future<Response> createSubscriptionPlan({
-    required String name,
-    required double price,
+    required String title,
+    required int price,
     required int duration,
-    required String support,
-    required String employees,
+    required List<String> features,
   }) async {
+    print(
+      "Creating plan with title: $title, price: $price, duration: $duration, features: $features",
+    );
     return await ApiClient.dio.post(
       "subscription/plans",
       data: {
-        "name": name,
+        "title": title,
         "price": price,
         "duration": duration,
-        "features": {"support": support, "employees": employees},
+        "features": features,
       },
-      options: Options(validateStatus: (status) => true),
     );
   }
 
+  // 🟡 UPDATE PLAN
   static Future<Response> updateSubscriptionPlan({
     required String id,
-    required String name,
-    required double price,
+    required String title,
+    required int price,
     required int duration,
-    required String support,
-    required String employees,
+    required List<String> features,
   }) async {
     return await ApiClient.dio.put(
       "subscription/plans/$id",
       data: {
-        "name": name,
+        "title": title,
         "price": price,
         "duration": duration,
-        "features": {"support": support, "employees": employees},
+        "features": features,
       },
-      options: Options(validateStatus: (status) => true),
     );
   }
 
+  // 🔴 DELETE PLAN
   static Future<Response> deleteSubscriptionPlan(String id) async {
-    return await ApiClient.dio.delete(
-      "subscription/plans/$id",
-      options: Options(validateStatus: (status) => true),
-    );
+    return await ApiClient.dio.delete("subscription/plans/$id");
   }
 
   static Future<bool> deleteCompany(String id) async {
@@ -124,30 +135,6 @@ class ApiService {
       return false;
     }
   }
-
- static Future<void> setPassword({
-  required String token,
-  required String password,
-}) async {
-  try {
-    final response = await ApiClient.dio.post(
-      "/set-password",
-      data: {
-        "token": token,
-        "password": password,
-      },
-    );
-
-    print("SUCCESS: ${response.data}");
-  } catch (e) {
-    if (e is DioException) {
-      print("STATUS: ${e.response?.statusCode}");
-      print("DATA: ${e.response?.data}");
-    }
-    print("ERROR: $e");
-    rethrow;
-  }
-}
 
   static Future updateProfile({
     required String name,
@@ -198,7 +185,7 @@ class ApiService {
       data: data,
       options: Options(validateStatus: (status) => true),
     );
-     print(response.data);
+    print(response.data);
 
     if (response.statusCode == 404 ||
         (response.data is Map<String, dynamic> &&
@@ -216,41 +203,106 @@ class ApiService {
     return response;
   }
 
-
-
-  Future<List<Employee>> getEmployees() async {
+  /// GET COMPANY PROFILE
+  static Future<CompanyModel?> getCompanyProfile() async {
     try {
-      final response = await ApiClient.dio.get("/employees");
+      final response = await ApiClient.dio.get("company/profile");
 
-      final List data = response.data;
-       print(response.data);
+      print(response.data);
 
-      return data.map((json) => Employee.fromJson(json)).toList();
+      if (response.statusCode == 200) {
+        return CompanyModel.fromJson(response.data["data"]);
+      }
     } catch (e) {
-      throw Exception("Failed to fetch employees");
+      debugPrint("GET ERROR => $e");
+    }
+
+    return null;
+  }
+
+  /// UPDATE COMPANY PROFILE
+  static Future<bool> updateCompanyProfile({
+    required CompanyModel company,
+    File? logo,
+    File? gst,
+    File? pan,
+  }) async {
+    try {
+      FormData formData = FormData.fromMap({
+        ...company.toJson(),
+
+        /// COMPANY LOGO
+        if (logo != null)
+          "companyLogo": await MultipartFile.fromFile(
+            logo.path,
+            filename: "logo.jpg",
+          ),
+
+        /// GST FILE
+        if (gst != null)
+          "gstFile": await MultipartFile.fromFile(
+            gst.path,
+            filename: "gst.jpg",
+          ),
+
+        /// PAN FILE
+        if (pan != null)
+          "panFile": await MultipartFile.fromFile(
+            pan.path,
+            filename: "pan.jpg",
+          ),
+      });
+
+      final response = await ApiClient.dio.put(
+        "company/profile",
+        data: formData,
+      );
+
+      print(response.data);
+
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint("UPDATE ERROR => $e");
+    }
+
+    return false;
+  }
+
+  static Future<List<EmployeeModel>> getEmployees() async {
+    final response = await ApiClient.dio.get("employee");
+
+    print("EMPLOYEE RESPONSE => ${response.data}");
+
+    if (response.statusCode == 200 && response.data["success"] == true) {
+      final List data = response.data["data"];
+
+      return data.map((e) => EmployeeModel.fromJson(e)).toList();
+    }
+
+    throw Exception("Failed to load employees");
+  }
+
+  Future<void> createEmployee(Map<String, dynamic> data) async {
+    try {
+      final response = await ApiClient.dio.post("/employees", data: data);
+      print(response.data);
+    } catch (e) {
+      print("ERROR: $e");
+      rethrow;
     }
   }
 
- Future<void> createEmployee(Map<String, dynamic> data) async {
-  try {
-    final response = await ApiClient.dio.post(
-      "/employees",
-      data: data,
-    );
-    print(response.data);
-  } catch (e) {
-    print("ERROR: $e");
-    rethrow;
-  }
-}
+  static Future<EmployeeDataModel> getEmployee(String employee) async {
+    final response = await ApiClient.dio.get("onboarding/review/$employee");
 
-  // 🔥 OPTIONAL: Wake up server (Render fix)
-  static Future<void> wakeUpServer() async {
-    try {
-      final response = await ApiClient.dio.get("/");
-      print("Server awake: ${response.statusCode}");
-    } catch (e) {
-      print("Wake up error: $e");
+    print("EMPLOYEE RESPONSE => ${response.data}");
+
+    if (response.statusCode == 200 && response.data["success"] == true) {
+      final data = response.data ["data"];
+
+     
+      return  EmployeeDataModel.fromJson(data);
     }
+    throw Exception("Failed to load employee data");
   }
 }

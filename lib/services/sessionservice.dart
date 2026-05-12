@@ -1,52 +1,54 @@
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
 class SessionService {
+  // 🔐 Secure Storage Instance
+  static const _storage = FlutterSecureStorage();
+
   // 🔐 SAVE TOKEN + USER DATA
   static Future<void> saveSession({
     required String token,
     required Map user,
   }) async {
-    final prefs = await SharedPreferences.getInstance();
-
-    await prefs.setString("token", token);
-    await prefs.setString("role", user["role"] ?? "");
-    await prefs.setString("id", user["id"] ?? "");
-    await prefs.setString("email", user["email"] ?? "");
-    await prefs.setString("name", user["name"] ?? "");
+   
+    print("Saving session for user: ${user["email"]}, token: $token" "its a session with token: $token, user: ${user["email"]}");
+    await _storage.write(key: "token", value: token);
+    await _storage.write(key: "role", value: user["role"] ?? "");
+    await _storage.write(key: "id", value: user["id"] ?? "");
+    await _storage.write(key: "email", value: user["email"] ?? "");
+    await _storage.write(key: "name", value: user["name"] ?? "");
   }
 
   // 📥 GET TOKEN
-  static Future<String?> getToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString("token");
-  }
-   static Future<String?> getID() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString("id");
+ static Future<String?> getToken() async {
+  final token = await _storage.read(key: "token");
+  print("Retrieving token from storage: $token");
+  return token;
+}
+
+  // 📥 GET ID
+  static Future<String?> getID() async {
+    return await _storage.read(key: "id");
   }
 
   // 📥 GET ROLE
   static Future<String?> getRole() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString("role");
+    return await _storage.read(key: "role");
   }
 
   // 📥 GET EMAIL
   static Future<String?> getEmail() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString("email");
+    return await _storage.read(key: "email");
   }
 
   // 📥 GET NAME
   static Future<String?> getName() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString("name");
+    return await _storage.read(key: "name");
   }
 
+  // ❌ CLEAR ONLY TOKEN
   static Future<void> clearToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove("token");
+    await _storage.delete(key: "token");
   }
 
   // 🔥 CHECK TOKEN EXPIRY
@@ -58,15 +60,14 @@ class SessionService {
     final isExpired = JwtDecoder.isExpired(token);
 
     if (isExpired) {
-      await clearToken(); // 🔥 remove expired token automatically
+      await clearSession(); // 🔥 remove full session
     }
 
     return isExpired;
   }
 
-  // 🧹 CLEAR SESSION
+  // 🧹 CLEAR FULL SESSION
   static Future<void> clearSession() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
+    await _storage.deleteAll();
   }
 }

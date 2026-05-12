@@ -1,11 +1,14 @@
-﻿import 'dart:io';
+﻿import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../state/bloc/auth/auth_bloc.dart';
-import '../state/bloc/auth/profile_cubit.dart';
+import '../state/auth/auth_bloc.dart';
+import '../state/profile/profile_cubit.dart';
+import '../state/profile/profile_state.dart';
 import '../widgets/Change_Password.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -16,12 +19,11 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  bool isEditing = false;
   bool initialized = false;
 
   late final TextEditingController nameController;
   late final TextEditingController emailController;
-
+  
   File? imageFile;
 
   @override
@@ -38,7 +40,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.dispose();
   }
 
-  Future<void> pickImage() async {
+  Future<void> pickImage(StateSetter setStateDialog) async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(
       source: ImageSource.gallery,
@@ -46,35 +48,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
 
     if (pickedFile != null) {
-      setState(() {
+      setStateDialog(() {
         imageFile = File(pickedFile.path);
       });
+      setState(() {});
     }
   }
 
   Future<void> saveProfile() async {
     await context.read<ProfileCubit>().updateProfile(
-          name: nameController.text,
-          email: emailController.text,
-          image: imageFile,
-        );
+      name: nameController.text,
+      email: emailController.text,
+      image: imageFile,
+    );
 
-    final state = context.read<ProfileCubit>().state;
     if (!mounted) return;
 
-    if (state.status == ProfileStatus.success) {
-      setState(() => isEditing = false);
-    }
+    final state = context.read<ProfileCubit>().state;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(state.message ?? 'Profile update failed')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(state.message ?? 'Profile updated')));
+  }
+
+  Uint8List? decodeBase64(String? data) {
+    if (data == null || data.isEmpty) return null;
+    try {
+      return base64Decode(data);
+    } catch (_) {
+      return null;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final session = context.watch<AuthBloc>().state.session;
     final profileState = context.watch<ProfileCubit>().state;
+
     final isLoading = profileState.status == ProfileStatus.loading;
 
     final name = session?.name ?? 'Admin';
@@ -86,28 +96,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
       initialized = true;
     }
 
+    final base64Image = decodeBase64(session?.profileLogo);
+
     return Scaffold(
       backgroundColor: const Color(0xfff4f6fb),
+
       floatingActionButton: FloatingActionButton.extended(
         backgroundColor: Colors.blue,
         icon: isLoading
             ? const SizedBox(
                 height: 18,
                 width: 18,
-                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
               )
-            : Icon(isEditing ? Icons.check : Icons.edit),
-        label: Text(isEditing ? 'Save' : 'Edit'),
-        onPressed: isLoading
-            ? null
-            : () {
-                if (isEditing) {
-                  saveProfile();
-                } else {
-                  setState(() => isEditing = true);
-                }
-              },
+            : const Icon(Icons.edit),
+        label: const Text("Edit"),
+        onPressed: () => showEditProfileDialog(),
       ),
+
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
@@ -115,6 +124,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.black),
       ),
+
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -122,53 +132,58 @@ class _ProfileScreenState extends State<ProfileScreen> {
               padding: const EdgeInsets.only(top: 30, bottom: 20),
               width: double.infinity,
               decoration: const BoxDecoration(
-                gradient: LinearGradient(colors: [Color(0xff4facfe), Color(0xff00f2fe)]),
-                borderRadius: BorderRadius.vertical(bottom: Radius.circular(30)),
+                gradient: LinearGradient(
+                  colors: [Color(0xff4facfe), Color(0xff00f2fe)],
+                ),
+                borderRadius: BorderRadius.vertical(
+                  bottom: Radius.circular(30),
+                ),
               ),
               child: Column(
                 children: [
-                  Stack(
-                    alignment: Alignment.bottomRight,
-                    children: [
-                      GestureDetector(
-                        onTap: isEditing ? pickImage : null,
-                        child: CircleAvatar(
-                          radius: 50,
-                          backgroundColor: Colors.white,
-                          backgroundImage:
-                              (imageFile != null && imageFile!.existsSync()) ? FileImage(imageFile!) : null,
-                          child: (imageFile == null)
-                              ? const Icon(Icons.person, size: 50, color: Colors.blue)
-                              : null,
-                        ),
-                      ),
-                      if (isEditing)
-                        Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: const BoxDecoration(color: Colors.blue, shape: BoxShape.circle),
-                          child: const Icon(Icons.camera_alt, size: 16, color: Colors.white),
-                        ),
-                    ],
+                  GestureDetector(
+                    onTap: showEditProfileDialog,
+                    child: CircleAvatar(
+                      radius: 50,
+                      backgroundColor: Colors.white,
+                      backgroundImage: imageFile != null
+                          ? FileImage(imageFile!)
+                          : (base64Image != null
+                                ? MemoryImage(base64Image)
+                                : (session?.profileLogo != null &&
+                                      session!.profileLogo!.startsWith('http'))
+                                ? NetworkImage(session.profileLogo!)
+                                : null),
+                      child: (imageFile == null && base64Image == null)
+                          ? const Icon(
+                              Icons.person,
+                              size: 50,
+                              color: Colors.blue,
+                            )
+                          : null,
+                    ),
                   ),
+
                   const SizedBox(height: 15),
-                  isEditing
-                      ? _editField(nameController)
-                      : Text(
-                          name,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+
+                  Text(
+                    name,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
                   const SizedBox(height: 5),
-                  isEditing
-                      ? _editField(emailController)
-                      : Text(email, style: const TextStyle(color: Colors.white70)),
+
+                  Text(email, style: const TextStyle(color: Colors.white70)),
                 ],
               ),
             ),
+
             const SizedBox(height: 20),
+
             _card(
               children: [
                 _tile(Icons.person, 'Name', name),
@@ -176,7 +191,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 const _StatusTile(),
               ],
             ),
+
             const SizedBox(height: 15),
+
             _card(
               children: [
                 _action(Icons.lock, 'Change Password', () {
@@ -185,6 +202,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _action(Icons.settings, 'Settings', () {}),
               ],
             ),
+
             const SizedBox(height: 80),
           ],
         ),
@@ -192,15 +210,112 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _editField(TextEditingController controller) {
-    return SizedBox(
-      width: 200,
-      child: TextField(
-        controller: controller,
-        textAlign: TextAlign.center,
-        style: const TextStyle(color: Colors.white),
-        decoration: const InputDecoration(border: InputBorder.none),
-      ),
+  // ✅ EDIT DIALOG (FIXED)
+  void showEditProfileDialog() {
+    showDialog(
+      
+      context: context,
+     
+
+      builder: (dialogContext) {
+         final session = context.watch<AuthBloc>().state.session;
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      "Edit Profile",
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    GestureDetector(
+                      onTap: () => pickImage(setStateDialog),
+                      child: CircleAvatar(
+                        radius: 45,
+                        backgroundColor: Colors.blue.shade100,
+                        backgroundImage: imageFile != null
+                            ? FileImage(imageFile!)
+                            : (session?.profileLogo != null &&
+                                  session!.profileLogo!.startsWith('http'))
+                            ? NetworkImage(session.profileLogo!)
+                            : null,
+                        child:
+                            imageFile == null &&
+                                (session?.profileLogo == null ||
+                                    session!.profileLogo!.isEmpty)
+                            ? const Icon(
+                                Icons.person,
+                                size: 40,
+                                color: Colors.blue,
+                              )
+                            : null,
+                      ),
+                    ),
+
+                    const SizedBox(height: 15),
+
+                    TextField(
+                      controller: nameController,
+                      decoration: const InputDecoration(
+                        labelText: "Name",
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+
+                    const SizedBox(height: 10),
+
+                    TextField(
+                      controller: emailController,
+                      decoration: const InputDecoration(
+                        labelText: "Email",
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.grey,
+                            ),
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text("Cancel"),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              await saveProfile();
+                              Navigator.pop(context);
+                            },
+                            child: const Text("Save"),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -212,7 +327,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
+          ],
         ),
         child: Column(children: children),
       ),
@@ -230,7 +347,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _action(IconData icon, String title, VoidCallback onTap) {
     return ListTile(
       leading: CircleAvatar(
-        backgroundColor: Colors.blue.withValues(alpha: 0.1),
+        backgroundColor: Colors.blue.withOpacity(0.1),
         child: Icon(icon, color: Colors.blue),
       ),
       title: Text(title),

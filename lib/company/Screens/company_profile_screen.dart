@@ -1,180 +1,298 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:goexperts/services/api_service.dart';
+import '../models/company_model.dart';
 
-import '../../state/bloc/auth/auth_bloc.dart';
-import '../widgets/company_info_section.dart';
-import '../widgets/company_info_tile.dart';
-import '../widgets/company_profile_header.dart';
-
-class CompanyProfileScreen extends StatelessWidget {
+class CompanyProfileScreen extends StatefulWidget {
   const CompanyProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final session = context.watch<AuthBloc>().state.session;
-    final companyName = _displayValue(session?.name, fallback: 'Company');
-    final email = _displayValue(session?.email);
-    final role = _displayValue(session?.role);
-    final companyId = _displayValue(session?.id);
+  State<CompanyProfileScreen> createState() => _CompanyProfileScreenState();
+}
 
+class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
+  CompanyModel? company;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchCompany();
+  }
+
+  Future<void> fetchCompany() async {
+    try {
+      final data = await ApiService.getCompanyProfile();
+
+      setState(() {
+        company = data;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+
+      debugPrint("FETCH COMPANY ERROR => $e");
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xfff5f7fb),
-      appBar: AppBar(
-        title: const Text('Company Profile'),
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-        elevation: 0,
+      backgroundColor: Colors.grey.shade100,
+
+      appBar: AppBar(title: const Text("Company Profile"), centerTitle: true),
+
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : company == null
+          ? const Center(child: Text("No Data Found"))
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  /// TOP CARD
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Column(
+                      children: [
+                        CircleAvatar(
+                          radius: 45,
+                          backgroundColor: Colors.blue.shade100,
+                          child: Text(
+                            company!.name[0],
+                            style: const TextStyle(
+                              fontSize: 35,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 15),
+
+                        Text(
+                          company!.name ?? "",
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        const SizedBox(height: 8),
+
+                        Text(
+                          company!.industry ?? "",
+                          style: TextStyle(color: Colors.grey.shade700),
+                        ),
+
+                        const SizedBox(height: 15),
+
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 15,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: company!.status == "ACTIVE"
+                                ? Colors.green.shade100
+                                : Colors.red.shade100,
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          child: Text(
+                            company!.status,
+                            style: TextStyle(
+                              color: company!.status == "ACTIVE"
+                                  ? Colors.green
+                                  : Colors.red,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  /// COMPANY DETAILS
+                  buildSectionTitle("Company Details"),
+
+                  buildInfoCard([
+                    infoTile(Icons.person, "Owner Name", company!.ownerName),
+                    infoTile(Icons.email, "Email", company!.email),
+                    infoTile(Icons.phone, "Phone", company!.phone),
+                    infoTile(Icons.language, "Website", company!.website),
+                    infoTile(
+                      Icons.location_city,
+                      "Location",
+                      company!.location,
+                    ),
+                  ]),
+
+                  const SizedBox(height: 20),
+
+                  /// ADDRESS
+                  buildSectionTitle("Address"),
+
+                  buildInfoCard([
+                    infoTile(
+                      Icons.home,
+                      "Address",
+                      "${company!.addressLine1}, "
+                          "${company!.addressLine2}",
+                    ),
+                    infoTile(Icons.location_on, "City", company!.city),
+                    infoTile(Icons.map, "State", company!.state),
+                    infoTile(Icons.public, "Country", company!.country),
+                    infoTile(Icons.pin_drop, "Pincode", company!.pincode),
+                  ]),
+
+                  const SizedBox(height: 20),
+
+                  /// DOCUMENTS
+                  buildSectionTitle("Documents"),
+
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: company!.documents.length,
+                    itemBuilder: (context, index) {
+                      final doc = company!.documents[index];
+
+                      return Card(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: ListTile(
+                          leading: const Icon(Icons.description),
+                          title: Text(doc["name"]),
+                          subtitle: Text(doc["status"]),
+                          trailing: IconButton(
+                            onPressed: () {
+                              // open document
+                            },
+                            icon: const Icon(Icons.open_in_new),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  /// SUBSCRIPTION
+                  buildSectionTitle("Subscription"),
+
+                  Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          infoRow(
+                            "Plan",
+                            company!.subscriptions[0]["plan"]["name"],
+                          ),
+
+                          infoRow(
+                            "Employees",
+                            company!
+                                .subscriptions[0]["plan"]["features"]["employees"],
+                          ),
+
+                          infoRow(
+                            "Support",
+                            company!
+                                .subscriptions[0]["plan"]["features"]["support"],
+                          ),
+
+                          infoRow(
+                            "Price",
+                            "₹${company!.subscriptions[0]["plan"]["price"]}",
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+    );
+  }
+
+  Widget buildSectionTitle(String title) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: Text(
+          title,
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            CompanyProfileHeader(companyName: companyName, email: email),
-            const SizedBox(height: 16),
-            CompanyInfoSection(
-              title: 'Company Details',
-              icon: Icons.business,
+    );
+  }
+
+  Widget buildInfoCard(List<Widget> children) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(children: children),
+    );
+  }
+
+  Widget infoTile(IconData icon, String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Row(
+        children: [
+          Icon(icon),
+
+          const SizedBox(width: 15),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CompanyInfoTile(
-                  icon: Icons.badge,
-                  title: 'Company ID',
-                  value: companyId,
-                ),
-                CompanyInfoTile(
-                  icon: Icons.business_center,
-                  title: 'Company Name',
-                  value: companyName,
-                ),
-                CompanyInfoTile(
-                  icon: Icons.email,
-                  title: 'Company Email',
-                  value: email,
-                ),
-                CompanyInfoTile(
-                  icon: Icons.verified_user,
-                  title: 'Account Role',
-                  value: role,
+                Text(title, style: TextStyle(color: Colors.grey.shade600)),
+
+                const SizedBox(height: 3),
+
+                Text(
+                  value,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            _industrySection(),
-            const SizedBox(height: 16),
-            _companyContactSection(),
-            const SizedBox(height: 16),
-            _operationsSection(),
-            const SizedBox(height: 16),
-            _subscriptionSection(),
-            const SizedBox(height: 24),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  static String _displayValue(String? value, {String fallback = 'Not set'}) {
-    if (value == null || value.trim().isEmpty) return fallback;
-    return value.trim();
-  }
+  Widget infoRow(String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
 
-  Widget _industrySection() {
-    return const CompanyInfoSection(
-      title: 'Industry Information',
-      icon: Icons.factory,
-      children: [
-        CompanyInfoTile(
-          icon: Icons.category,
-          title: 'Industry Type',
-          value: 'Not set',
-        ),
-        CompanyInfoTile(
-          icon: Icons.workspace_premium,
-          title: 'Services',
-          value: 'Not set',
-        ),
-        CompanyInfoTile(
-          icon: Icons.flag,
-          title: 'Specialization',
-          value: 'Not set',
-        ),
-        CompanyInfoTile(
-          icon: Icons.description,
-          title: 'About Company',
-          value: 'Not set',
-        ),
-      ],
-    );
-  }
-
-  Widget _companyContactSection() {
-    return const CompanyInfoSection(
-      title: 'Contact & Location',
-      icon: Icons.location_on,
-      children: [
-        CompanyInfoTile(
-          icon: Icons.phone,
-          title: 'Phone Number',
-          value: 'Not set',
-        ),
-        CompanyInfoTile(
-          icon: Icons.language,
-          title: 'Website / Domain',
-          value: 'Not set',
-        ),
-        CompanyInfoTile(icon: Icons.place, title: 'Location', value: 'Not set'),
-        CompanyInfoTile(icon: Icons.map, title: 'Address', value: 'Not set'),
-      ],
-    );
-  }
-
-  Widget _operationsSection() {
-    return const CompanyInfoSection(
-      title: 'Operations',
-      icon: Icons.account_tree,
-      children: [
-        CompanyInfoTile(
-          icon: Icons.people,
-          title: 'Employees',
-          value: 'Not set',
-        ),
-        CompanyInfoTile(
-          icon: Icons.supervisor_account,
-          title: 'HR Team',
-          value: 'Not set',
-        ),
-        CompanyInfoTile(
-          icon: Icons.apartment,
-          title: 'Departments',
-          value: 'Not set',
-        ),
-        CompanyInfoTile(icon: Icons.work, title: 'Projects', value: 'Not set'),
-      ],
-    );
-  }
-
-  Widget _subscriptionSection() {
-    return const CompanyInfoSection(
-      title: 'Subscription & Status',
-      icon: Icons.subscriptions,
-      children: [
-        CompanyInfoTile(
-          icon: Icons.check_circle,
-          title: 'Company Status',
-          value: 'Active',
-        ),
-        CompanyInfoTile(
-          icon: Icons.card_membership,
-          title: 'Current Plan',
-          value: 'Not set',
-        ),
-        CompanyInfoTile(
-          icon: Icons.event,
-          title: 'Plan Expiry',
-          value: 'Not set',
-        ),
-      ],
+          Text(value, style: const TextStyle(fontWeight: FontWeight.bold)),
+        ],
+      ),
     );
   }
 }

@@ -36,7 +36,7 @@
     <data
         android:scheme="https"
         android:host="goexperts-hrms.onrender.com"
-        android:pathPrefix="/setup-account"/>
+        android:pathPrefix="/setup-password"/>
             </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.

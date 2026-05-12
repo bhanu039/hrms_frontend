@@ -2,13 +2,15 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:uni_links/uni_links.dart';
+import 'package:app_links/app_links.dart';
 
 import 'admin/dashboard_screen.dart';
 import 'company/Screens/c_dashboard_screen.dart';
 import 'login_screen.dart';
 import 'services/api_service.dart';
-import 'state/bloc/auth/auth_bloc.dart';
+import 'services/set_pass_token.dart';
+import 'state/auth/auth_bloc.dart';
+import 'state/auth/auth_status.dart';
 import 'widgets/set_password_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -23,7 +25,8 @@ class _SplashScreenState extends State<SplashScreen>
   late AnimationController _controller;
   late Animation<double> _animation;
   bool _navigated = false;
-
+  final AppLinks _deepLinkService = AppLinks();
+  StreamSubscription<Uri?>? _linkSub;
   @override
   void initState() {
     super.initState();
@@ -36,46 +39,85 @@ class _SplashScreenState extends State<SplashScreen>
 
     _animation = Tween<double>(begin: 0.8, end: 1.2).animate(_controller);
 
-    checkLogin();
-    initDeepLink();
+    startFlow(); // ✅ single entry point
   }
 
-  void initDeepLink() async {
-    final link = await getInitialLink();
-
-    if (link != null) {
-      handleLink(link);
+  Future<void> startFlow() async {
+    final state = context.read<AuthBloc>().state;
+    if (state.status == AuthStatus.authenticated) {
+      await checkLogin(); // ✅ if already authenticated, skip deep link
+      return;
     }
 
-    linkStream.listen((link) {
-      if (link != null) {
-        handleLink(link);
+    try {
+      final uri = await _deepLinkService.getInitialLink();
+
+      if (uri != null) {
+        handleLink(uri);
+        return; // ✅ STOP here if deep link exists
       }
-    });
+
+      // If no deep link → continue normal flow
+      await checkLogin();
+
+      // Listen for future links
+      _linkSub = _deepLinkService.uriLinkStream.listen((uri) {
+        handleLink(uri);
+      });
+    } catch (e) {
+      print("Deep link error: $e");
+      await checkLogin(); // fallback
+    }
   }
 
-  void handleLink(String link) {
-    final uri = Uri.parse(link);
+  void handleLink(Uri uri) async {
+    if (_navigated) return;
 
-    if (uri.path == '/setup-account') {
-      final token = uri.queryParameters['token'];
+    print('Received link: $uri');
+    print('Host: ${uri.host}');
+    print('Path: ${uri.path}');
+    print('Params: ${uri.queryParameters}');
 
-      Navigator.push(
+    if (uri.path == '/setup-password') {
+      final token = uri.queryParameters["token"];
+
+      if (token == null) {
+        print('Token missing');
+        return;
+      }
+      // ✅ CHECK IF ALREADY USED
+      final isUsed = await DeepLinkService.isTokenUsed(token);
+
+      if (isUsed) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => LoginScreen()),
+        );
+        // ❌ STOP
+      }
+
+      _navigated = true;
+
+      Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => SetPasswordScreen(token: token!)),
+        MaterialPageRoute(builder: (_) => SetPasswordScreen(token: token)),
       );
+    } else {
+      print('Unknown deep link: $uri');
     }
   }
 
   Future<void> checkLogin() async {
     await Future.delayed(const Duration(seconds: 2));
-    if (!mounted || _navigated) return;
+
+    if (!mounted || _navigated) return; // 🚨 important
 
     final state = context.read<AuthBloc>().state;
     final session = state.session;
 
+    _navigated = true;
+
     if (state.status != AuthStatus.authenticated || session == null) {
-      _navigated = true;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const LoginScreen()),
@@ -83,17 +125,26 @@ class _SplashScreenState extends State<SplashScreen>
       return;
     }
 
-    _navigated = true;
     if (session.isSuperAdmin) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const DashboardScreen()),
       );
-    } else if (session.isCompanyLikeRole) {
+    } else if (session.isCompanyRole) {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const CDashboardScreen()),
       );
+    } else if (session.isHR) {
+     // Navigator.pushReplacement(
+       // context,
+       // MaterialPageRoute(builder: (_) => const HrDashboardScreen()),
+     // );
+    } else if (session.isEmployee) {
+     // Navigator.pushReplacement(
+       // context,
+        //MaterialPageRoute(builder: (_) => const EmployeeDashboardScreen()),
+    //  );
     } else {
       Navigator.pushReplacement(
         context,
@@ -105,6 +156,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void dispose() {
     _controller.dispose();
+    _linkSub?.cancel(); // ✅ prevent memory leak
     super.dispose();
   }
 

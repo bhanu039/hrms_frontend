@@ -1,7 +1,8 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../state/bloc/auth/auth_bloc.dart';
+
+import '../../state/auth/auth_bloc.dart';
 import '../../widgets/dashboard_card.dart';
 import 'company_menu.dart';
 import 'company_profile_screen.dart';

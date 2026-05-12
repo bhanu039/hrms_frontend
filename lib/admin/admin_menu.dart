@@ -2,11 +2,12 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../login_screen.dart';
-import '../state/bloc/auth/auth_bloc.dart';
+import '../state/auth/auth_bloc.dart';
+import '../state/auth/auth_event.dart';
 import 'admin_prifile.dart';
 import 'company_reg.dart';
 import 'companys_list.dart';
-import 'subscreiption_plans.dart';
+import 'subscription_plans.dart';
 
 class AdminDrawer extends StatelessWidget {
   const AdminDrawer({super.key});
@@ -77,7 +78,7 @@ class AdminDrawer extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const SubscriptionPlansScreen(),
+                        builder: (_) => const SubscriptionAdminPage(),
                       ),
                     );
                   },

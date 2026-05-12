@@ -32,8 +32,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   // 🔥 API CALL
   Future<void> fetchCompanies() async {
+    isLoading = true;
     try {
       var result = await ApiService.getCompanies();
+      print("Fetched ${result["companies"]?.length ?? 0} companies");
 
       setState(() {
         companies = result["companies"] ?? [];
@@ -156,7 +158,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               // 🔥 Dashboard Cards
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 400),
-                child: isLoading
+                child: isLoading == true
                     ? const Center(child: CircularProgressIndicator())
                     : GridView.count(
                         key: const ValueKey(1),

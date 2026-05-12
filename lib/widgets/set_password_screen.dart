@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import '../services/api_service.dart';
+import 'package:dio/dio.dart';
+import '../login_screen.dart';
+import '../services/set_pass_token.dart';
+import 'top_message.dart';
 
 class SetPasswordScreen extends StatefulWidget {
   final String token;
@@ -11,159 +14,151 @@ class SetPasswordScreen extends StatefulWidget {
 }
 
 class _SetPasswordScreenState extends State<SetPasswordScreen> {
-  final passwordController = TextEditingController();
-  final confirmController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController confirmController = TextEditingController();
+  bool isPasswordVisible = false;
 
-  bool obscure1 = true;
-  bool obscure2 = true;
+  bool isConfirmVisible = false;
+
   bool isLoading = false;
 
-  String passwordError = "";
-  String message = "";
+  final Dio dio = Dio(
+    BaseOptions(
+      baseUrl: "https://goexperts-hrms.onrender.com/api/", // 🔁 change
+      headers: {"Content-Type": "application/json"},
+    ),
+  );
 
-  // 🔐 Password Validation
-  String? validatePassword(String password) {
-    if (password.length < 8) {
-      return "Minimum 8 characters required";
-    }
-    if (!RegExp(r'[A-Z]').hasMatch(password)) {
-      return "At least 1 uppercase letter required";
-    }
-    if (!RegExp(r'[0-9]').hasMatch(password)) {
-      return "At least 1 number required";
-    }
-    if (!RegExp(r'[!@#\$&*~]').hasMatch(password)) {
-      return "At least 1 special character required";
-    }
-    return null;
-  }
-
-  Future<void> setPassword() async {
+  void submit() async {
     final password = passwordController.text.trim();
     final confirm = confirmController.text.trim();
 
-    final error = validatePassword(password);
-
-    if (error != null) {
-      setState(() => message = error);
+    if (password.isEmpty || confirm.isEmpty) {
+      TopMessage.show(context, "Fill all fields");
       return;
     }
 
     if (password != confirm) {
-      setState(() => message = "Passwords do not match");
+      TopMessage.show(context, "Passwords do not match");
       return;
     }
 
-    setState(() {
-      isLoading = true;
-      message = "";
-    });
+    setState(() => isLoading = true);
 
     try {
-      await ApiService.setPassword(token: widget.token, password: password);
+      print("Submitting new password with token: ${widget.token}");
+      print(" Password: $password");
+      final response = await dio.post(
+        "invite/setup-password", // 🔁 your API
+        data: {"token": widget.token, "password": password},
+        options: Options(validateStatus: (status) => true),
+      );
 
-      setState(() {
-        isLoading = false;
-        message = "Password set successfully ✅";
-      });
+      print("Response: ${response.data}");
 
-      Future.delayed(const Duration(seconds: 2), () {
-        Navigator.pop(context);
-      });
+      if (response.statusCode == 200) {
+        // ✅ MARK TOKEN USED ONLY AFTER SUCCESS
+        await DeepLinkService.markTokenUsed(widget.token);
+
+        TopMessage.show(context, "Password set successfully");
+        Future.microtask(() {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const LoginScreen()),
+            (route) => false,
+          );
+        });
+      } else
+        (e) {
+          TopMessage.show(
+            context,
+            "Failed to set password:  ${response.data['message'] ?? 'Unknown error'}",
+          );
+        };
+    } on DioException catch (e) {
+      print("Error: ${e.response?.data}");
+      TopMessage.show(context, "Server error");
     } catch (e) {
-      setState(() {
-        isLoading = false;
-        message = "Failed to set password ❌";
-      });
+      print("Error: $e");
+      TopMessage.show(context, "Something went wrong");
     }
+
+    setState(() => isLoading = false);
+  }
+
+  void showMsg(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        width: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xff4facfe), Color(0xff00f2fe)],
+            colors: [Color(0xff1e3a8a), Color(0xff9333ea)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
         ),
         child: Center(
           child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
             child: Container(
-              margin: const EdgeInsets.all(20),
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
-                boxShadow: const [
-                  BoxShadow(blurRadius: 10, color: Colors.black12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
                 ],
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.lock, size: 50, color: Colors.blue),
-
+                  const Icon(Icons.lock_reset, size: 60, color: Colors.blue),
                   const SizedBox(height: 10),
 
                   const Text(
                     "Set New Password",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 8),
 
-                  // 🔐 Password Field
+                  const Text(
+                    "Enter your new password below",
+                    style: TextStyle(color: Colors.grey),
+                  ),
+
+                  const SizedBox(height: 25),
+
+                  // 🔐 Password
                   TextField(
                     controller: passwordController,
-                    obscureText: obscure1,
-                    onChanged: (value) {
-                      setState(() {
-                        passwordError = validatePassword(value) ?? "";
-                      });
-                    },
+                    obscureText: !isPasswordVisible,
                     decoration: InputDecoration(
                       labelText: "New Password",
                       prefixIcon: const Icon(Icons.lock_outline),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          obscure1 ? Icons.visibility : Icons.visibility_off,
+                          isPasswordVisible
+                              ? Icons.visibility
+                              : Icons.visibility_off,
                         ),
                         onPressed: () {
-                          setState(() => obscure1 = !obscure1);
+                          setState(() {
+                            isPasswordVisible = !isPasswordVisible;
+                          });
                         },
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  // 🔴 Live validation error
-                  if (passwordError.isNotEmpty)
-                    Text(
-                      passwordError,
-                      style: const TextStyle(color: Colors.red),
-                    ),
-
-                  const SizedBox(height: 10),
-
-                  // 📋 Rules
-                  const Align(
-                    alignment: Alignment.centerLeft,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text("• Minimum 8 characters"),
-                        Text("• At least 1 uppercase letter"),
-                        Text("• At least 1 number"),
-                        Text("• At least 1 special character"),
-                      ],
                     ),
                   ),
 
@@ -172,58 +167,52 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                   // 🔐 Confirm Password
                   TextField(
                     controller: confirmController,
-                    obscureText: obscure2,
+                    obscureText: true,
                     decoration: InputDecoration(
                       labelText: "Confirm Password",
                       prefixIcon: const Icon(Icons.lock_outline),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          obscure2 ? Icons.visibility : Icons.visibility_off,
-                        ),
-                        onPressed: () {
-                          setState(() => obscure2 = !obscure2);
-                        },
-                      ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 25),
 
-                  // 🔘 Button
-                  isLoading
-                      ? const CircularProgressIndicator()
-                      : SizedBox(
-                          width: double.infinity,
-                          height: 50,
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
+                  // 🚀 Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: isLoading ? null : submit,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xff1e3a8a),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: isLoading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text(
+                              "Update Password",
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                            onPressed: setPassword,
-                            child: const Text(
-                              "Set Password",
-                              style: TextStyle(fontSize: 16),
-                            ),
-                          ),
-                        ),
-
-                  const SizedBox(height: 10),
-
-                  // ✅ Final message
-                  if (message.isNotEmpty)
-                    Text(
-                      message,
-                      style: TextStyle(
-                        color: message.contains("success")
-                            ? Colors.green
-                            : Colors.red,
-                      ),
                     ),
+                  ),
+                  FloatingActionButton(
+                    onPressed: () {
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (_) => const LoginScreen()),
+                        (route) => false,
+                      );
+                    },
+                    child: const Icon(Icons.login),
+                  ),
                 ],
               ),
             ),
@@ -231,5 +220,12 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    passwordController.dispose();
+    confirmController.dispose();
+    super.dispose();
   }
 }
