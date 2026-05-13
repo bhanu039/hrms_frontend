@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
-import '../services/api_service.dart';
-import '../services/session_expiry_handler.dart';
-import '../widgets/custom_text_field.dart';
+import '../../services/api_service.dart';
+import '../../services/session_expiry_handler.dart';
+import '../../widgets/custom_text_field.dart';
 
 class AddCompanyScreen extends StatefulWidget {
   const AddCompanyScreen({super.key});

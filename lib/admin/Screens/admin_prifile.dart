@@ -6,10 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../state/auth/auth_bloc.dart';
-import '../state/profile/profile_cubit.dart';
-import '../state/profile/profile_state.dart';
-import '../widgets/Change_Password.dart';
+import '../../state/auth/auth_bloc.dart';
+import '../../state/profile/profile_cubit.dart';
+import '../../state/profile/profile_state.dart';
+import '../../widgets/Change_Password.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});

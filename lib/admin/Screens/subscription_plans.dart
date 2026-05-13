@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../company/models/plan_model.dart';
-import '../services/api_service.dart';
+import '../../company/models/plan_model.dart';
+import '../../services/api_service.dart';
 
 class SubscriptionAdminPage extends StatefulWidget {
   const SubscriptionAdminPage({super.key});

@@ -97,7 +97,7 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
 
                               backgroundImage: emp.profilePhoto.isNotEmpty
                                   ? NetworkImage(
-                                      "https://goexperts-hrms.onrender.com${emp.profilePhoto}",
+                                      "https://res.cloudinary.com${emp.profilePhoto}",
                                     )
                                   : null,
 

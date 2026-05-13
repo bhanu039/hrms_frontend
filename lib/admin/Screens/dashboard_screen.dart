@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:goexperts/admin/companys_list.dart';
-import '../services/api_service.dart';
+import 'package:goexperts/admin/Screens/companys_list.dart';
+import '../../services/api_service.dart';
 import 'admin_menu.dart';
 import 'company_reg.dart';
 

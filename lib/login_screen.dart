@@ -6,7 +6,7 @@ import 'state/auth/auth_event.dart';
 import 'state/auth/auth_state.dart';
 import 'state/auth/auth_status.dart';
 
-import 'admin/dashboard_screen.dart';
+import 'admin/Screens/dashboard_screen.dart';
 import 'company/Screens/c_dashboard_screen.dart';
 import 'forgot_password_screen.dart';
 import 'services/api_service.dart';

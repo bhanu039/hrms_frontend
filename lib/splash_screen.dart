@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app_links/app_links.dart';
 
-import 'admin/dashboard_screen.dart';
+import 'admin/Screens/dashboard_screen.dart';
 import 'company/Screens/c_dashboard_screen.dart';
 import 'login_screen.dart';
 import 'services/api_service.dart';

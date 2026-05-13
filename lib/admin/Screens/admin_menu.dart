@@ -1,9 +1,9 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../login_screen.dart';
-import '../state/auth/auth_bloc.dart';
-import '../state/auth/auth_event.dart';
+import '../../login_screen.dart';
+import '../../state/auth/auth_bloc.dart';
+import '../../state/auth/auth_event.dart';
 import 'admin_prifile.dart';
 import 'company_reg.dart';
 import 'companys_list.dart';
@@ -86,8 +86,8 @@ class AdminDrawer extends StatelessWidget {
                 _menuTile(
                   context,
                   icon: Icons.people,
-                  title: 'User Management',
-                  subtitle: 'Roles and user access',
+                  title: 'Company Management',
+                  subtitle: 'User access',
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.pushNamed(context, '/users');

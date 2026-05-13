@@ -220,54 +220,6 @@ class ApiService {
     return null;
   }
 
-  /// UPDATE COMPANY PROFILE
-  static Future<bool> updateCompanyProfile({
-    required CompanyModel company,
-    File? logo,
-    File? gst,
-    File? pan,
-  }) async {
-    try {
-      FormData formData = FormData.fromMap({
-        ...company.toJson(),
-
-        /// COMPANY LOGO
-        if (logo != null)
-          "companyLogo": await MultipartFile.fromFile(
-            logo.path,
-            filename: "logo.jpg",
-          ),
-
-        /// GST FILE
-        if (gst != null)
-          "gstFile": await MultipartFile.fromFile(
-            gst.path,
-            filename: "gst.jpg",
-          ),
-
-        /// PAN FILE
-        if (pan != null)
-          "panFile": await MultipartFile.fromFile(
-            pan.path,
-            filename: "pan.jpg",
-          ),
-      });
-
-      final response = await ApiClient.dio.put(
-        "company/profile",
-        data: formData,
-      );
-
-      print(response.data);
-
-      return response.statusCode == 200;
-    } catch (e) {
-      debugPrint("UPDATE ERROR => $e");
-    }
-
-    return false;
-  }
-
   static Future<List<EmployeeModel>> getEmployees() async {
     final response = await ApiClient.dio.get("employee");
 
@@ -305,4 +257,34 @@ class ApiService {
     }
     throw Exception("Failed to load employee data");
   }
+
+  
+   Future<Response> updateCompany({
+    required Map<String, dynamic> data,
+    String? companyLogoPath,
+    String? gstFilePath,
+  }) async {
+    FormData formData = FormData.fromMap({
+      ...data,
+
+      if (companyLogoPath != null)
+        "companyLogo": await MultipartFile.fromFile(
+          companyLogoPath,
+          filename: companyLogoPath.split('/').last,
+        ),
+
+      if (gstFilePath != null)
+        "gstFile": await MultipartFile.fromFile(
+          gstFilePath,
+          filename: gstFilePath.split('/').last,
+        ),
+    });
+
+    // using existing api client
+    return await ApiClient.dio.put(
+      "/company/update",
+      data: formData,
+    );
+  }
+
 }

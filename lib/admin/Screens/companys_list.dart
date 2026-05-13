@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../services/api_service.dart';
+import '../../services/api_service.dart';
 import 'company_reg.dart';
 import 'company_view_screen.dart';
 

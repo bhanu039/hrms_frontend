@@ -1,7 +1,7 @@
   import 'package:flutter/material.dart';
 
 class TopMessage {
-  static void show(BuildContext context, String message) {
+  static void show(BuildContext context, String message, {required MaterialColor color}) {
     final overlay = Overlay.of(context);
 
     late OverlayEntry overlayEntry;

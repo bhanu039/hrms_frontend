@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 
 import '../../state/auth/auth_bloc.dart';
+import '../../widgets/Adding_Screen.dart';
 import '../../widgets/dashboard_card.dart';
 import 'company_menu.dart';
 import 'company_profile_screen.dart';
@@ -98,7 +99,53 @@ class CDashboardScreen extends StatelessWidget {
           },
         ),
       ),
+      floatingActionButton: Container(
+  decoration: BoxDecoration(
+    borderRadius: BorderRadius.circular(18),
+    gradient: LinearGradient(
+      colors: [
+        Colors.indigo,
+        Colors.indigo.shade400,
+      ],
+    ),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.indigo.withOpacity(0.3),
+        blurRadius: 10,
+        offset: const Offset(0, 5),
+      ),
+    ],
+  ),
+
+  child: FloatingActionButton.extended(
+    onPressed: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const AddEmployeeScreen(),
+        ),
+      );
+    },
+
+    backgroundColor: Colors.transparent,
+    elevation: 0,
+
+    icon: const Icon(
+      Icons.person_add_alt_1,
+      color: Colors.white,
+    ),
+
+    label: const Text(
+      "Add Employee",
+      style: TextStyle(
+        color: Colors.white,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+  ),
+),
     );
+    
   }
 }
 

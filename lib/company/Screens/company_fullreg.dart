@@ -2,22 +2,31 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:goexperts/widgets/top_message.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geocoding/geocoding.dart';
+import '../../services/api_service.dart';
+import '../../state/models/user_session.dart';
 
 class ProfileCompletionScreen extends StatefulWidget {
   const ProfileCompletionScreen({super.key});
 
   @override
-  State<ProfileCompletionScreen> createState() =>_ProfileCompletionScreenState();
+  State<ProfileCompletionScreen> createState() =>
+      _ProfileCompletionScreenState();
 }
 
-class _ProfileCompletionScreenState
-    extends State<ProfileCompletionScreen> {
+class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
   int currentStep = 0;
+  bool isLoading = false;
 
   /// ================= FILES =================
 
   File? companyLogo;
   File? gstFile;
+  double? latitude;
+  double? longitude;
+  LatLng selectedLocation = const LatLng(17.3850, 78.4867);
 
   /// ================= CONTROLLERS =================
 
@@ -69,6 +78,31 @@ class _ProfileCompletionScreenState
   final panController = TextEditingController();
   final tanController = TextEditingController();
 
+  Future<Map<String, dynamic>> getAddress(LatLng position) async {
+    List<Placemark> placemarks = await placemarkFromCoordinates(
+      position.latitude,
+      position.longitude,
+    );
+
+    Placemark place = placemarks.first;
+
+    return {
+      "address1": "${place.street ?? ""}, ${place.subLocality ?? ""}",
+
+      "city": place.locality ?? "",
+
+      "state": place.administrativeArea ?? "",
+
+      "country": place.country ?? "",
+
+      "pincode": place.postalCode ?? "",
+
+      "latitude": position.latitude,
+
+      "longitude": position.longitude,
+    };
+  }
+
   /// ================= PICK FILE =================
 
   Future<void> pickFile(String type) async {
@@ -106,20 +140,15 @@ class _ProfileCompletionScreenState
 
         title: const Text(
           "Company Registration",
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
       ),
 
       body: Column(
         children: [
-
           const SizedBox(height: 20),
 
           /// ================= STEP INDICATOR =================
-
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
 
@@ -158,24 +187,17 @@ class _ProfileCompletionScreenState
           ),
 
           /// ================= BOTTOM BUTTONS =================
-
           Container(
             padding: const EdgeInsets.all(20),
 
             decoration: const BoxDecoration(
               color: Colors.white,
 
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black12,
-                  blurRadius: 10,
-                ),
-              ],
+              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 10)],
             ),
 
             child: Row(
               children: [
-
                 if (currentStep != 0)
                   Expanded(
                     child: OutlinedButton(
@@ -197,13 +219,11 @@ class _ProfileCompletionScreenState
                     ),
                   ),
 
-                if (currentStep != 0)
-                  const SizedBox(width: 15),
+                if (currentStep != 0) const SizedBox(width: 15),
 
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-
                       if (currentStep < 4) {
                         setState(() {
                           currentStep++;
@@ -244,148 +264,353 @@ class _ProfileCompletionScreenState
   /// ================= STEP CONTENT =================
 
   Widget buildStepContent() {
-
     switch (currentStep) {
-
       /// STEP 1
       case 0:
-        return buildCard(
-          "Basic Information",
-          Icons.business,
+        return buildCard("Basic Information", Icons.business, [
+          buildField(nameController, "Company Name"),
+          buildField(legalNameController, "Legal Name"),
+          buildField(domainController, "Domain"),
+          buildField(websiteController, "Website"),
+          buildField(phoneController, "Phone Number"),
 
-          [
-
-            buildField(nameController, "Company Name"),
-            buildField(legalNameController, "Legal Name"),
-            buildField(domainController, "Domain"),
-            buildField(websiteController, "Website"),
-            buildField(phoneController, "Phone Number"),
-
-            buildUploadTile(
-              "Company Logo",
-              Icons.image,
-              () => pickFile("logo"),
-              companyLogo,
-            ),
-          ],
-        );
+          buildUploadTile(
+            "Company Logo",
+            Icons.image,
+            () => pickFile("logo"),
+            companyLogo,
+          ),
+        ]);
 
       /// STEP 2
       case 1:
-        return buildCard(
-          "Company Details",
-          Icons.work_outline,
+        return buildCard("Company Details", Icons.work_outline, [
+          buildField(industryTypeController, "Industry Type ID"),
+          buildField(companySizeController, "Company Size"),
+          buildField(foundedYearController, "Founded Year"),
 
-          [
+          buildField(workingHoursController, "Working Hours"),
+          buildField(workingDaysController, "Working Days"),
+          buildField(probationController, "Probation Period"),
+          buildField(noticeController, "Notice Period"),
 
-            buildField(industryTypeController, "Industry Type ID"),
-            buildField(companySizeController, "Company Size"),
-            buildField(foundedYearController, "Founded Year"),
-
-            buildField(workingHoursController, "Working Hours"),
-            buildField(workingDaysController, "Working Days"),
-            buildField(probationController, "Probation Period"),
-            buildField(noticeController, "Notice Period"),
-
-            buildMultiField(
-              companyPolicyController,
-              "Company Policy",
-            ),
-          ],
-        );
+          buildMultiField(companyPolicyController, "Company Policy"),
+        ]);
 
       /// STEP 3
       case 2:
-        return buildCard(
-          "Payroll Settings",
-          Icons.payments_outlined,
+        return buildCard("Payroll Settings", Icons.payments_outlined, [
+          buildField(currencyController, "Currency"),
+          buildField(salaryCycleController, "Salary Cycle"),
+          buildField(payrollStartController, "Payroll Start Day"),
+          buildField(payrollEndController, "Payroll End Day"),
+          buildField(pfPercentageController, "PF Percentage"),
 
-          [
+          SwitchListTile(
+            value: pfEnabled,
+            title: const Text("PF Enabled"),
 
-            buildField(currencyController, "Currency"),
-            buildField(salaryCycleController, "Salary Cycle"),
-            buildField(payrollStartController, "Payroll Start Day"),
-            buildField(payrollEndController, "Payroll End Day"),
-            buildField(pfPercentageController, "PF Percentage"),
+            onChanged: (value) {
+              setState(() {
+                pfEnabled = value;
+              });
+            },
+          ),
 
-            SwitchListTile(
-              value: pfEnabled,
-              title: const Text("PF Enabled"),
+          SwitchListTile(
+            value: esiEnabled,
+            title: const Text("ESI Enabled"),
 
-              onChanged: (value) {
-                setState(() {
-                  pfEnabled = value;
-                });
-              },
-            ),
-
-            SwitchListTile(
-              value: esiEnabled,
-              title: const Text("ESI Enabled"),
-
-              onChanged: (value) {
-                setState(() {
-                  esiEnabled = value;
-                });
-              },
-            ),
-          ],
-        );
+            onChanged: (value) {
+              setState(() {
+                esiEnabled = value;
+              });
+            },
+          ),
+        ]);
 
       /// STEP 4
       case 3:
-        return buildCard(
-          "Localization & Address",
-          Icons.location_on_outlined,
+        return buildCard("Localization & Address", Icons.location_on_outlined, [
+          /// TIMEZONE
+          buildField(timezoneController, "Timezone"),
 
-          [
+          buildField(dateFormatController, "Date Format"),
 
-            buildField(timezoneController, "Timezone"),
-            buildField(dateFormatController, "Date Format"),
-            buildField(languageController, "Language"),
+          buildField(languageController, "Language"),
 
-            buildField(address1Controller, "Address Line 1"),
-            buildField(address2Controller, "Address Line 2"),
-            buildField(cityController, "City"),
-            buildField(stateController, "State"),
-            buildField(countryController, "Country"),
-            buildField(pincodeController, "Pincode"),
-          ],
-        );
+          const SizedBox(height: 10),
+
+          /// MAP PICKER CARD
+          GestureDetector(
+            onTap: () async {
+              final result = await Navigator.push(
+                context,
+
+                MaterialPageRoute(
+                  builder: (_) => Scaffold(
+                    backgroundColor: Colors.white,
+
+                    appBar: AppBar(
+                      title: const Text("Select Company Location"),
+                      backgroundColor: Colors.indigo,
+                      foregroundColor: Colors.white,
+                    ),
+
+                    body: StatefulBuilder(
+                      builder: (context, setMapState) {
+                        return Stack(
+                          children: [
+                            GoogleMap(
+                              initialCameraPosition: CameraPosition(
+                                target: selectedLocation,
+                                zoom: 15,
+                              ),
+
+                              myLocationEnabled: true,
+                              myLocationButtonEnabled: true,
+
+                              onTap: (LatLng position) async {
+                                setMapState(() {
+                                  selectedLocation = position;
+                                });
+
+                                final result = await getAddress(position);
+
+                                if (context.mounted) {
+                                  Navigator.pop(context, result);
+                                }
+                              },
+
+                              markers: {
+                                Marker(
+                                  markerId: const MarkerId("selected"),
+                                  position: selectedLocation,
+                                ),
+                              },
+                            ),
+
+                            Positioned(
+                              top: 20,
+                              left: 20,
+                              right: 20,
+
+                              child: Container(
+                                padding: const EdgeInsets.all(14),
+
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(18),
+
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 10,
+                                    ),
+                                  ],
+                                ),
+
+                                child: const Row(
+                                  children: [
+                                    Icon(Icons.touch_app, color: Colors.indigo),
+
+                                    SizedBox(width: 10),
+
+                                    Expanded(
+                                      child: Text(
+                                        "Tap anywhere on map to select company location",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                ),
+              );
+
+              if (result != null) {
+                setState(() {
+                  address1Controller.text = result["address1"] ?? "";
+
+                  cityController.text = result["city"] ?? "";
+
+                  stateController.text = result["state"] ?? "";
+
+                  countryController.text = result["country"] ?? "";
+
+                  pincodeController.text = result["pincode"] ?? "";
+
+                  latitude = result["latitude"];
+                  longitude = result["longitude"];
+                });
+              }
+            },
+
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 20),
+
+              padding: const EdgeInsets.all(18),
+
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.indigo.shade500, Colors.indigo.shade300],
+                ),
+
+                borderRadius: BorderRadius.circular(22),
+
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.indigo.withOpacity(0.25),
+                    blurRadius: 12,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(14),
+
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+
+                    child: const Icon(Icons.map, color: Colors.white, size: 30),
+                  ),
+
+                  const SizedBox(width: 15),
+
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+
+                      children: [
+                        Text(
+                          "Select Location From Map",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        SizedBox(height: 5),
+
+                        Text(
+                          "Auto fill address with coordinates",
+                          style: TextStyle(color: Colors.white70),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const Icon(Icons.arrow_forward_ios, color: Colors.white),
+                ],
+              ),
+            ),
+          ),
+
+          /// AUTO FILLED FIELDS
+          AbsorbPointer(
+            child: buildField(address1Controller, "Address Line 1"),
+          ),
+
+          buildField(address2Controller, "Address Line 2"),
+
+          AbsorbPointer(child: buildField(cityController, "City")),
+
+          AbsorbPointer(child: buildField(stateController, "State")),
+
+          AbsorbPointer(child: buildField(countryController, "Country")),
+
+          AbsorbPointer(child: buildField(pincodeController, "Pincode")),
+
+          /// LOCATION INFO CARD
+          if (latitude != null && longitude != null)
+            Container(
+              width: double.infinity,
+
+              margin: const EdgeInsets.only(top: 10),
+
+              padding: const EdgeInsets.all(18),
+
+              decoration: BoxDecoration(
+                color: Colors.green.shade50,
+                borderRadius: BorderRadius.circular(20),
+
+                border: Border.all(color: Colors.green.shade200),
+              ),
+
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+
+                children: [
+                  const Row(
+                    children: [
+                      Icon(Icons.check_circle, color: Colors.green),
+
+                      SizedBox(width: 10),
+
+                      Text(
+                        "Location Selected",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 15),
+
+                  Text(
+                    "Latitude : $latitude",
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  Text(
+                    "Longitude : $longitude",
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+            ),
+        ]);
 
       /// STEP 5
       default:
-        return buildCard(
-          "Tax & Documents",
-          Icons.description_outlined,
+        return buildCard("Tax & Documents", Icons.description_outlined, [
+          buildField(gstController, "GST Number"),
+          buildField(panController, "PAN Number"),
+          buildField(tanController, "TAN Number"),
 
-          [
+          const SizedBox(height: 15),
 
-            buildField(gstController, "GST Number"),
-            buildField(panController, "PAN Number"),
-            buildField(tanController, "TAN Number"),
-
-            const SizedBox(height: 15),
-
-            buildUploadTile(
-              "GST Certificate",
-              Icons.picture_as_pdf,
-              () => pickFile("gst"),
-              gstFile,
-            ),
-          ],
-        );
+          buildUploadTile(
+            "GST Certificate",
+            Icons.picture_as_pdf,
+            () => pickFile("gst"),
+            gstFile,
+          ),
+        ]);
     }
   }
 
   /// ================= CARD =================
 
-  Widget buildCard(
-    String title,
-    IconData icon,
-    List<Widget> children,
-  ) {
-
+  Widget buildCard(String title, IconData icon, List<Widget> children) {
     return Container(
       key: ValueKey(currentStep),
 
@@ -408,10 +633,8 @@ class _ProfileCompletionScreenState
         crossAxisAlignment: CrossAxisAlignment.start,
 
         children: [
-
           Row(
             children: [
-
               Container(
                 padding: const EdgeInsets.all(12),
 
@@ -420,10 +643,7 @@ class _ProfileCompletionScreenState
                   borderRadius: BorderRadius.circular(15),
                 ),
 
-                child: Icon(
-                  icon,
-                  color: Colors.indigo,
-                ),
+                child: Icon(icon, color: Colors.indigo),
               ),
 
               const SizedBox(width: 15),
@@ -449,11 +669,7 @@ class _ProfileCompletionScreenState
 
   /// ================= TEXT FIELD =================
 
-  Widget buildField(
-    TextEditingController controller,
-    String hint,
-  ) {
-
+  Widget buildField(TextEditingController controller, String hint) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 18),
 
@@ -482,11 +698,7 @@ class _ProfileCompletionScreenState
 
   /// ================= MULTI FIELD =================
 
-  Widget buildMultiField(
-    TextEditingController controller,
-    String hint,
-  ) {
-
+  Widget buildMultiField(TextEditingController controller, String hint) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 18),
 
@@ -517,7 +729,6 @@ class _ProfileCompletionScreenState
     VoidCallback onTap,
     File? file,
   ) {
-
     return Container(
       margin: const EdgeInsets.only(bottom: 15),
 
@@ -527,23 +738,13 @@ class _ProfileCompletionScreenState
       ),
 
       child: ListTile(
-
         leading: CircleAvatar(
           backgroundColor: Colors.indigo.withValues(alpha: 0.1),
 
-          child: Icon(
-            icon,
-            color: Colors.indigo,
-          ),
+          child: Icon(icon, color: Colors.indigo),
         ),
 
-        title: Text(
-          title,
-
-          style: const TextStyle(
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
 
         subtitle: file != null
             ? Text(file.path.split('/').last)
@@ -563,9 +764,7 @@ class _ProfileCompletionScreenState
           child: Text(
             file != null ? "Change" : "Upload",
 
-            style: const TextStyle(
-              color: Colors.white,
-            ),
+            style: const TextStyle(color: Colors.white),
           ),
         ),
       ),
@@ -574,59 +773,152 @@ class _ProfileCompletionScreenState
 
   /// ================= SUBMIT =================
 
-  void submitForm() {
+  Future<void> submitForm() async {
+    final ApiService apiService = ApiService();
 
-    final body = {
+    try {
+      setState(() {
+        isLoading = true;
+      });
 
-      "name": nameController.text,
-      "legalName": legalNameController.text,
-      "domain": domainController.text,
-      "website": websiteController.text,
-      "phone": phoneController.text,
+      final body = {
+        "name": nameController.text,
+        "legalName": legalNameController.text,
+        "domain": domainController.text,
+        "website": websiteController.text,
+        "phone": phoneController.text,
 
-      "industryTypeId": industryTypeController.text,
-      "companySize": companySizeController.text,
-      "foundedYear": foundedYearController.text,
+        "industryTypeId": industryTypeController.text,
+        "companySize": companySizeController.text,
+        "foundedYear": foundedYearController.text,
 
-      "workingHours": workingHoursController.text,
-      "workingDays": workingDaysController.text,
-      "defaultProbationPeriod": probationController.text,
-      "defaultNoticePeriod": noticeController.text,
-      "companyPolicy": companyPolicyController.text,
+        "workingHours": workingHoursController.text,
+        "workingDays": workingDaysController.text,
+        "defaultProbationPeriod": probationController.text,
+        "defaultNoticePeriod": noticeController.text,
+        "companyPolicy": companyPolicyController.text,
 
-      "currency": currencyController.text,
-      "salaryCycle": salaryCycleController.text,
-      "payrollStartDay": payrollStartController.text,
-      "payrollEndDay": payrollEndController.text,
-      "pfEnabled": pfEnabled,
-      "pfPercentage": pfPercentageController.text,
-      "esiEnabled": esiEnabled,
+        "currency": currencyController.text,
+        "salaryCycle": salaryCycleController.text,
+        "payrollStartDay": payrollStartController.text,
+        "payrollEndDay": payrollEndController.text,
+        "pfEnabled": pfEnabled,
+        "pfPercentage": pfPercentageController.text,
+        "esiEnabled": esiEnabled,
 
-      "timezone": timezoneController.text,
-      "dateFormat": dateFormatController.text,
-      "language": languageController.text,
+        "timezone": timezoneController.text,
+        "dateFormat": dateFormatController.text,
+        "language": languageController.text,
 
-      "addressLine1": address1Controller.text,
-      "addressLine2": address2Controller.text,
-      "city": cityController.text,
-      "state": stateController.text,
-      "country": countryController.text,
-      "pincode": pincodeController.text,
+        "addressLine1": address1Controller.text,
+        "addressLine2": address2Controller.text,
+        "city": cityController.text,
+        "state": stateController.text,
+        "country": countryController.text,
+        "pincode": pincodeController.text,
+        "latitude": latitude?.toString(),
+        "longitude": longitude?.toString(),
 
-      "gstNumber": gstController.text,
-      "panNumber": panController.text,
-      "tanNumber": tanController.text,
+        "gstNumber": gstController.text,
+        "panNumber": panController.text,
+        "tanNumber": tanController.text,
 
-      "companyLogo": companyLogo?.path,
-      "gstFile": gstFile?.path,
-    };
+        "companyLogo": companyLogo?.path,
+        "gstFile": gstFile?.path,
+      };
 
-    print(body);
+      print(body);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Company Registered Successfully"),
-      ),
-    );
+      final response = await apiService.updateCompany(
+        data: body,
+        companyLogoPath: companyLogo?.path,
+        gstFilePath: gstFile?.path,
+      );
+
+      if (response.statusCode == 200) {
+        clearForm();
+
+        TopMessage.show(context, "Company profile updated successfully" ,
+        color: Colors.green);
+
+        setState(() {
+          currentUserSession = currentUserSession!.copyWith(
+            isProfileCompleted: response.data["isprofilecompleted"] ?? true,
+          );
+          ;
+        });
+      }
+    } catch (e) {
+      print(e);
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  /// ================= CLEAR ALL FIELDS =================
+
+  void clearForm() {
+    /// BASIC
+    nameController.clear();
+    legalNameController.clear();
+    domainController.clear();
+    websiteController.clear();
+    phoneController.clear();
+
+    /// COMPANY
+    industryTypeController.clear();
+    companySizeController.clear();
+    foundedYearController.clear();
+
+    /// POLICY
+    workingHoursController.clear();
+    workingDaysController.clear();
+    probationController.clear();
+    noticeController.clear();
+    companyPolicyController.clear();
+
+    /// PAYROLL
+    currencyController.clear();
+    salaryCycleController.clear();
+    payrollStartController.clear();
+    payrollEndController.clear();
+    pfPercentageController.clear();
+
+    /// LOCALIZATION
+    timezoneController.clear();
+    dateFormatController.clear();
+    languageController.clear();
+
+    /// ADDRESS
+    address1Controller.clear();
+    address2Controller.clear();
+    cityController.clear();
+    stateController.clear();
+    countryController.clear();
+    pincodeController.clear();
+
+    /// TAX
+    gstController.clear();
+    panController.clear();
+    tanController.clear();
+
+    /// FILES
+    companyLogo = null;
+    gstFile = null;
+
+    /// LOCATION
+    latitude = null;
+    longitude = null;
+
+    /// SWITCHES
+    pfEnabled = true;
+    esiEnabled = true;
+
+    /// STEP RESET
+    currentStep = 0;
+
+    setState(() {});
   }
 }

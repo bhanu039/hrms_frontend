@@ -95,3 +95,4 @@ class UserSession {
     );
   }
 }
+UserSession? currentUserSession;

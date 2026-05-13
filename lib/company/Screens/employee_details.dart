@@ -99,7 +99,7 @@ class _EmployeeReviewScreenState extends State<EmployeeReviewScreen> {
                               backgroundImage:
                                   employee?.profilePhoto.isNotEmpty == true
                                   ? NetworkImage(
-                                      "https://goexperts-hrms.onrender.com${employee!.profilePhoto}",
+                                      "https://res.cloudinary.com${employee!.profilePhoto}",
                                     )
                                   : null,
 
@@ -462,7 +462,7 @@ class _EmployeeReviewScreenState extends State<EmployeeReviewScreen> {
                         onPressed: () async {
                           // document file url from backend
                           final fileUrl =
-                              "https://goexperts-hrms.onrender.com${doc.fileUrl}";
+                              "https://res.cloudinary.com${doc.fileUrl}";
                           print("Document URL: $fileUrl");
 
                           // null or empty check

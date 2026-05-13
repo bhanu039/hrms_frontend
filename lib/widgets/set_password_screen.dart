@@ -34,12 +34,12 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
     final confirm = confirmController.text.trim();
 
     if (password.isEmpty || confirm.isEmpty) {
-      TopMessage.show(context, "Fill all fields");
+      TopMessage.show(context, "Fill all fields", color: Colors.red);
       return;
     }
 
     if (password != confirm) {
-      TopMessage.show(context, "Passwords do not match");
+      TopMessage.show(context, "Passwords do not match", color: Colors.red);
       return;
     }
 
@@ -60,7 +60,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
         // ✅ MARK TOKEN USED ONLY AFTER SUCCESS
         await DeepLinkService.markTokenUsed(widget.token);
 
-        TopMessage.show(context, "Password set successfully");
+        TopMessage.show(context, "Password set successfully", color: Colors.green);
         Future.microtask(() {
           Navigator.pushAndRemoveUntil(
             context,
@@ -73,14 +73,15 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
           TopMessage.show(
             context,
             "Failed to set password:  ${response.data['message'] ?? 'Unknown error'}",
+            color: Colors.red,
           );
         };
     } on DioException catch (e) {
       print("Error: ${e.response?.data}");
-      TopMessage.show(context, "Server error");
+      TopMessage.show(context, "Server error", color: Colors.red);
     } catch (e) {
       print("Error: $e");
-      TopMessage.show(context, "Something went wrong");
+      TopMessage.show(context, "Something went wrong", color: Colors.red);
     }
 
     setState(() => isLoading = false);
