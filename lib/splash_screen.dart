@@ -3,9 +3,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app_links/app_links.dart';
+import 'package:goexperts/main_tabs_screen.dart';
+import 'package:goexperts/widgets/top_message.dart';
 
-import 'admin/Screens/dashboard_screen.dart';
-import 'company/Screens/c_dashboard_screen.dart';
 import 'login_screen.dart';
 import 'services/api_service.dart';
 import 'services/set_pass_token.dart';
@@ -118,39 +118,26 @@ class _SplashScreenState extends State<SplashScreen>
     _navigated = true;
 
     if (state.status != AuthStatus.authenticated || session == null) {
+      TopMessage.show(
+        context,
+        "Please log in to continue.",
+        color: Colors.blue,
+      );
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const LoginScreen()),
       );
       return;
     }
+    else{
 
-    if (session.isSuperAdmin) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const DashboardScreen()),
+        MaterialPageRoute(builder: (_) => const MainTabScreen()),
       );
-    } else if (session.isCompanyRole) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const CDashboardScreen()),
-      );
-    } else if (session.isHR) {
-     // Navigator.pushReplacement(
-       // context,
-       // MaterialPageRoute(builder: (_) => const HrDashboardScreen()),
-     // );
-    } else if (session.isEmployee) {
-     // Navigator.pushReplacement(
-       // context,
-        //MaterialPageRoute(builder: (_) => const EmployeeDashboardScreen()),
-    //  );
-    } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-      );
+    
     }
+
   }
 
   @override

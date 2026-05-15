@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:goexperts/admin/Screens/companys_list.dart';
 import '../../services/api_service.dart';
+import '../../widgets/top_message.dart';
 import 'admin_menu.dart';
 import 'company_reg.dart';
 
@@ -21,6 +22,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
+     TopMessage.show(
+            context,
+            "Welcome, Super Admin!",
+            color: Colors.green,
+          );
     fetchCompanies();
   }
 

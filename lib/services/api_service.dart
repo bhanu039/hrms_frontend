@@ -236,7 +236,7 @@ class ApiService {
 
   Future<void> createEmployee(Map<String, dynamic> data) async {
     try {
-      final response = await ApiClient.dio.post("/employees", data: data);
+      final response = await ApiClient.dio.post("invite/invite", data: data);
       print(response.data);
     } catch (e) {
       print("ERROR: $e");
@@ -282,7 +282,7 @@ class ApiService {
 
     // using existing api client
     return await ApiClient.dio.put(
-      "/company/update",
+      "company/update",
       data: formData,
     );
   }

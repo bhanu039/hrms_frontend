@@ -7,6 +7,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geocoding/geocoding.dart';
 import '../../services/api_service.dart';
 import '../../state/models/user_session.dart';
+import '../../widgets/app_primary_button.dart';
 
 class ProfileCompletionScreen extends StatefulWidget {
   const ProfileCompletionScreen({super.key});
@@ -222,8 +223,12 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
                 if (currentStep != 0) const SizedBox(width: 15),
 
                 Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
+
+                  child: AppGradientButton(
+                      text: currentStep == 4 ? "Submit" : "Next",
+                      
+                      isLoading: isLoading,
+                      onPressed: isLoading ? null : () {
                       if (currentStep < 4) {
                         setState(() {
                           currentStep++;
@@ -232,27 +237,8 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
                         submitForm();
                       }
                     },
-
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.indigo,
-                      minimumSize: const Size(double.infinity, 55),
-
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
                     ),
-
-                    child: Text(
-                      currentStep == 4 ? "Submit" : "Next",
-
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                ),
+                                    ),
               ],
             ),
           ),

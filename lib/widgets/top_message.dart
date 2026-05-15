@@ -13,7 +13,7 @@ class TopMessage {
         right: 16,
         child: Material(
           color: Colors.transparent,
-          child: _TopMessageWidget(message: message),
+          child: _TopMessageWidget(message: message, color: color),
         ),
       ),
     );
@@ -28,15 +28,16 @@ class TopMessage {
 
 class _TopMessageWidget extends StatelessWidget {
   final String message;
+  final Color color;
 
-  const _TopMessageWidget({required this.message});
+  const _TopMessageWidget({required this.message, required this.color});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.black87,
+        color: color,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Text(

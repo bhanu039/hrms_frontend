@@ -3,16 +3,37 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 
 import '../../state/auth/auth_bloc.dart';
-import '../../widgets/Adding_Screen.dart';
+import '../../widgets/Adding_Employee_Screen.dart';
 import '../../widgets/dashboard_card.dart';
+import '../../widgets/top_message.dart';
 import 'company_menu.dart';
 import 'company_profile_screen.dart';
 
-class CDashboardScreen extends StatelessWidget {
+class CDashboardScreen extends StatefulWidget {
   const CDashboardScreen({super.key});
 
   @override
+  State<CDashboardScreen> createState() => _CDashboardScreenState();
+}
+
+class _CDashboardScreenState extends State<CDashboardScreen> {
+
+
+   @override
+  void initState() {
+    super.initState();
+     TopMessage.show(
+            context,
+            "Welcome, Super Admin!",
+            color: Colors.green,
+          );
+    
+  }
+  @override
   Widget build(BuildContext context) {
+
+
+    
     final session = context.watch<AuthBloc>().state.session;
     final companyName = (session?.name ?? '').trim();
     final displayName = companyName.isEmpty ? 'Company' : companyName;

@@ -23,6 +23,7 @@ class AuthController extends AsyncNotifier<UserSession?> {
     final role = await SessionService.getRole();
     final email = await SessionService.getEmail();
     final name = await SessionService.getName();
+      final companyid = await SessionService.getCompanyID();
 
     if (token == null || token.isEmpty) return null;
 
@@ -32,8 +33,8 @@ class AuthController extends AsyncNotifier<UserSession?> {
       role: role ?? "",
       name: name ?? "",
       email: email ?? "",
-      createdAt:
-          "", // 🔥 createdAt is not stored, set to empty or handle as needed
+      createdAt: "", // 🔥 createdAt is not stored, set to empty or handle as needed
+      companyid: companyid ?? "", // 🔥 companyid is not stored, set to empty or handle as needed
     );
   }
 
@@ -68,6 +69,7 @@ class AuthController extends AsyncNotifier<UserSession?> {
         "name": session.name,
         "email": session.email,
         "createdAt": session.createdAt,
+        "companyId": session.companyid, // 🔥 save companyid if available
       },
     );
 
@@ -94,6 +96,7 @@ class AuthController extends AsyncNotifier<UserSession?> {
         "role": updated.role,
         "name": updated.name,
         "email": updated.email,
+        "companyId": updated.companyid,
       },
     );
     state = AsyncData(updated);

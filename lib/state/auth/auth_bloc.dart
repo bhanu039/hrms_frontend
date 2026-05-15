@@ -102,6 +102,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     final role = await SessionService.getRole();
     final email = await SessionService.getEmail();
     final name = await SessionService.getName();
+      final companyid = await SessionService.getCompanyID();
 
     if (token == null || token.isEmpty) return null;
 
@@ -112,6 +113,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       email: email ?? "",
       role: role ?? "",
       createdAt: createdAt ?? '',
+      companyid: companyid ?? "",
     );
   }
 }

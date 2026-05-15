@@ -6,11 +6,10 @@ import '../../login_screen.dart';
 import '../../state/auth/auth_bloc.dart';
 import '../../state/auth/auth_event.dart';
 import '../../widgets/menu_widget.dart';
-import 'company_profile_screen.dart';
-import 'subscription_plans.dart';
 
-class CompanyDrawer extends StatelessWidget {
-  const CompanyDrawer({super.key});
+
+class HrDrawer extends StatelessWidget {
+  const HrDrawer({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -31,17 +30,17 @@ class CompanyDrawer extends StatelessWidget {
                 DrawerWidgets.menuTile(
                   context,
                   icon: Icons.business,
-                  title: 'Company Profile',
+                  title: 'Hr Profile',
                   subtitle: 'Details, address, logo',
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const CompanyProfileScreen(),
-                      ),
-                    );
-                  },
+                  // onTap: () {
+                  //   Navigator.pop(context);
+                  //   Navigator.push(
+                  //     context,
+                  //     MaterialPageRoute(
+                  //       builder: (_) => const CompanyProfileScreen(),
+                  //     ),
+                  //   );
+                  // },
                 ),
 
                 DrawerWidgets.menuTile(
@@ -54,8 +53,14 @@ class CompanyDrawer extends StatelessWidget {
                 DrawerWidgets.menuTile(
                   context,
                   icon: Icons.people,
-                  title: 'HRs',
-                  subtitle: 'Teams and staff records',
+                  title: 'Attendance',
+                  subtitle: 'manage attendance',
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const EmployeeListScreen(),
+                    ),
+                  ),
                 ),
                 DrawerWidgets.menuTile(
                   context,
@@ -75,9 +80,19 @@ class CompanyDrawer extends StatelessWidget {
                   title: 'Projects',
                   subtitle: 'Active and completed work',
                 ),
-
-               
-
+                DrawerWidgets.menuTile(
+                  context,
+                  icon: Icons.apartment,
+                  title: 'Departments',
+                  subtitle: 'Business units',
+                ),
+                DrawerWidgets.sectionTitle('Growth'),
+                DrawerWidgets.menuTile(
+                  context,
+                  icon: Icons.apartment,
+                  title: 'Departments',
+                  subtitle: 'Business units',
+                ),
                 DrawerWidgets.sectionTitle('Growth'),
                 DrawerWidgets.menuTile(
                   context,
@@ -85,20 +100,7 @@ class CompanyDrawer extends StatelessWidget {
                   title: 'Reports & Analytics',
                   subtitle: 'Performance and activity',
                 ),
-                DrawerWidgets.menuTile(
-                  context,
-                  icon: Icons.subscriptions,
-                  title: 'Subscription',
-                  subtitle: 'Plan and billing status',
-                  onTap: () => {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const SubscriptionPage(),
-                      ),
-                    ),
-                  },
-                ),
+                
                 DrawerWidgets.menuTile(
                   context,
                   icon: Icons.settings,
@@ -106,55 +108,14 @@ class CompanyDrawer extends StatelessWidget {
                   subtitle: 'Account preferences',
                   subItems: [
                     MenuSubItem(
-                      icon: Icons.people,
-                      title: 'Departments',
-
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.pushNamed(context, '/users');
-                      },
-                    ),
-                    MenuSubItem(
-                      icon: Icons.people,
-                      title: 'Designations',
-
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.pushNamed(context, '/users');
-                      },
-                    ),
-
-                    MenuSubItem(
                       icon: Icons.payments,
                       title: 'Payroll Settings',
-                      onTap: () => DrawerWidgets.showComingSoon(
-                        context,
-                        'Payroll Settings',
-                      ),
+                      onTap: () => DrawerWidgets.showComingSoon(context, 'Payroll Settings'),
                     ),
-                     MenuSubItem(
-                      icon: Icons.payments,
-                      title: 'Date & Time Settings',
-                      onTap: () => DrawerWidgets.showComingSoon(
-                        context,
-                        'Date & Time Settings',
-                      ),
-                    ),
-                     MenuSubItem(
-                      icon: Icons.payments,
-                      title: 'Location Settings',
-                      onTap: () => DrawerWidgets.showComingSoon(
-                        context,
-                        'Location Settings',
-                      ),
-                    ),
-                    MenuSubItem(
+                   MenuSubItem(
                       icon: Icons.work_history,
                       title: 'Work Settings',
-                      onTap: () => DrawerWidgets.showComingSoon(
-                        context,
-                        'Work Settings',
-                      ),
+                      onTap: () => DrawerWidgets.showComingSoon(context, 'Work Settings'),
                     ),
                   ],
                 ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import '../login_screen.dart';
 import '../services/set_pass_token.dart';
+import 'app_primary_button.dart';
 import 'top_message.dart';
 
 class SetPasswordScreen extends StatefulWidget {
@@ -60,7 +61,11 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
         // ✅ MARK TOKEN USED ONLY AFTER SUCCESS
         await DeepLinkService.markTokenUsed(widget.token);
 
-        TopMessage.show(context, "Password set successfully", color: Colors.green);
+        TopMessage.show(
+          context,
+          "Password set successfully",
+          color: Colors.green,
+        );
         Future.microtask(() {
           Navigator.pushAndRemoveUntil(
             context,
@@ -68,20 +73,16 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
             (route) => false,
           );
         });
-      } else
-        (e) {
-          TopMessage.show(
-            context,
-            "Failed to set password:  ${response.data['message'] ?? 'Unknown error'}",
-            color: Colors.red,
-          );
-        };
-    } on DioException catch (e) {
-      print("Error: ${e.response?.data}");
-      TopMessage.show(context, "Server error", color: Colors.red);
+      } else {
+        TopMessage.show(
+          context,
+          response.data["message"] ?? "Failed to set password",
+          color: Colors.red,
+        );
+      }
     } catch (e) {
       print("Error: $e");
-      TopMessage.show(context, "Something went wrong", color: Colors.red);
+      TopMessage.show(context, "Something went wrong: $e", color: Colors.red);
     }
 
     setState(() => isLoading = false);
@@ -184,35 +185,18 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                   SizedBox(
                     width: double.infinity,
                     height: 50,
-                    child: ElevatedButton(
-                      onPressed: isLoading ? null : submit,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xff1e3a8a),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: isLoading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text(
-                              "Update Password",
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                    child: AppGradientButton(
+                      text: "Create Password",
+
+                      isLoading: isLoading,
+                      onPressed: isLoading
+                          ? () => TopMessage.show(
+                              context,
+                              "Please wait...",
+                              color: Colors.blue,
+                            )
+                          : submit,
                     ),
-                  ),
-                  FloatingActionButton(
-                    onPressed: () {
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(builder: (_) => const LoginScreen()),
-                        (route) => false,
-                      );
-                    },
-                    child: const Icon(Icons.login),
                   ),
                 ],
               ),

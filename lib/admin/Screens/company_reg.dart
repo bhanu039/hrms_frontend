@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import '../../services/api_client.dart';
 import '../../services/api_service.dart';
 import '../../services/session_expiry_handler.dart';
+
 import '../../widgets/custom_text_field.dart';
 
 class AddCompanyScreen extends StatefulWidget {
@@ -20,6 +22,9 @@ class _AddCompanyScreenState extends State<AddCompanyScreen> {
   final adminnameController = TextEditingController();
   final locationController = TextEditingController();
   bool isLoading = false;
+  String? selectedindustriesId;
+
+  List<Map<String, dynamic>> industries = [];
 
   void clearFields() {
     nameController.clear();
@@ -28,6 +33,34 @@ class _AddCompanyScreenState extends State<AddCompanyScreen> {
     adminEmailController.clear();
     adminnameController.clear();
     locationController.clear();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    loadInitialData();
+  }
+
+  /// ================= LOAD API =================
+
+  Future<void> loadInitialData() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final industriesRes = await ApiClient.dio.get("master/industries");
+      print(industriesRes.data["data"]);
+
+      industries = List<Map<String, dynamic>>.from(industriesRes.data["data"]);
+    } catch (e) {
+      debugPrint(e.toString());
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   Future<void> createCompany() async {
@@ -183,6 +216,7 @@ class _AddCompanyScreenState extends State<AddCompanyScreen> {
                     },
                   ),
                   space(),
+                  buildIndustriesDropdown(),
 
                   CustomTextField(
                     controller: locationController,
@@ -233,6 +267,55 @@ class _AddCompanyScreenState extends State<AddCompanyScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  Widget buildIndustriesDropdown() {
+    return dropdownContainer(
+      child: DropdownButtonFormField<String>(
+        initialValue: selectedindustriesId,
+
+        decoration: dropdownDecoration(Icons.apartment_outlined),
+
+        hint: const Text("Select Department"),
+
+        items: industries.map((department) {
+          return DropdownMenuItem<String>(
+            value: department["id"],
+            child: Text(department["name"]),
+          );
+        }).toList(),
+
+        onChanged: (value) async {
+          setState(() {
+            selectedindustriesId = value;
+            selectedindustriesId = null;
+          });
+        },
+      ),
+    );
+  }
+
+  Widget dropdownContainer({required Widget child}) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 18),
+
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(18),
+      ),
+
+      child: child,
+    );
+  }
+
+  InputDecoration dropdownDecoration(IconData icon) {
+    return InputDecoration(
+      prefixIcon: Icon(icon),
+
+      border: InputBorder.none,
+
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
     );
   }
 }

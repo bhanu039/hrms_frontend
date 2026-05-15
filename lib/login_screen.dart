@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:goexperts/main_tabs_screen.dart';
+import 'package:goexperts/widgets/top_message.dart';
 import 'company/Screens/company_fullreg.dart';
+import 'hr/screens/hr_dashbord.dart';
 import 'state/auth/auth_bloc.dart';
 import 'state/auth/auth_event.dart';
 import 'state/auth/auth_state.dart';
@@ -10,6 +13,7 @@ import 'admin/Screens/dashboard_screen.dart';
 import 'company/Screens/c_dashboard_screen.dart';
 import 'forgot_password_screen.dart';
 import 'services/api_service.dart';
+import 'widgets/app_primary_button.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -38,13 +42,14 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void showError(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(msg),
-        backgroundColor: Colors.red.shade700,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    TopMessage.show(context, msg, color: Colors.red);
+    // ScaffoldMessenger.of(context).showSnackBar(
+    //   SnackBar(
+    //     content: Text(msg),
+    //     backgroundColor: Colors.red.shade700,
+    //     behavior: SnackBarBehavior.floating,
+    //   ),
+    // );
   }
 
   @override
@@ -52,13 +57,11 @@ class _LoginScreenState extends State<LoginScreen> {
     super.initState();
 
     ApiService.wakeUpServer();
-  
   }
 
- 
-
   @override
-  void dispose() {// ✅ cancel the subscription
+  void dispose() {
+    // ✅ cancel the subscription
     emailController.dispose();
     passwordController.dispose();
     super.dispose();
@@ -79,33 +82,12 @@ class _LoginScreenState extends State<LoginScreen> {
         }
 
         if (authState.status != AuthStatus.authenticated || session == null) {
-          return;
+           Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const MainTabScreen()),
+          );
         }
 
-        if (session.isSuperAdmin) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const DashboardScreen()),
-          );
-        } else if (session.isCompanyRole) {
-          if(session.isProfileCompleted == false){ 
-             Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const ProfileCompletionScreen()),
-          );
-          }
-          else{
-             Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const CDashboardScreen()),
-          );
-          }
-          }
-         
-         
-         else if (session.isHR || session.isEmployee) {
-          showError("Unauthorized role: ${session.role}");
-        }
       },
       child: Scaffold(
         backgroundColor: const Color(0xff07111f),
@@ -442,35 +424,15 @@ class _ThreeDLoginPanel extends StatelessWidget {
                         ),
                       ],
                     ),
-                    child: ElevatedButton(
+                    child: AppGradientButton(
+                      text: "Sign In",
+
+                      isLoading: isLoading,
                       onPressed: isLoading ? null : state.login,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xff111827),
-                        foregroundColor: Colors.white,
-                        disabledBackgroundColor: const Color(0xff9ca3af),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                      child: isLoading
-                          ? const SizedBox(
-                              height: 22,
-                              width: 22,
-                              child: CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2.4,
-                              ),
-                            )
-                          : const Text(
-                              'Login',
-                              style: TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
                     ),
                   ),
                 ),
+                const SizedBox(height: 14),
               ],
             ),
           ),

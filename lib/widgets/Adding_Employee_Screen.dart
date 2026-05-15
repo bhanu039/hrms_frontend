@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:goexperts/services/api_client.dart';
 
 import '../services/api_service.dart';
-import '../state/models/user_session.dart';
+import '../state/auth/auth_bloc.dart';
+import 'app_primary_button.dart';
 
 class AddEmployeeScreen extends StatefulWidget {
   const AddEmployeeScreen({super.key});
@@ -15,6 +17,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
   final formKey = GlobalKey<FormState>();
 
   final ApiService apiService = ApiService();
+  String companyid = "";
 
   /// ================= CONTROLLERS =================
 
@@ -26,13 +29,14 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
 
   /// ================= DROPDOWN VALUES =================
 
-  String? selectedRole;
+  String selectedRole = "Select the role";
   String? selectedDepartmentId;
   String? selectedDesignationId;
 
   bool isNewHire = true;
 
   bool isLoading = false;
+  bool isCompanyRole = false;
 
   /// ================= API DATA =================
 
@@ -42,10 +46,11 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
   @override
   void initState() {
     super.initState();
+    final session = context.read<AuthBloc>().state.session;
+    companyid = session?.companyid ?? '';
+    isCompanyRole = session?.isCompanyRole ?? false;
 
-    selectedRole = currentUserSession?.isCompanyRole == true
-        ? "HR"
-        : "EMPLOYEE";
+    print("isCompanyRole: $isCompanyRole");
 
     loadInitialData();
   }
@@ -59,8 +64,9 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
 
     try {
       final departmentResponse = await ApiClient.dio.get(
-        "/departments?industryTypeId=id",
+        "master/company-departments?companyId=$companyid",
       );
+      print(departmentResponse.data["data"]);
 
       departments = List<Map<String, dynamic>>.from(
         departmentResponse.data["data"],
@@ -255,6 +261,8 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                   icon: Icons.badge_outlined,
 
                   children: [
+                    buildRoleDropdown(),
+
                     buildField(
                       controller: nameController,
                       hint: "Employee Name",
@@ -266,8 +274,6 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                       hint: "Email Address",
                       icon: Icons.email_outlined,
                     ),
-
-                    buildRoleDropdown(),
 
                     buildDepartmentDropdown(),
 
@@ -299,27 +305,11 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
                   width: double.infinity,
                   height: 58,
 
-                  child: ElevatedButton(
+                  child: AppGradientButton(
+                    text: "Create Employee",
+
+                    isLoading: isLoading,
                     onPressed: isLoading ? null : submitEmployee,
-
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.indigo,
-
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(18),
-                      ),
-                    ),
-
-                    child: isLoading
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text(
-                            "Create Employee",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
                   ),
                 ),
 
@@ -485,7 +475,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
   Widget buildRoleDropdown() {
     List<String> roles = [];
 
-    if (currentUserSession?.isCompanyRole == true) {
+    if (isCompanyRole == true) {
       roles = ["HR", "EMPLOYEE"];
     } else {
       roles = ["EMPLOYEE"];
@@ -493,7 +483,8 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
 
     return dropdownContainer(
       child: DropdownButtonFormField<String>(
-        initialValue: selectedRole,
+        initialValue: selectedRole == "Select the role" ? null : selectedRole,
+        hint: const Text("Select Role"),
 
         decoration: dropdownDecoration(Icons.admin_panel_settings_outlined),
 
@@ -503,7 +494,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
 
         onChanged: (value) {
           setState(() {
-            selectedRole = value;
+            selectedRole = value ?? "Select the role";
           });
         },
       ),
@@ -551,7 +542,7 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
 
     try {
       final designationResponse = await ApiClient.dio.get(
-        "/designations?departmentId=$selectedDepartmentId",
+        "master/designations?departmentId=$selectedDepartmentId",
       );
 
       designations = List<Map<String, dynamic>>.from(
@@ -607,8 +598,9 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
       child: SwitchListTile(
         value: isNewHire,
 
-        title: const Text(
-          "Is New Hire",
+        title: Text(
+          isNewHire ? "Is New Hire" : "Is Existing Employee",
+
           style: TextStyle(fontWeight: FontWeight.w600),
         ),
 

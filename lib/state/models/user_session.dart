@@ -10,6 +10,7 @@ class UserSession {
     required this.createdAt,
     this.profileLogo,
     this.isProfileCompleted,
+    this.companyid,
   });
 
   final String token;
@@ -20,6 +21,7 @@ class UserSession {
   final String createdAt;
   final String? profileLogo;
   final bool? isProfileCompleted;
+  final String? companyid;
 
   bool get isSuperAdmin => role == "SUPER_ADMIN";
   bool get isCompanyRole => role == "OWNER" || role == "COMPANY";
@@ -40,6 +42,7 @@ class UserSession {
     String? profileLogo,
     String? createdAt,
     bool? isProfileCompleted,
+    String? companyid,
   }) {
     return UserSession(
       token: token ?? this.token,
@@ -50,6 +53,7 @@ class UserSession {
       createdAt: createdAt ?? this.createdAt,
       profileLogo: profileLogo ?? this.profileLogo,
       isProfileCompleted: isProfileCompleted ?? this.isProfileCompleted,
+      companyid: companyid ?? this.companyid,
     );
   }
 
@@ -62,6 +66,7 @@ class UserSession {
     required String createdAt,
     String? profileLogo,
     bool? isProfileCompleted,
+    String? companyid,
   }) {
     return UserSession(
       token: token,
@@ -72,6 +77,7 @@ class UserSession {
       createdAt: createdAt,
       profileLogo: profileLogo,
       isProfileCompleted: isProfileCompleted,
+      companyid: companyid,
     );
   }
 
@@ -92,6 +98,7 @@ class UserSession {
       createdAt: user["createdAt"]?.toString() ?? "",
       profileLogo: user["profileLogo"]?.toString(),
       isProfileCompleted: user["isProfileCompleted"] as bool?,
+      companyid: user["companyId"]?.toString(),
     );
   }
 }

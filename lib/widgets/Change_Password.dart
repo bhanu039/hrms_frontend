@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:goexperts/widgets/top_message.dart';
 import '../services/api_service.dart';
 import '../services/sessionservice.dart';
 
@@ -185,21 +186,17 @@ void showChangePasswordDialog(BuildContext context) {
                                           );
 
                                       Navigator.pop(dialogContext);
-
-                                      ScaffoldMessenger.of(
+                                      TopMessage.show(
                                         context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            res["message"] ?? "Success",
-                                          ),
-                                        ),
+                                        res["message"] ??
+                                            "Password changed successfully",
+                                        color: Colors.green,
                                       );
                                     } catch (e) {
-                                      ScaffoldMessenger.of(
+                                      TopMessage.show(
                                         context,
-                                      ).showSnackBar(
-                                        SnackBar(content: Text("Error: $e")),
+                                        "Error: $e",
+                                        color: Colors.red,
                                       );
                                     }
 
