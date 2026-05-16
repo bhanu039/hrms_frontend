@@ -34,11 +34,11 @@ class CompanyDrawer extends StatelessWidget {
                   title: 'Company Profile',
                   subtitle: 'Details, address, logo',
                   onTap: () {
-                    Navigator.pop(context);
+                    // Navigator.pop(context);
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const CompanyProfileScreen(),
+                        builder: (context) => const CompanyProfileScreen(),
                       ),
                     );
                   },

@@ -71,11 +71,8 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
               itemCount: _plans.length,
               itemBuilder: (context, index) {
                 final plan = _plans[index];
-                Map<String, String> allFeatures = {
-                  "Support": plan.features.support,
-                  "Employees": plan.features.employees,
-                  ...plan.features.extraFeatures,
-                };
+
+                final features = plan.features.toJson();
 
                 final isSelected = selectedPlanId == plan.id;
 
@@ -106,7 +103,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                                 Colors.cyan.withValues(alpha: 0.08),
                               ]
                             : [
-                                const Color.fromARGB(255, 253, 12, 12),
+                                const Color.fromARGB(255, 53, 38, 38),
                                 const Color.fromARGB(26, 255, 206, 206),
                               ],
                       ),
@@ -157,7 +154,7 @@ class _SubscriptionPageState extends State<SubscriptionPage> {
                         /// FEATURES
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: allFeatures.entries.map((e) {
+                          children: features.entries.map((e) {
                             return Padding(
                               padding: const EdgeInsets.symmetric(vertical: 3),
                               child: Row(

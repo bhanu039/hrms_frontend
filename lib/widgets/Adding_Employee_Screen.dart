@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:goexperts/services/api_client.dart';
+import 'package:goexperts/widgets/top_message.dart';
 
 import '../services/api_service.dart';
 import '../state/auth/auth_bloc.dart';
@@ -544,10 +545,13 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
       final designationResponse = await ApiClient.dio.get(
         "master/designations?departmentId=$selectedDepartmentId",
       );
-
-      designations = List<Map<String, dynamic>>.from(
-        designationResponse.data["data"],
-      );
+      if (designationResponse.data["data"] != null) {
+        designations = List<Map<String, dynamic>>.from(
+          designationResponse.data["data"],
+        );
+      } else {
+        TopMessage.show(context, "no designations ", color: Colors.red);
+      }
     } catch (e) {
       debugPrint(e.toString());
     } finally {

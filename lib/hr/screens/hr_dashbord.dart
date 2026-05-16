@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import '../../widgets/top_message.dart';
@@ -15,18 +14,16 @@ class HrDashboardScreen extends StatefulWidget {
 }
 
 class _HrDashboardScreenState extends State<HrDashboardScreen> {
-
-
-   @override
+  @override
   void initState() {
     super.initState();
-     TopMessage.show(
-            context,
-            "Welcome, Super Admin!",
-            color: Colors.green,
-          );
-  
+    //  TopMessage.show(
+    //         context,
+    //         "Welcome, Super Admin!",
+    //         color: Colors.green,
+    //       );
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -60,7 +57,28 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
                   mainAxisSpacing: 12,
                   childAspectRatio: 1.25,
 
-                  children:  [
+                  children: [
+                    StatCard(
+                      title: "Check in",
+
+                      icon: Icons.add,
+                      onPress: () => TopMessage.show(
+                        context,
+                        "this is the Employees ",
+                        color: Colors.cyan,
+                      ),
+                    ),
+                    StatCard(
+                      title: "Check out",
+
+                      icon: Icons.outbond,
+                      onPress: () => TopMessage.show(
+                        context,
+                        "this is the Employees ",
+                        color: Colors.cyan,
+                      ),
+                    ),
+
                     StatCard(
                       title: "Employees",
                       count: "120",
@@ -97,13 +115,61 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
                 Wrap(
                   spacing: 10,
                   runSpacing: 10,
-                  children:  [
-                    ActionButton(icon: Icons.person_add, label: "Add Employee" ,onPressed: ()=>TopMessage.show(context, "Employee added successfully!", color: Colors.green),),
-                    ActionButton(icon: Icons.apartment, label: "Department", onPressed: ()=>TopMessage.show(context, "Department added successfully!", color: Colors.green),),
-                    ActionButton(icon: Icons.badge, label: "Designation", onPressed: ()=>TopMessage.show(context, "Designation added successfully!", color: Colors.green),),
-                    ActionButton(icon: Icons.campaign, label: "Announcement", onPressed: ()=>TopMessage.show(context, "Announcement added successfully!", color: Colors.green),),
-                    ActionButton(icon: Icons.schedule, label: "Attendance", onPressed: ()=>TopMessage.show(context, "Attendance updated successfully!", color: Colors.green),),
-                    ActionButton(icon: Icons.payments, label: "Payroll", onPressed: ()=>TopMessage.show(context, "Payroll processed successfully!", color: Colors.green),),
+                  children: [
+                    ActionButton(
+                      icon: Icons.person_add,
+                      label: "Add Employee",
+                      onPressed: () => TopMessage.show(
+                        context,
+                        "Employee added successfully!",
+                        color: Colors.green,
+                      ),
+                    ),
+                    ActionButton(
+                      icon: Icons.apartment,
+                      label: "Department",
+                      onPressed: () => TopMessage.show(
+                        context,
+                        "Department added successfully!",
+                        color: Colors.green,
+                      ),
+                    ),
+                    ActionButton(
+                      icon: Icons.badge,
+                      label: "Designation",
+                      onPressed: () => TopMessage.show(
+                        context,
+                        "Designation added successfully!",
+                        color: Colors.green,
+                      ),
+                    ),
+                    ActionButton(
+                      icon: Icons.campaign,
+                      label: "Announcement",
+                      onPressed: () => TopMessage.show(
+                        context,
+                        "Announcement added successfully!",
+                        color: Colors.green,
+                      ),
+                    ),
+                    ActionButton(
+                      icon: Icons.schedule,
+                      label: "Attendance",
+                      onPressed: () => TopMessage.show(
+                        context,
+                        "Attendance updated successfully!",
+                        color: Colors.green,
+                      ),
+                    ),
+                    ActionButton(
+                      icon: Icons.payments,
+                      label: "Payroll",
+                      onPressed: () => TopMessage.show(
+                        context,
+                        "Payroll processed successfully!",
+                        color: Colors.green,
+                      ),
+                    ),
                   ],
                 ),
 

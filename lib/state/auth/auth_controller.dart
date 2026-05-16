@@ -57,7 +57,7 @@ class AuthController extends AsyncNotifier<UserSession?> {
     print(
       "this block is a auth controller , saving session for user: ${session.token}, ${session.email}",
     );
-    currentUserSession =
+  currentUserSession =
     UserSession.fromLoginResponse(response.data);
 
     // 🔥 SAVE SESSION HERE ONLY

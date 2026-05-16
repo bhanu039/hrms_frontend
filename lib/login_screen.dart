@@ -2,15 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:goexperts/main_tabs_screen.dart';
 import 'package:goexperts/widgets/top_message.dart';
-import 'company/Screens/company_fullreg.dart';
-import 'hr/screens/hr_dashbord.dart';
+
 import 'state/auth/auth_bloc.dart';
 import 'state/auth/auth_event.dart';
 import 'state/auth/auth_state.dart';
 import 'state/auth/auth_status.dart';
 
-import 'admin/Screens/dashboard_screen.dart';
-import 'company/Screens/c_dashboard_screen.dart';
 import 'forgot_password_screen.dart';
 import 'services/api_service.dart';
 import 'widgets/app_primary_button.dart';

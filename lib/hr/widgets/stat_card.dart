@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
 
 class StatCard extends StatelessWidget {
-  final String title;
-  final String count;
-  final IconData icon;
+  final String? title;
+  final String? count;
+  final IconData? icon;
 
   const StatCard({
     super.key,
-    required this.title,
-    required this.count,
-    required this.icon,
+     this.title,
+     this.count,
+     this.icon, 
+      onPress,
   });
 
   @override
@@ -21,7 +22,7 @@ class StatCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -34,14 +35,14 @@ class StatCard extends StatelessWidget {
           Icon(icon, color: Colors.indigo, size: 30),
           const SizedBox(height: 10),
           Text(
-            count,
+            count!,
             style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 4),
-          Text(title, style: const TextStyle(color: Colors.grey)),
+          Text(title!, style: const TextStyle(color: Colors.grey)),
         ],
       ),
     );

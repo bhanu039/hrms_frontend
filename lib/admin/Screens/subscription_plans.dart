@@ -13,15 +13,7 @@ class _SubscriptionAdminPageState extends State<SubscriptionAdminPage> {
   List<Plan> _plans = [];
   bool _loading = false;
 
-  String? selectedPlanId; // ✅ Selected plan for UI highlight
-  String? editingId; // ✅ Current plan being edited
-
-  final _formKey = GlobalKey<FormState>();
-
-  final titleCtrl = TextEditingController();
-  final priceCtrl = TextEditingController();
-  final durationCtrl = TextEditingController();
-  final featureCtrl = TextEditingController();
+  String? selectedPlanId;
 
   @override
   void initState() {
@@ -29,114 +21,81 @@ class _SubscriptionAdminPageState extends State<SubscriptionAdminPage> {
     fetchPlans();
   }
 
-  // 🔵 FETCH PLANS
+  // ================= FETCH =================
   Future<void> fetchPlans() async {
     setState(() => _loading = true);
     try {
-      final response = await ApiService.getSubscriptionPlans();
-      _plans = response;
+      _plans = await ApiService.getSubscriptionPlans();
     } catch (e) {
       debugPrint(e.toString());
     }
     setState(() => _loading = false);
   }
 
-  // 🔴 DELETE PLAN
+  // ================= DELETE =================
   Future<void> deletePlan(String id) async {
-    try {
-      final response = await ApiService.deleteSubscriptionPlan(id);
-      if (response.statusCode == 200 && response.data["success"] == true) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Plan deleted successfully")),
-        );
-        fetchPlans();
-      } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text("Failed to delete plan")));
-      }
-    } catch (e) {
-      debugPrint(e.toString());
-    }
+    await ApiService.deleteSubscriptionPlan(id);
+    fetchPlans();
   }
 
-  // 🔵 CLEAR FORM
-  void clearForm() {
-    editingId = null;
-    titleCtrl.clear();
-    priceCtrl.clear();
-    durationCtrl.clear();
-    featureCtrl.clear();
-  }
-
-  // 🟢 SHOW PLAN DIALOG (CREATE / EDIT)
+  // ================= DIALOG =================
   void showPlanDialog({Plan? plan}) {
-    final _dialogFormKey = GlobalKey<FormState>();
+    final formKey = GlobalKey<FormState>();
 
     final titleController = TextEditingController(text: plan?.name ?? '');
+
     final priceController = TextEditingController(
       text: plan?.price.toString() ?? '',
     );
+
     final durationController = TextEditingController(
       text: plan?.duration.toString() ?? '',
     );
 
+    // ✅ FULL DYNAMIC FEATURES LIST
     List<MapEntry<TextEditingController, TextEditingController>>
     featureControllers = [];
 
-    if (plan != null) {
-      editingId = plan.id;
+    void loadFeatures() {
+      featureControllers.clear();
 
-      // Fixed features first
-      featureControllers.add(
-        MapEntry(
-          TextEditingController(text: "Support"),
-          TextEditingController(text: plan.features.support),
-        ),
-      );
-      featureControllers.add(
-        MapEntry(
-          TextEditingController(text: "Employees"),
-          TextEditingController(text: plan.features.employees),
-        ),
-      );
+      if (plan != null) {
+        final data = plan.features.toJson();
 
-      // Extra features
-      plan.features.extraFeatures.forEach((key, value) {
+        data.forEach((key, value) {
+          featureControllers.add(
+            MapEntry(
+              TextEditingController(text: key),
+              TextEditingController(text: value.toString()),
+            ),
+          );
+        });
+      } else {
         featureControllers.add(
-          MapEntry(
-            TextEditingController(text: key),
-            TextEditingController(text: value),
-          ),
+          MapEntry(TextEditingController(), TextEditingController()),
         );
-      });
-    } else {
-      clearForm();
-      // Default empty support and employees
-      featureControllers.add(
-        MapEntry(TextEditingController(), TextEditingController()),
-      );
-      featureControllers.add(
-        MapEntry(TextEditingController(), TextEditingController()),
-      );
+      }
     }
+
+    loadFeatures();
 
     showDialog(
       context: context,
       builder: (context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: StatefulBuilder(
-            builder: (context, setState) {
-              return Padding(
+        bool checker = false;
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Container(
                 padding: const EdgeInsets.all(16),
+                width: 500,
                 child: SingleChildScrollView(
                   child: Form(
-                    key: _dialogFormKey,
+                    key: formKey,
                     child: Column(
-                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
                           plan == null ? "Create Plan" : "Edit Plan",
@@ -145,20 +104,23 @@ class _SubscriptionAdminPageState extends State<SubscriptionAdminPage> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
+
                         const SizedBox(height: 16),
 
-                        // Title
+                        // TITLE
                         TextFormField(
                           controller: titleController,
                           decoration: const InputDecoration(
                             labelText: "Title",
                             border: OutlineInputBorder(),
                           ),
-                          validator: (v) => v!.isEmpty ? "Enter title" : null,
+                          validator: (v) =>
+                              v == null || v.isEmpty ? "Enter title" : null,
                         ),
+
                         const SizedBox(height: 12),
 
-                        // Price
+                        // PRICE
                         TextFormField(
                           controller: priceController,
                           keyboardType: TextInputType.number,
@@ -166,11 +128,13 @@ class _SubscriptionAdminPageState extends State<SubscriptionAdminPage> {
                             labelText: "Price",
                             border: OutlineInputBorder(),
                           ),
-                          validator: (v) => v!.isEmpty ? "Enter price" : null,
+                          validator: (v) =>
+                              v == null || v.isEmpty ? "Enter price" : null,
                         ),
+
                         const SizedBox(height: 12),
 
-                        // Duration
+                        // DURATION
                         TextFormField(
                           controller: durationController,
                           keyboardType: TextInputType.number,
@@ -179,11 +143,12 @@ class _SubscriptionAdminPageState extends State<SubscriptionAdminPage> {
                             border: OutlineInputBorder(),
                           ),
                           validator: (v) =>
-                              v!.isEmpty ? "Enter duration" : null,
+                              v == null || v.isEmpty ? "Enter duration" : null,
                         ),
-                        const SizedBox(height: 12),
 
-                        // Features header + Add button
+                        const SizedBox(height: 16),
+
+                        // FEATURES HEADER
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -201,6 +166,8 @@ class _SubscriptionAdminPageState extends State<SubscriptionAdminPage> {
                               ),
                               onPressed: () {
                                 setState(() {
+                                  checker = true;
+
                                   featureControllers.add(
                                     MapEntry(
                                       TextEditingController(),
@@ -213,125 +180,160 @@ class _SubscriptionAdminPageState extends State<SubscriptionAdminPage> {
                           ],
                         ),
 
-                        // Dynamic Features List
+                        const SizedBox(height: 10),
+
+                        // FEATURES LIST
                         Column(
-                          children: featureControllers
-                              .asMap()
-                              .entries
-                              .map(
-                                (entry) => Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 6,
+                          children: featureControllers.asMap().entries.map((
+                            entry,
+                          ) {
+                            final index = entry.key;
+
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: TextFormField(
+                                      controller: entry.value.key,
+                                      decoration: const InputDecoration(
+                                        labelText: "Feature Name",
+                                        border: OutlineInputBorder(),
+                                      ),
+                                      validator: (v) => v == null || v.isEmpty
+                                          ? "Enter feature"
+                                          : null,
+                                    ),
                                   ),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        flex: 4,
-                                        child: TextFormField(
-                                          controller: entry.value.key,
-                                          decoration: const InputDecoration(
-                                            labelText: "Feature Name",
-                                            border: OutlineInputBorder(),
-                                          ),
-                                          validator: (v) => v!.isEmpty
-                                              ? "Enter feature name"
-                                              : null,
-                                        ),
+
+                                  const SizedBox(width: 8),
+
+                                  Expanded(
+                                    child: TextFormField(
+                                      controller: entry.value.value,
+                                      decoration: const InputDecoration(
+                                        labelText: "Feature Value",
+                                        border: OutlineInputBorder(),
                                       ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        flex: 6,
-                                        child: TextFormField(
-                                          controller: entry.value.value,
-                                          decoration: const InputDecoration(
-                                            labelText: "Feature Value",
-                                            border: OutlineInputBorder(),
-                                          ),
-                                          validator: (v) => v!.isEmpty
-                                              ? "Enter feature value"
-                                              : null,
-                                        ),
-                                      ),
-                                      IconButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            featureControllers.removeAt(
-                                              entry.key,
-                                            );
-                                          });
-                                        },
-                                        icon: const Icon(
-                                          Icons.delete,
-                                          color: Colors.red,
-                                        ),
-                                      ),
-                                    ],
+                                      validator: (v) => v == null || v.isEmpty
+                                          ? "Enter value"
+                                          : null,
+                                    ),
                                   ),
-                                ),
-                              )
-                              .toList(),
+                                  checker
+                                      ? IconButton(
+                                          icon: const Icon(
+                                            Icons.delete,
+                                            color: Colors.red,
+                                          ),
+                                          onPressed: () {
+                                            setState(() {
+                                              featureControllers.removeAt(
+                                                index,
+                                              );
+                                            });
+                                          },
+                                        )
+                                      : Text(""),
+                                ],
+                              ),
+                            );
+                          }).toList(),
                         ),
+
                         const SizedBox(height: 20),
 
-                        // Cancel / Save Buttons
                         Row(
                           children: [
-                            Expanded(
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.grey,
+                            const SizedBox(width: 30),
+                            SizedBox(
+                              width: 100,
+                              height: 42,
+                              child: Expanded(
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.grey.shade300,
+                                    foregroundColor: Colors.black,
+                                  ),
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                  },
+                                  child: const Text("Cancel"),
                                 ),
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text("Cancel"),
                               ),
                             ),
-                            const SizedBox(width: 10),
-                            Expanded(
+
+                            const SizedBox(width: 20),
+
+                            // SAVE BUTTON
+                            SizedBox(
                               child: ElevatedButton(
                                 onPressed: () async {
-                                  if (!_dialogFormKey.currentState!.validate())
+                                  if (!formKey.currentState!.validate()) {
                                     return;
+                                  }
 
-                                  // Build Features object
-                                  Map<String, String> extraFeatures = {};
-                                  String support = '';
-                                  String employees = '';
+                                  // ✅ BUILD MAP
+                                  Map<String, String> finalFeatures = {};
 
                                   for (var f in featureControllers) {
-                                    String key = f.key.text;
-                                    String value = f.value.text;
+                                    final key = f.key.text.trim();
+                                    final value = f.value.text.trim();
 
-                                    if (key.toLowerCase() == "support") {
-                                      support = value;
-                                    } else if (key.toLowerCase() ==
-                                        "employees") {
-                                      employees = value;
-                                    } else {
-                                      extraFeatures[key] = value;
+                                    if (key.isNotEmpty && value.isNotEmpty) {
+                                      finalFeatures[key] = value;
                                     }
                                   }
 
-                                  Features features = Features(
-                                    support: support,
-                                    employees: employees,
-                                    extraFeatures: extraFeatures,
-                                  );
+                                  // ✅ CONVERT MAP TO LIST
+                                  final List<String> apiFeatures = finalFeatures
+                                      .entries
+                                      .map((e) => "${e.key}: ${e.value}")
+                                      .toList();
 
-                                  Plan newPlan = Plan(
-                                    id: plan?.id ?? DateTime.now().toString(),
-                                    name: titleController.text,
-                                    price: double.parse(priceController.text),
-                                    duration: int.parse(
-                                      durationController.text,
-                                    ),
-                                    features: features,
-                                  );
+                                  try {
+                                    // CREATE
+                                    if (plan == null) {
+                                      await ApiService.createSubscriptionPlan(
+                                        title: titleController.text,
+                                        price: int.parse(priceController.text),
+                                        duration: int.parse(
+                                          durationController.text,
+                                        ),
+                                        features: apiFeatures,
+                                      );
+                                    }
+                                    // UPDATE
+                                    else {
+                                      await ApiService.updateSubscriptionPlan(
+                                        id: plan.id,
+                                        title: titleController.text,
+                                        price: int.parse(priceController.text),
+                                        duration: int.parse(
+                                          durationController.text,
+                                        ),
+                                        features: apiFeatures,
+                                      );
+                                    }
 
-                                  // Call API save function here
-                                  // await savePlan(newPlan);
+                                    Navigator.pop(context);
 
-                                  Navigator.pop(context);
-                                  fetchPlans();
+                                    fetchPlans();
+
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          plan == null
+                                              ? "Plan Created Successfully"
+                                              : "Plan Updated Successfully",
+                                        ),
+                                      ),
+                                    );
+                                  } catch (e) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text(e.toString())),
+                                    );
+                                  }
                                 },
                                 child: Text(plan == null ? "Create" : "Update"),
                               ),
@@ -342,31 +344,34 @@ class _SubscriptionAdminPageState extends State<SubscriptionAdminPage> {
                     ),
                   ),
                 ),
-              );
-            },
-          ),
+              ),
+            );
+          },
         );
       },
     );
   }
 
+  // ================= UI =================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+      backgroundColor: const Color.fromARGB(255, 246, 220, 220),
+
       appBar: AppBar(
         title: const Text("Subscription Plans"),
         centerTitle: true,
-        backgroundColor: const Color.fromARGB(0, 0, 0, 0),
+        backgroundColor: const Color.fromARGB(152, 237, 235, 235),
         elevation: 0,
       ),
+
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _plans.isEmpty
           ? const Center(
               child: Text(
                 "No Plans Found",
-                style: TextStyle(color: Colors.black87),
+                style: TextStyle(color: Colors.white),
               ),
             )
           : ListView.builder(
@@ -374,12 +379,7 @@ class _SubscriptionAdminPageState extends State<SubscriptionAdminPage> {
               itemBuilder: (context, index) {
                 final plan = _plans[index];
 
-                // ✅ Combine fixed + extra features
-                Map<String, String> allFeatures = {
-                  "Support": plan.features.support,
-                  "Employees": plan.features.employees,
-                  ...plan.features.extraFeatures,
-                };
+                final features = plan.features.toJson();
 
                 final isSelected = selectedPlanId == plan.id;
 
@@ -401,17 +401,17 @@ class _SubscriptionAdminPageState extends State<SubscriptionAdminPage> {
                       gradient: LinearGradient(
                         colors: isSelected
                             ? [
-                                Colors.blue.withOpacity(0.25),
                                 const Color.fromARGB(
                                   255,
-                                  109,
-                                  194,
-                                  205,
-                                ).withOpacity(0.08),
+                                  67,
+                                  68,
+                                  68,
+                                ).withValues(alpha: 0.25),
+                                Colors.cyan.withValues(alpha: 0.08),
                               ]
                             : [
-                                 const Color.fromARGB(255, 253, 12, 12),
-                                const Color.fromARGB(26, 255, 255, 255),
+                                const Color.fromARGB(255, 53, 38, 38),
+                                const Color.fromARGB(26, 255, 206, 206),
                               ],
                       ),
                       border: Border.all(
@@ -421,12 +421,13 @@ class _SubscriptionAdminPageState extends State<SubscriptionAdminPage> {
                       boxShadow: isSelected
                           ? [
                               BoxShadow(
-                                color: Colors.blue.withOpacity(0.25),
+                                color: Colors.blue.withValues(alpha: 0.25),
                                 blurRadius: 18,
                               ),
                             ]
                           : [],
                     ),
+
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -437,7 +438,7 @@ class _SubscriptionAdminPageState extends State<SubscriptionAdminPage> {
                             Text(
                               plan.name,
                               style: const TextStyle(
-                                color: Color.fromARGB(255, 24, 23, 23),
+                                color: Colors.white,
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -446,8 +447,8 @@ class _SubscriptionAdminPageState extends State<SubscriptionAdminPage> {
                               "₹${plan.price}",
                               style: TextStyle(
                                 color: isSelected
-                                    ? Colors.white
-                                    : Colors.greenAccent,
+                                    ? const Color.fromARGB(255, 0, 254, 89)
+                                    : const Color.fromARGB(179, 251, 1, 1),
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -460,7 +461,7 @@ class _SubscriptionAdminPageState extends State<SubscriptionAdminPage> {
                         /// FEATURES
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: allFeatures.entries.map((e) {
+                          children: features.entries.map((e) {
                             return Padding(
                               padding: const EdgeInsets.symmetric(vertical: 3),
                               child: Row(
@@ -474,7 +475,7 @@ class _SubscriptionAdminPageState extends State<SubscriptionAdminPage> {
                                   Text(
                                     "${e.key}: ${e.value}",
                                     style: const TextStyle(
-                                      color: Colors.black87,
+                                      color: Color.fromARGB(255, 248, 247, 247),
                                     ),
                                   ),
                                 ],
@@ -483,40 +484,25 @@ class _SubscriptionAdminPageState extends State<SubscriptionAdminPage> {
                           }).toList(),
                         ),
 
-                        const SizedBox(height: 14),
+                        /// BUTTON
+                        const SizedBox(height: 10),
 
-                        /// BUTTONS
                         Row(
                           children: [
-                            SizedBox(
-                              width: MediaQuery.of(context).size.width * 0.4,
+                            Expanded(
                               child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: isSelected
-                                      ? Colors.blue
-                                      : Colors.white12,
-                                ),
-                                onPressed: () {
-                                  showPlanDialog(plan: plan);
-                                },
-                                child: const Text(
-                                  "Edit",
-                                  style: TextStyle(color: Colors.white),
-                                ),
+                                onPressed: () => showPlanDialog(plan: plan),
+                                child: const Text("Edit"),
                               ),
                             ),
                             const SizedBox(width: 10),
-                            SizedBox(
-                              width: MediaQuery.of(context).size.width * 0.4,
+                            Expanded(
                               child: ElevatedButton(
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.redAccent,
+                                  backgroundColor: Colors.red,
                                 ),
                                 onPressed: () => deletePlan(plan.id),
-                                child: const Text(
-                                  "Delete",
-                                  style: TextStyle(color: Colors.white),
-                                ),
+                                child: const Text("Delete"),
                               ),
                             ),
                           ],
@@ -527,10 +513,9 @@ class _SubscriptionAdminPageState extends State<SubscriptionAdminPage> {
                 );
               },
             ),
+
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showPlanDialog();
-        },
+        onPressed: () => showPlanDialog(),
         child: const Icon(Icons.add),
       ),
     );

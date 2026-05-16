@@ -22,11 +22,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   void initState() {
     super.initState();
-     TopMessage.show(
-            context,
-            "Welcome, Super Admin!",
-            color: Colors.green,
-          );
+    //  TopMessage.show(
+    //         context,
+    //         "Welcome, Super Admin!",
+    //         color: Colors.green,
+    //       );
     fetchCompanies();
   }
 

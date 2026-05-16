@@ -22,11 +22,11 @@ class _CDashboardScreenState extends State<CDashboardScreen> {
    @override
   void initState() {
     super.initState();
-     TopMessage.show(
-            context,
-            "Welcome, Super Admin!",
-            color: Colors.green,
-          );
+    //  TopMessage.show(
+    //         context,
+    //         "Welcome, Super Admin!",
+    //         color: Colors.green,
+    //       );
     
   }
   @override

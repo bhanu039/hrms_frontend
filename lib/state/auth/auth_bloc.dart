@@ -42,45 +42,40 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   void _onLoginRequested(
-  AuthLoginRequested event,
-  Emitter<AuthState> emit,
-) async {
+    AuthLoginRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(state.copyWith(status: AuthStatus.loading));
 
-  emit(
-    state.copyWith(
-      status: AuthStatus.loading,
-    ),
-  );
+    try {
+      print(
+        "this block is a auth block, attempting login for user: ${event.email}",
+      );
 
-  try {
-    print("this block is a auth block, attempting login for user: ${event.email}");
+      final session = await AuthController().login(
+        email: event.email,
+        password: event.password,
+      );
 
-    final session =
-        await AuthController().login(
-      email: event.email,
-      password: event.password,
-    );
-
-    emit(
-      state.copyWith(
-        status: AuthStatus.authenticated,
-        session: session,
-      ),
-    );
-
-  } catch (e) {
-
-    emit(
-      state.copyWith1(
-        status: AuthStatus.error,
-        message: e.toString(),
-        clearSession: true,
-      ),
-    );
+      emit(state.copyWith(status: AuthStatus.authenticated, session: session));
+    } catch (e) {
+      emit(
+        state.copyWith1(
+          status: AuthStatus.error,
+          message: e.toString(),
+          clearSession: true,
+        ),
+      );
+    }
   }
-}
 
-  void _onLogout(AuthLogoutRequested event, Emitter<AuthState> emit) {
+  void _onLogout(AuthLogoutRequested event, Emitter<AuthState> emit) async {
+    /// clear global session
+    currentUserSession = null;
+
+    /// clear secure storage
+    await SessionService.clearSession();
+
     emit(state.copyWith(status: AuthStatus.unauthenticated, session: null));
   }
 
@@ -102,7 +97,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     final role = await SessionService.getRole();
     final email = await SessionService.getEmail();
     final name = await SessionService.getName();
-      final companyid = await SessionService.getCompanyID();
+    final companyid = await SessionService.getCompanyID();
 
     if (token == null || token.isEmpty) return null;
 

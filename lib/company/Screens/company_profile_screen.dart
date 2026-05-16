@@ -87,7 +87,7 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
                         const SizedBox(height: 8),
 
                         Text(
-                          company!.industry ?? "",
+                          company!.industryTypeId ?? "",
                           style: TextStyle(color: Colors.grey.shade700),
                         ),
 
@@ -128,32 +128,32 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
                     infoTile(Icons.email, "Email", company!.email),
                     infoTile(Icons.phone, "Phone", company!.phone),
                     infoTile(Icons.language, "Website", company!.website),
-                    infoTile(
-                      Icons.location_city,
-                      "Location",
-                      company!.location,
-                    ),
+                    // infoTile(
+                    //   Icons.location_city,
+                    //   "Location",
+                    //   company!.location,
+                    // ),
                   ]),
 
                   const SizedBox(height: 20),
 
                   /// ADDRESS
-                  buildSectionTitle("Address"),
+                  // buildSectionTitle("Address"),
 
-                  buildInfoCard([
-                    infoTile(
-                      Icons.home,
-                      "Address",
-                      "${company!.addressLine1}, "
-                          "${company!.addressLine2}",
-                    ),
-                    infoTile(Icons.location_on, "City", company!.city),
-                    infoTile(Icons.map, "State", company!.state),
-                    infoTile(Icons.public, "Country", company!.country),
-                    infoTile(Icons.pin_drop, "Pincode", company!.pincode),
-                  ]),
+                  // buildInfoCard([
+                  //   infoTile(
+                  //     Icons.home,
+                  //     "Address",
+                  //     "${company!.addressLine1}, "
+                  //         "${company!.addressLine2}",
+                  //   ),
+                  //   infoTile(Icons.location_on, "City", company!.city),
+                  //   infoTile(Icons.map, "State", company!.state),
+                  //   infoTile(Icons.public, "Country", company!.country),
+                  //   // infoTile(Icons.pin_drop, "Pincode", company!.pincode.toString()??""),
+                  // ]),
 
-                  const SizedBox(height: 20),
+                  // const SizedBox(height: 20),
 
                   /// DOCUMENTS
                   buildSectionTitle("Documents"),
@@ -199,19 +199,23 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
                         children: [
                           infoRow(
                             "Plan",
-                            company!.subscriptions[0]["plan"]["name"],
+                            company!.subscriptions[0]["plan"]["name"]
+                                    ?.toString() ??
+                                "N/A",
                           ),
 
                           infoRow(
                             "Employees",
                             company!
-                                .subscriptions[0]["plan"]["features"]["employees"],
+                                .subscriptions[0]["plan"]["features"]["employees"]
+                                .toString(),
                           ),
 
                           infoRow(
                             "Support",
-                            company!
-                                .subscriptions[0]["plan"]["features"]["support"],
+                            company!.subscriptions[0]["plan"]["features"]["support"]
+                                    ?.toString() ??
+                                "N/A",
                           ),
 
                           infoRow(
