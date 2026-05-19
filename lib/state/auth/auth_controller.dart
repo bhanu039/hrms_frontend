@@ -1,4 +1,5 @@
-import 'package:dio/dio.dart';
+// lib/auth/auth_controller.dart
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../services/api_service.dart';
@@ -14,91 +15,138 @@ class AuthController extends AsyncNotifier<UserSession?> {
     return _loadSessionFromStorage();
   }
 
-  Future<UserSession?> _loadSessionFromStorage() async {
-    final isExpired = await SessionService.isTokenExpired();
-    if (isExpired) return SessionService.clearSession().then((_) => null);
+  /// ================= LOAD SESSION =================
 
-    final token = await SessionService.getToken();
-    final id = await SessionService.getID();
-    final role = await SessionService.getRole();
-    final email = await SessionService.getEmail();
-    final name = await SessionService.getName();
+  Future<UserSession?> _loadSessionFromStorage() async {
+    try {
+      final isExpired = await SessionService.isTokenExpired();
+
+      /// token expired
+      if (isExpired) {
+        await SessionService.clearSession();
+        return null;
+      }
+
+      final token = await SessionService.getToken();
+      final id = await SessionService.getID();
+      final role = await SessionService.getRole();
+      final email = await SessionService.getEmail();
+      final name = await SessionService.getName();
       final companyid = await SessionService.getCompanyID();
 
-    if (token == null || token.isEmpty) return null;
+      if (token == null || token.isEmpty) {
+        return null;
+      }
 
-    return UserSession.fromStorage(
-      token: token,
-      id: id ?? "",
-      role: role ?? "",
-      name: name ?? "",
-      email: email ?? "",
-      createdAt: "", // 🔥 createdAt is not stored, set to empty or handle as needed
-      companyid: companyid ?? "", // 🔥 companyid is not stored, set to empty or handle as needed
-    );
+      return UserSession.fromStorage(
+        token: token,
+        id: id ?? "",
+        role: role ?? "",
+        name: name ?? "",
+        email: email ?? "",
+        createdAt: "",
+        companyid: companyid ?? "",
+      );
+    } catch (e) {
+      print("Load Session Error => $e");
+      return null;
+    }
   }
+
+  /// ================= LOGIN =================
 
   Future<UserSession> login({
     required String email,
     required String password,
   }) async {
-    final response = await ApiService.login(email: email, password: password);
+    try {
+      final response = await ApiService.login(email: email, password: password);
 
-    final ok = response.statusCode == 200 && response.data["success"] == true;
+      final ok = response.statusCode == 200 && response.data["success"] == true;
 
-    if (!ok) {
-      throw Exception(response.data["message"] ?? "Invalid credentials");
+      if (!ok) {
+        throw Exception(response.data["message"] ?? "Invalid credentials");
+      }
+
+      final session = UserSession.fromLoginResponse(
+        Map<String, dynamic>.from(response.data as Map),
+      );
+
+      print(
+        "AuthController Login Success => "
+        "${session.email}, ${session.role}",
+      );
+
+      /// 🔥 global session
+      currentUserSession = session;
+
+      /// 🔥 save session
+      await SessionService.saveSession(
+        token: session.token,
+        user: {
+          "id": session.id,
+          "role": session.role,
+          "name": session.name,
+          "email": session.email,
+          "createdAt": session.createdAt,
+          "companyId": session.companyid,
+        },
+      );
+
+      /// update riverpod state
+      state = AsyncData(session);
+
+      return session;
+    } catch (e) {
+      print("Login Error => $e");
+      rethrow;
     }
-
-    final session = UserSession.fromLoginResponse(
-      Map<String, dynamic>.from(response.data as Map),
-    );
-
-    print(
-      "this block is a auth controller , saving session for user: ${session.token}, ${session.email}",
-    );
-  currentUserSession =
-    UserSession.fromLoginResponse(response.data);
-
-    // 🔥 SAVE SESSION HERE ONLY
-    await SessionService.saveSession(
-      token: session.token,
-      user: {
-        "id": session.id,
-        "role": session.role,
-        "name": session.name,
-        "email": session.email,
-        "createdAt": session.createdAt,
-        "companyId": session.companyid, // 🔥 save companyid if available
-      },
-    );
-
-    return session;
   }
+
+  /// ================= LOGOUT =================
 
   Future<void> logout() async {
-    await SessionService.clearSession();
-    state = const AsyncData(null);
+    try {
+      currentUserSession = null;
+
+      await SessionService.clearSession();
+
+      state = const AsyncData(null);
+    } catch (e) {
+      print("Logout Error => $e");
+    }
   }
+
+  /// ================= UPDATE PROFILE =================
 
   Future<void> updateLocalProfile({
     required String name,
     required String email,
   }) async {
-    final current = state.valueOrNull;
-    if (current == null) return;
+    try {
+      final current = state.valueOrNull;
 
-    final updated = current.copyWith(name: name, email: email);
-    await SessionService.saveSession(
-      token: updated.token,
-      user: {
-        "id": updated.id,
-        "role": updated.role,
-        "name": updated.name,
-        "email": updated.email,
-        "companyId": updated.companyid,
-      },
-    );
-    state = AsyncData(updated);
+      if (current == null) return;
+
+      final updated = current.copyWith(name: name, email: email);
+
+      await SessionService.saveSession(
+        token: updated.token,
+        user: {
+          "id": updated.id,
+          "role": updated.role,
+          "name": updated.name,
+          "email": updated.email,
+          "createdAt": updated.createdAt,
+          "companyId": updated.companyid,
+        },
+      );
+
+      currentUserSession = updated;
+
+      state = AsyncData(updated);
+    } catch (e) {
+      print("Update Profile Error => $e");
+    }
   }
 }

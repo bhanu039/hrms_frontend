@@ -35,7 +35,7 @@ class StatCard extends StatelessWidget {
           Icon(icon, color: Colors.indigo, size: 30),
           const SizedBox(height: 10),
           Text(
-            count!,
+            count??"",
             style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,

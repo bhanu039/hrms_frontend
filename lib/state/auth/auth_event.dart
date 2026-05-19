@@ -21,6 +21,7 @@ class AuthLoginRequested extends AuthEvent {
 
 class AuthLogoutRequested extends AuthEvent {
   AuthLogoutRequested() {
+    
     SessionService.clearSession();
   }
 }

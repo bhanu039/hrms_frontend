@@ -36,6 +36,7 @@ class _MainTabScreenState extends State<MainTabScreen> {
 
     /// ================= SUPER ADMIN =================
     if (role == "SUPER_ADMIN") {
+      print("this is admin screen");
       screens = const [DashboardScreen(), CompanyScreen(), ProfileScreen()];
 
       navItems = const [
@@ -48,6 +49,7 @@ class _MainTabScreenState extends State<MainTabScreen> {
     }
     /// ================= HR =================
     else if (role == "HR") {
+      print("this is Hr screen");
       screens = const [
         HrDashboardScreen(),
         EmployeeListScreen(),
@@ -64,6 +66,7 @@ class _MainTabScreenState extends State<MainTabScreen> {
     }
     /// ================= OWNER =================
     else if (role == "OWNER") {
+      print("this is company screen");
       screens = const [
         CDashboardScreen(),
         EmployeeListScreen(),
@@ -83,7 +86,10 @@ class _MainTabScreenState extends State<MainTabScreen> {
     }
     /// ================= EMPLOYEE =================
     else if (role == "EMPLOYEE") {
+      print("this is Employee screen");
       TopMessage.show(context, "Employee UI Coming Soon", color: Colors.red);
+    } else {
+      print("this is the else space ");
     }
   }
 
@@ -220,7 +226,7 @@ class _MainTabScreenState extends State<MainTabScreen> {
                 ),
               ),
 
-             const SizedBox(width: 10),
+              const SizedBox(width: 10),
 
               isSelected
                   ? Text(

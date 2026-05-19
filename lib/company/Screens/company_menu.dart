@@ -43,6 +43,22 @@ class CompanyDrawer extends StatelessWidget {
                     );
                   },
                 ),
+                 DrawerWidgets.menuTile(
+                  context,
+                  icon: Icons.workspace_premium,
+                  title: 'Documents',
+                  subtitle: 'Core Documents',
+                   onTap: () {
+                    // Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const CompanyProfileScreen(),
+                      ),
+                    );
+                  },
+
+                ),
 
                 DrawerWidgets.menuTile(
                   context,
@@ -75,8 +91,6 @@ class CompanyDrawer extends StatelessWidget {
                   title: 'Projects',
                   subtitle: 'Active and completed work',
                 ),
-
-               
 
                 DrawerWidgets.sectionTitle('Growth'),
                 DrawerWidgets.menuTile(
@@ -132,7 +146,7 @@ class CompanyDrawer extends StatelessWidget {
                         'Payroll Settings',
                       ),
                     ),
-                     MenuSubItem(
+                    MenuSubItem(
                       icon: Icons.payments,
                       title: 'Date & Time Settings',
                       onTap: () => DrawerWidgets.showComingSoon(
@@ -140,7 +154,7 @@ class CompanyDrawer extends StatelessWidget {
                         'Date & Time Settings',
                       ),
                     ),
-                     MenuSubItem(
+                    MenuSubItem(
                       icon: Icons.payments,
                       title: 'Location Settings',
                       onTap: () => DrawerWidgets.showComingSoon(
@@ -169,8 +183,11 @@ class CompanyDrawer extends StatelessWidget {
               title: 'Logout',
               subtitle: 'Exit company account',
               color: Colors.red,
-              onTap: () {
+              onTap: () async {
                 context.read<AuthBloc>().add(AuthLogoutRequested());
+
+                await Future.delayed(const Duration(milliseconds: 300));
+
                 Navigator.pushAndRemoveUntil(
                   context,
                   MaterialPageRoute(builder: (_) => const LoginScreen()),

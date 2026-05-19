@@ -287,4 +287,80 @@ class ApiService {
     );
   }
 
+
+  Future<Map<String, dynamic>> checkinData(
+    File imageFile,
+    double latitude,
+    double longitude,
+  ) async {
+
+    try {
+
+      FormData formData = FormData.fromMap({
+
+        "image": await MultipartFile.fromFile(
+          imageFile.path,
+          filename: "face.jpg",
+        ),
+
+        "latitude": latitude,
+        "longitude": longitude,
+      });
+
+      Response response = await ApiClient.dio.post(
+        "attendance/clock-in",
+        data: formData,
+      );
+
+      return {
+        "success": true,
+        "data": response.data,
+      };
+
+    } catch (e) {
+
+      return {
+        "success": false,
+        "message": e.toString(),
+      };
+    }
+  }  
+   Future<Map<String, dynamic>> checkoutData(
+    File imageFile,
+    double latitude,
+    double longitude,
+  ) async {
+
+    try {
+
+      FormData formData = FormData.fromMap({
+
+        "image": await MultipartFile.fromFile(
+          imageFile.path,
+          filename: "face.jpg",
+        ),
+
+        "latitude": latitude,
+        "longitude": longitude,
+      });
+
+      Response response = await ApiClient.dio.post(
+        "attendance/clock-in",
+        data: formData,
+      );
+
+      return {
+        "success": true,
+        "data": response.data,
+      };
+
+    } catch (e) {
+
+      return {
+        "success": false,
+        "message": e.toString(),
+      };
+    }
+  }  
+
 }

@@ -155,37 +155,6 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
 
                   // const SizedBox(height: 20),
 
-                  /// DOCUMENTS
-                  buildSectionTitle("Documents"),
-
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: company!.documents.length,
-                    itemBuilder: (context, index) {
-                      final doc = company!.documents[index];
-
-                      return Card(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: ListTile(
-                          leading: const Icon(Icons.description),
-                          title: Text(doc["name"]),
-                          subtitle: Text(doc["status"]),
-                          trailing: IconButton(
-                            onPressed: () {
-                              // open document
-                            },
-                            icon: const Icon(Icons.open_in_new),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-
-                  const SizedBox(height: 20),
-
                   /// SUBSCRIPTION
                   buildSectionTitle("Subscription"),
 

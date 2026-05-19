@@ -1,10 +1,18 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:goexperts/services/api_service.dart';
+import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../widgets/top_message.dart';
 import '../widgets/action_button.dart';
 import '../widgets/small_info.dart';
 import '../widgets/stat_card.dart';
 import '../widgets/task_tile.dart';
+import 'hr_menu.dart';
 
 class HrDashboardScreen extends StatefulWidget {
   const HrDashboardScreen({super.key});
@@ -14,20 +22,250 @@ class HrDashboardScreen extends StatefulWidget {
 }
 
 class _HrDashboardScreenState extends State<HrDashboardScreen> {
+  File? employeePhoto;
+
+  double? latitude;
+  double? longitude;
+
+  Timer? timer;
+
+  DateTime? checkInTime;
+  DateTime? checkoutTime;
+
+  Duration workingDuration = Duration.zero;
+
+  bool isCheckedIn = false;
+
+  bool islocation = false;
+  bool isImage = false;
+
+  // =========================
+  // CHECK IN
+  // =========================
+
+  Future<void> checkIn() async {
+    // Get Location
+    await getCurrentLocation();
+    print("Latitude,Longitude>>>$latitude,$longitude");
+
+    print("islocation---> $islocation");
+    // Capture Face
+    islocation
+        ? await captureFace()
+        : TopMessage.show(context, "image will not capure", color: Colors.red);
+
+    if (isImage == true) {
+      final apiService = ApiService();
+
+      final response = await apiService.checkinData(
+        employeePhoto!,
+        latitude!,
+        longitude!,
+      );
+
+      if (response["success"] == true) {
+        print(response["data"]);
+
+        print(response["data"]["message"]);
+
+        TopMessage.show(context, "Your Checkin success ", color: Colors.green);
+
+        // Save Check-In Time
+        checkInTime = DateTime.now();
+
+        print(
+          "Check-In Time: "
+          "${checkInTime.toString().split('.').first}",
+        );
+
+        print("Latitude: $latitude");
+        print("Longitude: $longitude");
+
+        isCheckedIn = true;
+
+        // Start Timer
+        timer = Timer.periodic(const Duration(seconds: 1), (_) {
+          setState(() {
+            workingDuration = DateTime.now().difference(checkInTime!);
+          });
+        });
+
+        setState(() {
+          islocation == false;
+          isImage = false;
+        });
+      } else {
+        print(response["message"]);
+
+        TopMessage.show(context, response["message"], color: Colors.red);
+      }
+    }
+  }
+
+  // =========================
+  // CHECK OUT
+  // =========================
+
+  Future<void> checkOut() async {
+    // Get Location
+    await getCurrentLocation();
+
+    // Capture Face
+    print("islocation---> $islocation");
+    islocation
+        ? await captureFace()
+        : TopMessage.show(context, "image will not capure", color: Colors.red);
+
+    if (isImage == true) {
+      final apiService = ApiService();
+      final response1 = await apiService.checkinData(
+        employeePhoto!,
+        latitude!,
+        longitude!,
+      );
+
+      if (response1["success"] == true) {
+        print(response1["data"]);
+
+        TopMessage.show(context, "Your CheckOut success ", color: Colors.green);
+
+        print(response1["data"]["message"]);
+
+        // Save Check-In Time
+        checkoutTime = DateTime.now();
+
+        print(
+          "Check-Out Time: "
+          "${checkoutTime.toString().split('.').first}",
+        );
+
+        print("Latitude: $latitude");
+        print("Longitude: $longitude");
+
+        timer?.cancel();
+
+        setState(() {
+          islocation = false;
+          isImage = false;
+          isCheckedIn = false;
+        });
+      } else {
+        print(response1["message"]);
+        TopMessage.show(context, response1["message"], color: Colors.red);
+      }
+    }
+  }
+
+  apicalls() async {}
+
+  // =========================
+  // GET LOCATION
+  // =========================
+
+  Future<void> getCurrentLocation() async {
+    // System permission
+    LocationPermission permission = await Geolocator.requestPermission();
+
+    if (permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever) {
+      print("Permission denied");
+      return;
+    }
+
+    Position position = await Geolocator.getCurrentPosition();
+
+    print(position.latitude);
+    print(position.longitude);
+
+    setState(() {
+      latitude = position.latitude;
+      longitude = position.longitude;
+      islocation = true;
+    });
+    print("islocation---> $islocation");
+  }
+  // =========================
+  // CAPTURE FACE
+  // =========================
+
+  Future<void> captureFace() async {
+    final picker = ImagePicker();
+
+    final pickedFile = await picker.pickImage(
+      source: ImageSource.camera,
+      preferredCameraDevice: CameraDevice.front,
+    );
+
+    if (pickedFile == null) return;
+
+    employeePhoto = File(pickedFile.path);
+
+    bool hasFace = await detectFace(employeePhoto!);
+
+    if (!hasFace) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("No Face Detected")));
+      isImage = false;
+
+      return;
+    } else {
+      setState(() {
+        isImage = true;
+      });
+    }
+  }
+
+  // =========================
+  // FACE DETECTION
+  // =========================
+
+  Future<bool> detectFace(File imageFile) async {
+    final inputImage = InputImage.fromFile(imageFile);
+
+    final faceDetector = FaceDetector(
+      options: FaceDetectorOptions(enableContours: true, enableLandmarks: true),
+    );
+
+    final faces = await faceDetector.processImage(inputImage);
+
+    await faceDetector.close();
+
+    return faces.isNotEmpty;
+  }
+
+  // =========================
+  // FORMAT TIMER
+  // =========================
+
+  String formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+
+    final hours = twoDigits(duration.inHours);
+
+    final minutes = twoDigits(duration.inMinutes.remainder(60));
+
+    final seconds = twoDigits(duration.inSeconds.remainder(60));
+
+    return "$hours:$minutes:$seconds";
+  }
+
+  // =========================
+  // DISPOSE
+  // =========================
+
   @override
-  void initState() {
-    super.initState();
-    //  TopMessage.show(
-    //         context,
-    //         "Welcome, Super Admin!",
-    //         color: Colors.green,
-    //       );
+  void dispose() {
+    timer?.cancel();
+
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
+      drawer: const HrDrawer(),
 
       appBar: AppBar(
         title: const Text("HR Dashboard"),
@@ -48,6 +286,45 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: const Color.fromARGB(255, 184, 211, 233),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Column(
+                    children: [
+                      const Text(
+                        "Working Hours",
+                        style: TextStyle(
+                          color: Color.fromARGB(255, 43, 37, 37),
+                          fontSize: 18,
+                        ),
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      Text(
+                        formatDuration(workingDuration),
+                        style: const TextStyle(
+                          fontSize: 40,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      ElevatedButton(
+                        onPressed: isCheckedIn ? checkOut : checkIn,
+
+                        child: Text(isCheckedIn ? "Check-Out" : "Check-In"),
+                      ),
+                    ],
+                  ),
+                ),
+
                 /// ================= STATS =================
                 GridView.count(
                   crossAxisCount: 2,
@@ -59,30 +336,14 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
 
                   children: [
                     StatCard(
-                      title: "Check in",
-
-                      icon: Icons.add,
-                      onPress: () => TopMessage.show(
-                        context,
-                        "this is the Employees ",
-                        color: Colors.cyan,
-                      ),
-                    ),
-                    StatCard(
-                      title: "Check out",
-
-                      icon: Icons.outbond,
-                      onPress: () => TopMessage.show(
-                        context,
-                        "this is the Employees ",
-                        color: Colors.cyan,
-                      ),
-                    ),
-
-                    StatCard(
                       title: "Employees",
                       count: "120",
                       icon: Icons.people,
+                      onPress: () => TopMessage.show(
+                        context,
+                        "this is the Employees ",
+                        color: Colors.cyan,
+                      ),
                     ),
                     StatCard(
                       title: "Active",

@@ -40,13 +40,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void showError(String msg) {
     TopMessage.show(context, msg, color: Colors.red);
-    // ScaffoldMessenger.of(context).showSnackBar(
-    //   SnackBar(
-    //     content: Text(msg),
-    //     backgroundColor: Colors.red.shade700,
-    //     behavior: SnackBarBehavior.floating,
-    //   ),
-    // );
   }
 
   @override
@@ -67,24 +60,26 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
-      listener: (context, authState) {
-        final session = authState.session;
+      listener: (context, state) {
+        final session = state.session;
         print(
-          "Auth State Changed: ${authState.status}, Session: ${session?.email}, Role: ${session?.role}",
+          "Auth State Changed: ${state.status}, Session: ${session?.email}, Role: ${session?.role}",
         );
 
-        if (authState.status == AuthStatus.error) {
-          showError(authState.message ?? 'Invalid credentials');
+        if (state.status == AuthStatus.error) {
+          showError(state.message ?? 'Invalid credentials');
           return;
         }
 
-        if (authState.status != AuthStatus.authenticated || session == null) {
-           Navigator.pushReplacement(
+        if (state.status != AuthStatus.authenticated || session == null) {
+          print("this is the main screnn ");
+          Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => const MainTabScreen()),
           );
+        } else {
+          TopMessage.show(context, state.message.toString(), color: Colors.red);
         }
-
       },
       child: Scaffold(
         backgroundColor: const Color(0xff07111f),
