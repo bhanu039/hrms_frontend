@@ -250,16 +250,14 @@ class ApiService {
     print("EMPLOYEE RESPONSE => ${response.data}");
 
     if (response.statusCode == 200 && response.data["success"] == true) {
-      final data = response.data ["data"];
+      final data = response.data["data"];
 
-     
-      return  EmployeeDataModel.fromJson(data);
+      return EmployeeDataModel.fromJson(data);
     }
     throw Exception("Failed to load employee data");
   }
 
-  
-   Future<Response> updateCompany({
+  Future<Response> updateCompany({
     required Map<String, dynamic> data,
     String? companyLogoPath,
     String? gstFilePath,
@@ -281,25 +279,18 @@ class ApiService {
     });
 
     // using existing api client
-    return await ApiClient.dio.put(
-      "company/update",
-      data: formData,
-    );
+    return await ApiClient.dio.put("company/update", data: formData);
   }
 
-
   Future<Map<String, dynamic>> checkinData(
-    File imageFile,
+    File livePhotoFile,
     double latitude,
     double longitude,
   ) async {
-
     try {
-
       FormData formData = FormData.fromMap({
-
-        "image": await MultipartFile.fromFile(
-          imageFile.path,
+        "livePhoto": await MultipartFile.fromFile(
+          livePhotoFile.path,
           filename: "face.jpg",
         ),
 
@@ -310,33 +301,25 @@ class ApiService {
       Response response = await ApiClient.dio.post(
         "attendance/clock-in",
         data: formData,
+        options: Options(validateStatus: (status) => true),
       );
 
-      return {
-        "success": true,
-        "data": response.data,
-      };
-
+      return response.data;
     } catch (e) {
-
-      return {
-        "success": false,
-        "message": e.toString(),
-      };
+      print("this is the catch block");
+      return {"success": false, "message": e.toString()};
     }
-  }  
-   Future<Map<String, dynamic>> checkoutData(
-    File imageFile,
+  }
+
+  Future<Map<String, dynamic>> checkoutData(
+    File livePhotoFile,
     double latitude,
     double longitude,
   ) async {
-
     try {
-
       FormData formData = FormData.fromMap({
-
-        "image": await MultipartFile.fromFile(
-          imageFile.path,
+        "livePhoto": await MultipartFile.fromFile(
+          livePhotoFile.path,
           filename: "face.jpg",
         ),
 
@@ -345,22 +328,36 @@ class ApiService {
       });
 
       Response response = await ApiClient.dio.post(
-        "attendance/clock-in",
+        "attendance/clock-out",
         data: formData,
+        options: Options(validateStatus: (status) => true),
       );
 
-      return {
-        "success": true,
-        "data": response.data,
-      };
-
+      return response.data;
     } catch (e) {
-
-      return {
-        "success": false,
-        "message": e.toString(),
-      };
+      return {"success": false, "message": e.toString()};
     }
-  }  
+  }
 
+  static Future<Map<String, dynamic>> getEmpProfile( {required String id}) async {
+    final res = await ApiClient.dio.get("employee/self/$id");
+    return res.data;
+
+  }
+
+  /// UPDATE PROFILE
+  static Future<Map<String, dynamic>> updateEmpProfile({
+  required String id,
+  required Map<String, dynamic> body,
+}) async {
+  final res = await ApiClient.dio.put(
+    "employee/self/$id",
+    data: body,
+  );
+
+  print("Employee update data: ${res.data}");
+
+  return res.data;
 }
+ 
+  }

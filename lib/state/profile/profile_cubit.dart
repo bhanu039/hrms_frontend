@@ -37,7 +37,7 @@ class ProfileCubit extends Cubit<ProfileState> {
         name: name,
         email: email,
         role: current.role,
-        profileLogo: current.profileLogo,
+        isProfileCompleted: current.isProfileCompleted,
         createdAt: current.createdAt,
       );
 

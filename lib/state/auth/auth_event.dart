@@ -22,9 +22,10 @@ class AuthLoginRequested extends AuthEvent {
 class AuthLogoutRequested extends AuthEvent {
   AuthLogoutRequested() {
     
+    
     SessionService.clearSession();
   }
-}
+} 
 
 class UpdateSession extends AuthEvent {
   final UserSession session;

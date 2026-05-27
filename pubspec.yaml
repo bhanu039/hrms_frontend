@@ -38,6 +38,8 @@ dependencies:
   flutter_secure_storage: ^9.0.0
   
   geolocator: ^11.0.0
+  google_maps_flutter: ^2.6.1
+  geocoding: ^3.0.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -46,10 +48,13 @@ dependencies:
   jwt_decoder: ^2.0.1
   url_launcher: ^6.3.0
   file_picker: ^8.0.0
-  google_maps_flutter: ^2.6.1
-  geocoding: ^3.0.0
+  camera: ^0.11.0
+  google_mlkit_face_detection: ^0.10.0
+  flutter_speed_dial: ^7.0.0
+  equatable: ^2.0.5
+
   app_links: ^6.3.2
-  google_mlkit_face_detection: ^0.13.0
+  swipeable_button_view: ^0.0.2
 
 
 flutter_launcher_icons:

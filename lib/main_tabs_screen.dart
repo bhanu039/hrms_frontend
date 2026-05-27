@@ -8,9 +8,11 @@ import 'admin/Screens/companys_list.dart';
 import 'admin/Screens/dashboard_screen.dart';
 
 import 'company/Screens/c_dashboard_screen.dart';
+import 'company/Screens/company_fullreg.dart';
 import 'company/Screens/company_profile_screen.dart';
 import 'company/Screens/employee_screen.dart';
 
+import 'hr/screens/hr_Profile.dart';
 import 'state/auth/auth_bloc.dart';
 import 'widgets/top_message.dart';
 
@@ -34,9 +36,14 @@ class _MainTabScreenState extends State<MainTabScreen> {
     final session = context.read<AuthBloc>().state.session;
     final role = session?.role ?? "";
 
+    bool isProfileCompleted = session?.isProfileCompleted ?? false;
+
+    print("this is the main screen ");
+
     /// ================= SUPER ADMIN =================
     if (role == "SUPER_ADMIN") {
       print("this is admin screen");
+
       screens = const [DashboardScreen(), CompanyScreen(), ProfileScreen()];
 
       navItems = const [
@@ -50,16 +57,19 @@ class _MainTabScreenState extends State<MainTabScreen> {
     /// ================= HR =================
     else if (role == "HR") {
       print("this is Hr screen");
+
       screens = const [
         HrDashboardScreen(),
         EmployeeListScreen(),
-        CompanyProfileScreen(),
+        ProfileCompletionScreen(),
+        HrProfileScreen(),
       ];
 
       navItems = const [
         NavItemModel(icon: Icons.home_rounded, label: "Home"),
 
         NavItemModel(icon: Icons.groups_rounded, label: "Employees"),
+        NavItemModel(icon: Icons.person, label: "Person"),
 
         NavItemModel(icon: Icons.person_outline_rounded, label: "Profile"),
       ];
@@ -67,9 +77,10 @@ class _MainTabScreenState extends State<MainTabScreen> {
     /// ================= OWNER =================
     else if (role == "OWNER") {
       print("this is company screen");
+
       screens = const [
         CDashboardScreen(),
-        EmployeeListScreen(),
+        ProfileCompletionScreen(),
         CompanyProfileScreen(),
       ];
 
@@ -79,17 +90,22 @@ class _MainTabScreenState extends State<MainTabScreen> {
           label: "Dashboard",
         ),
 
-        NavItemModel(icon: Icons.badge_rounded, label: "Staff"),
+        NavItemModel(icon: Icons.badge_rounded, label: "projects"),
 
         NavItemModel(icon: Icons.person_outline_rounded, label: "Profile"),
       ];
     }
     /// ================= EMPLOYEE =================
     else if (role == "EMPLOYEE") {
+      TopMessage.show(
+        context,
+        "This Is The Employee Screen",
+        color: Colors.green,
+      );
       print("this is Employee screen");
       TopMessage.show(context, "Employee UI Coming Soon", color: Colors.red);
     } else {
-      print("this is the else space ");
+      print("Ur role dashbord is not done ");
     }
   }
 
@@ -209,7 +225,7 @@ class _MainTabScreenState extends State<MainTabScreen> {
                 : [],
           ),
 
-          child: Row(
+          child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
 
@@ -221,29 +237,30 @@ class _MainTabScreenState extends State<MainTabScreen> {
 
                 child: Icon(
                   icon,
-                  size: 24,
+                  size: 20,
                   color: isSelected ? Colors.white : Colors.grey.shade600,
                 ),
               ),
 
-              const SizedBox(width: 10),
+              const SizedBox(height: 1),
 
-              isSelected
-                  ? Text(
-                      label,
-                      textAlign: TextAlign.center,
+              // isSelected
+              //     ?
+              Text(
+                label,
+                textAlign: TextAlign.center,
 
-                      overflow: TextOverflow.ellipsis,
+                overflow: TextOverflow.ellipsis,
 
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 1,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 1,
 
-                        color: isSelected ? Colors.white : Colors.grey.shade600,
-                      ),
-                    )
-                  : Text(""),
+                  color: isSelected ? Colors.white : Colors.grey.shade600,
+                ),
+              ),
+              // : Text(""),
             ],
           ),
         ),

@@ -23,7 +23,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   late final TextEditingController nameController;
   late final TextEditingController emailController;
-  
+
   File? imageFile;
 
   @override
@@ -59,7 +59,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     await context.read<ProfileCubit>().updateProfile(
       name: nameController.text,
       email: emailController.text,
-      image: imageFile,
+      image: imageFile!,
     );
 
     if (!mounted) return;
@@ -69,15 +69,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(state.message ?? 'Profile updated')));
-  }
-
-  Uint8List? decodeBase64(String? data) {
-    if (data == null || data.isEmpty) return null;
-    try {
-      return base64Decode(data);
-    } catch (_) {
-      return null;
-    }
   }
 
   @override
@@ -95,8 +86,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       emailController.text = email;
       initialized = true;
     }
-
-    final base64Image = decodeBase64(session?.profileLogo);
 
     return Scaffold(
       backgroundColor: const Color(0xfff4f6fb),
@@ -148,13 +137,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       backgroundColor: Colors.white,
                       backgroundImage: imageFile != null
                           ? FileImage(imageFile!)
-                          : (base64Image != null
-                                ? MemoryImage(base64Image)
-                                : (session?.profileLogo != null &&
-                                      session!.profileLogo!.startsWith('http'))
-                                ? NetworkImage(session.profileLogo!)
-                                : null),
-                      child: (imageFile == null && base64Image == null)
+                          : null,
+                      child: imageFile == null
                           ? const Icon(
                               Icons.person,
                               size: 50,
@@ -213,14 +197,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // ✅ EDIT DIALOG (FIXED)
   void showEditProfileDialog() {
     showDialog(
-      
       context: context,
-     
 
       builder: (dialogContext) {
-         final session = context.watch<AuthBloc>().state.session;
+      
         return StatefulBuilder(
           builder: (context, setStateDialog) {
+            var profileImage;
             return Dialog(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
@@ -247,14 +230,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         backgroundColor: Colors.blue.shade100,
                         backgroundImage: imageFile != null
                             ? FileImage(imageFile!)
-                            : (session?.profileLogo != null &&
-                                  session!.profileLogo!.startsWith('http'))
-                            ? NetworkImage(session.profileLogo!)
+                            : (profileImage != null &&
+                                  profileImage!.startsWith('http'))
+                            ? NetworkImage(profileImage!)
                             : null,
                         child:
                             imageFile == null &&
-                                (session?.profileLogo == null ||
-                                    session!.profileLogo!.isEmpty)
+                                (profileImage == null ||
+                                    profileImage!.isEmpty)
                             ? const Icon(
                                 Icons.person,
                                 size: 40,

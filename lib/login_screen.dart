@@ -6,7 +6,7 @@ import 'package:goexperts/widgets/top_message.dart';
 import 'state/auth/auth_bloc.dart';
 import 'state/auth/auth_event.dart';
 import 'state/auth/auth_state.dart';
-import 'state/auth/auth_status.dart';
+
 
 import 'forgot_password_screen.dart';
 import 'services/api_service.dart';
@@ -61,28 +61,31 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
+        
         final session = state.session;
+
         print(
-          "Auth State Changed: ${state.status}, Session: ${session?.email}, Role: ${session?.role}",
+          "Auth State Changed: ${state.status}, "
+          "Session: ${session?.email}, "
+          "Role: ${session?.role}",
         );
 
         if (state.status == AuthStatus.error) {
           showError(state.message ?? 'Invalid credentials');
           return;
-        }
+        }if(state.status == AuthStatus.authenticated) {
+          print("Navigating to MainTabScreen");
 
-        if (state.status != AuthStatus.authenticated || session == null) {
-          print("this is the main screnn ");
-          Navigator.pushReplacement(
-            context,
+          Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (_) => const MainTabScreen()),
+            (route) => false,
           );
-        } else {
-          TopMessage.show(context, state.message.toString(), color: Colors.red);
+        }else{
+
         }
       },
       child: Scaffold(
-        backgroundColor: const Color(0xff07111f),
+        backgroundColor: const Color(0xff07111f), 
         body: LayoutBuilder(
           builder: (context, constraints) {
             final isWide = constraints.maxWidth >= 820;

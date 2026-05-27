@@ -5,7 +5,7 @@ class ApiClient {
   static final Dio dio =
       Dio(
           BaseOptions(
-            baseUrl: "https://goexperts-hrms.onrender.com/api/",
+            baseUrl: "http://13.232.42.123/api/",
             connectTimeout: const Duration(seconds: 30), // ⬅ increased
             receiveTimeout: const Duration(seconds: 30),
             headers: {"Content-Type": "application/json"},
@@ -22,7 +22,7 @@ class ApiClient {
 
                 if (isExpired) {
                   await SessionService.clearSession();
-
+                  
                   return handler.reject(
                     DioException(
                       requestOptions: options,
@@ -36,6 +36,7 @@ class ApiClient {
                   options.headers["Authorization"] = "Bearer $token";
                 }
               }
+              
 
               return handler.next(options);
             },

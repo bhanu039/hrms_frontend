@@ -117,7 +117,7 @@ class AdminDrawer extends StatelessWidget {
                     Navigator.pushNamed(context, '/users');
                   },
                 ),
-                 DrawerWidgets.menuTile(
+                DrawerWidgets.menuTile(
                   context,
                   icon: Icons.people,
                   title: 'Departments',
@@ -137,7 +137,7 @@ class AdminDrawer extends StatelessWidget {
                     Navigator.pushNamed(context, '/users');
                   },
                 ),
-                
+
                 DrawerWidgets.menuTile(
                   context,
                   icon: Icons.settings,

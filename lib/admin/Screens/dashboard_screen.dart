@@ -322,7 +322,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 decoration: BoxDecoration(
                                   color: getStatusColor(
                                     company["status"],
-                                  ).withOpacity(0.15),
+                                  ).withValues(alpha:0.15),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(

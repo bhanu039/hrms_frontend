@@ -18,14 +18,12 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmController = TextEditingController();
   bool isPasswordVisible = false;
-
   bool isConfirmVisible = false;
-
   bool isLoading = false;
 
   final Dio dio = Dio(
     BaseOptions(
-      baseUrl: "https://goexperts-hrms.onrender.com/api/", // 🔁 change
+      baseUrl: "http://13.232.42.123/api/", // 🔁 change
       headers: {"Content-Type": "application/json"},
     ),
   );
@@ -57,7 +55,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
 
       print("Response: ${response.data}");
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200||response.data["success"]==true ) {
         // ✅ MARK TOKEN USED ONLY AFTER SUCCESS
         await DeepLinkService.markTokenUsed(widget.token);
 

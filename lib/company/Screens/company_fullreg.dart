@@ -2,12 +2,13 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:goexperts/services/sessionservice.dart';
 import 'package:goexperts/widgets/top_message.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:geocoding/geocoding.dart';
+
 import '../../services/api_service.dart';
 import '../../state/models/user_session.dart';
 import '../../widgets/app_primary_button.dart';
+import '../../widgets/location_get.dart';
 
 class ProfileCompletionScreen extends StatefulWidget {
   const ProfileCompletionScreen({super.key});
@@ -20,6 +21,7 @@ class ProfileCompletionScreen extends StatefulWidget {
 class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
   int currentStep = 0;
   bool isLoading = false;
+  final email = SessionService.getEmail();
 
   /// ================= FILES =================
 
@@ -27,7 +29,6 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
   File? gstFile;
   double? latitude;
   double? longitude;
-  LatLng selectedLocation = const LatLng(17.3850, 78.4867);
 
   /// ================= CONTROLLERS =================
 
@@ -78,31 +79,6 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
   final gstController = TextEditingController();
   final panController = TextEditingController();
   final tanController = TextEditingController();
-
-  Future<Map<String, dynamic>> getAddress(LatLng position) async {
-    List<Placemark> placemarks = await placemarkFromCoordinates(
-      position.latitude,
-      position.longitude,
-    );
-
-    Placemark place = placemarks.first;
-
-    return {
-      "address1": "${place.street ?? ""}, ${place.subLocality ?? ""}",
-
-      "city": place.locality ?? "",
-
-      "state": place.administrativeArea ?? "",
-
-      "country": place.country ?? "",
-
-      "pincode": place.postalCode ?? "",
-
-      "latitude": position.latitude,
-
-      "longitude": position.longitude,
-    };
-  }
 
   /// ================= PICK FILE =================
 
@@ -223,22 +199,23 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
                 if (currentStep != 0) const SizedBox(width: 15),
 
                 Expanded(
-
                   child: AppGradientButton(
-                      text: currentStep == 4 ? "Submit" : "Next",
-                      
-                      isLoading: isLoading,
-                      onPressed: isLoading ? null : () {
-                      if (currentStep < 4) {
-                        setState(() {
-                          currentStep++;
-                        });
-                      } else {
-                        submitForm();
-                      }
-                    },
-                    ),
-                                    ),
+                    text: currentStep == 4 ? "Submit" : "Next",
+
+                    isLoading: isLoading,
+                    onPressed: isLoading
+                        ? null
+                        : () {
+                            if (currentStep < 4) {
+                              setState(() {
+                                currentStep++;
+                              });
+                            } else {
+                              submitForm();
+                            }
+                          },
+                  ),
+                ),
               ],
             ),
           ),
@@ -330,112 +307,22 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
           /// MAP PICKER CARD
           GestureDetector(
             onTap: () async {
-              final result = await Navigator.push(
-                context,
+              final location = await LocationHelper.getCurrentLocation();
 
-                MaterialPageRoute(
-                  builder: (_) => Scaffold(
-                    backgroundColor: Colors.white,
-
-                    appBar: AppBar(
-                      title: const Text("Select Company Location"),
-                      backgroundColor: Colors.indigo,
-                      foregroundColor: Colors.white,
-                    ),
-
-                    body: StatefulBuilder(
-                      builder: (context, setMapState) {
-                        return Stack(
-                          children: [
-                            GoogleMap(
-                              initialCameraPosition: CameraPosition(
-                                target: selectedLocation,
-                                zoom: 15,
-                              ),
-
-                              myLocationEnabled: true,
-                              myLocationButtonEnabled: true,
-
-                              onTap: (LatLng position) async {
-                                setMapState(() {
-                                  selectedLocation = position;
-                                });
-
-                                final result = await getAddress(position);
-
-                                if (context.mounted) {
-                                  Navigator.pop(context, result);
-                                }
-                              },
-
-                              markers: {
-                                Marker(
-                                  markerId: const MarkerId("selected"),
-                                  position: selectedLocation,
-                                ),
-                              },
-                            ),
-
-                            Positioned(
-                              top: 20,
-                              left: 20,
-                              right: 20,
-
-                              child: Container(
-                                padding: const EdgeInsets.all(14),
-
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(18),
-
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 10,
-                                    ),
-                                  ],
-                                ),
-
-                                child: const Row(
-                                  children: [
-                                    Icon(Icons.touch_app, color: Colors.indigo),
-
-                                    SizedBox(width: 10),
-
-                                    Expanded(
-                                      child: Text(
-                                        "Tap anywhere on map to select company location",
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              );
-
-              if (result != null) {
+              if (location != null) {
                 setState(() {
-                  address1Controller.text = result["address1"] ?? "";
+                  address1Controller.text = location["address1"] ?? "";
 
-                  cityController.text = result["city"] ?? "";
+                  cityController.text = location["city"] ?? "";
 
-                  stateController.text = result["state"] ?? "";
+                  stateController.text = location["state"] ?? "";
 
-                  countryController.text = result["country"] ?? "";
+                  countryController.text = location["country"] ?? "";
 
-                  pincodeController.text = result["pincode"] ?? "";
+                  pincodeController.text = location["pincode"] ?? "";
 
-                  latitude = result["latitude"];
-                  longitude = result["longitude"];
+                  latitude = location["latitude"];
+                  longitude = location["longitude"];
                 });
               }
             },
@@ -511,8 +398,6 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
             child: buildField(address1Controller, "Address Line 1"),
           ),
 
-          buildField(address2Controller, "Address Line 2"),
-
           AbsorbPointer(child: buildField(cityController, "City")),
 
           AbsorbPointer(child: buildField(stateController, "State")),
@@ -584,6 +469,30 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
 
           const SizedBox(height: 15),
 
+          buildUploadTile(
+            "GST Certificate",
+            Icons.picture_as_pdf,
+            () => pickFile("gst"),
+            gstFile,
+          ),
+          buildUploadTile(
+            "GST Certificate",
+            Icons.picture_as_pdf,
+            () => pickFile("gst"),
+            gstFile,
+          ),
+          buildUploadTile(
+            "GST Certificate",
+            Icons.picture_as_pdf,
+            () => pickFile("gst"),
+            gstFile,
+          ),
+          buildUploadTile(
+            "GST Certificate",
+            Icons.picture_as_pdf,
+            () => pickFile("gst"),
+            gstFile,
+          ),
           buildUploadTile(
             "GST Certificate",
             Icons.picture_as_pdf,
@@ -823,15 +732,16 @@ class _ProfileCompletionScreenState extends State<ProfileCompletionScreen> {
 
       if (response.statusCode == 200) {
         clearForm();
+        await SessionService.updateProfileStatus(true);
 
-        TopMessage.show(context, "Company profile updated successfully" ,
-        color: Colors.green);
+        TopMessage.show(
+          context,
+          "Company profile updated successfully",
+          color: Colors.green,
+        );
 
         setState(() {
-          currentUserSession = currentUserSession!.copyWith(
-            isProfileCompleted: response.data["isprofilecompleted"] ?? true,
-          );
-          ;
+          currentStep = 0;
         });
       }
     } catch (e) {

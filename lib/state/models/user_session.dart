@@ -8,8 +8,8 @@ class UserSession {
     required this.name,
     required this.email,
     required this.createdAt,
-    this.profileLogo,
-    this.isProfileCompleted,
+    
+    required this.isProfileCompleted,
     this.companyid,
   });
 
@@ -19,7 +19,6 @@ class UserSession {
   final String name;
   final String email;
   final String createdAt;
-  final String? profileLogo;
   final bool? isProfileCompleted;
   final String? companyid;
 
@@ -33,53 +32,8 @@ class UserSession {
     print("[UserSession] $message");
   }
 
-  UserSession copyWith({
-    String? token,
-    String? id,
-    String? role,
-    String? name,
-    String? email,
-    String? profileLogo,
-    String? createdAt,
-    bool? isProfileCompleted,
-    String? companyid,
-  }) {
-    return UserSession(
-      token: token ?? this.token,
-      id: id ?? this.id,
-      role: role ?? this.role,
-      name: name ?? this.name,
-      email: email ?? this.email,
-      createdAt: createdAt ?? this.createdAt,
-      profileLogo: profileLogo ?? this.profileLogo,
-      isProfileCompleted: isProfileCompleted ?? this.isProfileCompleted,
-      companyid: companyid ?? this.companyid,
-    );
-  }
+ 
 
-  factory UserSession.fromStorage({
-    required String token,
-    required String id,
-    required String role,
-    required String name,
-    required String email,
-    required String createdAt,
-    String? profileLogo,
-    bool? isProfileCompleted,
-    String? companyid,
-  }) {
-    return UserSession(
-      token: token,
-      id: id,
-      role: role,
-      name: name,
-      email: email,
-      createdAt: createdAt,
-      profileLogo: profileLogo,
-      isProfileCompleted: isProfileCompleted,
-      companyid: companyid,
-    );
-  }
 
   factory UserSession.fromLoginResponse(Map<String, dynamic> data) {
     final user = (data["user"] is Map)
@@ -91,14 +45,13 @@ class UserSession {
     );
     return UserSession(
       token: data["token"]?.toString() ?? "",
-      id: user["id"]?.toString() ?? user["_id"]?.toString() ?? "",
+      id:  user["id"]?.toString() ?? "",
       role: user["role"]?.toString() ?? "",
       name: user["name"]?.toString() ?? "",
       email: user["email"]?.toString() ?? "",
       createdAt: user["createdAt"]?.toString() ?? "",
-      profileLogo: user["profileLogo"]?.toString(),
-      isProfileCompleted: user["isProfileCompleted"] as bool?,
-      companyid: user["companyId"]?.toString(),
+      isProfileCompleted:user["isProfileCompleted"],
+      companyid: user["companyId"]?.toString()??"",
     );
   }
 }

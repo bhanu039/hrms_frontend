@@ -10,7 +10,7 @@ import 'login_screen.dart';
 import 'services/api_service.dart';
 import 'services/set_pass_token.dart';
 import 'state/auth/auth_bloc.dart';
-import 'state/auth/auth_status.dart';
+import 'state/auth/auth_state.dart';
 import 'widgets/set_password_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -27,11 +27,12 @@ class _SplashScreenState extends State<SplashScreen>
   bool _navigated = false;
   final AppLinks _deepLinkService = AppLinks();
   StreamSubscription<Uri?>? _linkSub;
+  bool isProfileCompleted = false;
   @override
   void initState() {
     super.initState();
     ApiService.wakeUpServer();
-
+   
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
@@ -41,6 +42,8 @@ class _SplashScreenState extends State<SplashScreen>
 
     startFlow(); // ✅ single entry point
   }
+
+ 
 
   Future<void> startFlow() async {
     final state = context.read<AuthBloc>().state;
@@ -85,17 +88,7 @@ class _SplashScreenState extends State<SplashScreen>
         print('Token missing');
         return;
       }
-      // ✅ CHECK IF ALREADY USED
-      final isUsed = await DeepLinkService.isTokenUsed(token);
-
-      if (isUsed) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => LoginScreen()),
-        );
-        // ❌ STOP
-      }
-
+      
       _navigated = true;
 
       Navigator.pushReplacement(
@@ -128,16 +121,12 @@ class _SplashScreenState extends State<SplashScreen>
         MaterialPageRoute(builder: (_) => const LoginScreen()),
       );
       return;
-    }
-    else{
-
+    } else {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const MainTabScreen()),
       );
-    
     }
-
   }
 
   @override

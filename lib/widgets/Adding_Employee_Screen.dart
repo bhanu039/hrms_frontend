@@ -575,8 +575,9 @@ class _AddEmployeeScreenState extends State<AddEmployeeScreen> {
         items: designations.map((designation) {
           return DropdownMenuItem<String>(
             value: designation["id"],
-            child: Text(designation["name"]),
+            child: Text(designation["title"]),
           );
+          
         }).toList(),
 
         onChanged: (value) {
