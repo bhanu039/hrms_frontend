@@ -2,16 +2,18 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:goexperts/services/api_service.dart';
-import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:go_router/go_router.dart';
+import 'package:goexperts/core/services/api_service.dart';
 import 'package:swipeable_button_view/swipeable_button_view.dart';
-import '../../widgets/Adding_Employee_Screen.dart';
-import '../../widgets/custom_dailogbox.dart';
-import '../../widgets/face_detact.dart';
-import '../../widgets/location_get.dart';
 
-import '../../widgets/top_message.dart';
+
+import '../../core/services/sessionservice.dart';
+import '../../core/widgets/Adding_Employee_Screen.dart';
+import '../../core/widgets/custom_dailogbox.dart';
+
+import '../../core/widgets/face_detact.dart';
+import '../../core/widgets/location_get.dart';
+import '../../core/widgets/top_message.dart';
 import '../widgets/action_button.dart';
 import '../widgets/small_info.dart';
 import '../widgets/stat_card.dart';
@@ -45,308 +47,284 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
   bool islocation = false;
   bool isImage = false;
 
-  // =========================
-  // CHECK IN
-  // =========================
+  @override
+  void initState() {
+    super.initState();
+    loadWorkingDuration();
+  }
+
+  Future<void> loadWorkingDuration() async {
+    final duration = await SessionService.get();
+
+    if (!mounted) return;
+
+    setState(() {
+      isLoading = false;
+      islocation = false;
+      isImage = false;
+      workingDuration = duration;
+    });
+  }
 
   Future<void> checkIn() async {
-    // Get Location
-    final location = await LocationHelper.getCurrentLocation();
+    if (isLoading) return;
 
-    if (location != null) {
-      setState(() {
-        latitude = location["latitude"];
-        longitude = location["latitude"];
-        islocation = !islocation;
-      });
-      print("latitude>>>>>>>latitude>>>>>>$latitude,$longitude");
-    }
-    print("Latitude,Longitude>>>$latitude,$longitude");
-
-    print("islocation---> $islocation");
-    // Capture Face
-    islocation
-        ? await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => FaceCaptureWidget(
-                onCaptured: (File? image) {
-                  if (image != null) {
-                    setState(() {
-                      isImage = !isImage;
-                      imagefile = image;
-                    });
-
-                    print("Face detected ✔");
-                    print(image.path);
-                  } else {
-                    CustomDialog.show(
-                      context: context,
-                      title: "face not detacted ",
-                      message: "face not detacted ",
-                      icon: Icons.pageview,
-                      color: Colors.orange,
-                    );
-                    setState(() {
-                      isLoading = false;
-                    });
-                  }
-                },
-              ),
-            ),
-          )
-        : {
-            CustomDialog.show(
-              context: context,
-              title: "Location Required",
-              message: "Enable GPS to continue attendance.",
-              icon: Icons.location_off,
-              color: Colors.orange,
-            ),
-            setState(() {
-              isLoading = false;
-            }),
-          };
-
-    if (isImage == true) {
-      final apiService = ApiService();
-
-      final response = await apiService.checkinData(
-        imagefile!,
-        latitude!,
-        longitude!,
-      );
-
-      if (response["success"] == true) {
-        print(response["data"]);
-
-        print(response["data"]["message"]);
-
-        CustomDialog.show(
-          context: context,
-          title: "Check-In Success",
-          message: "Your attendance has been marked successfully.",
-          icon: Icons.check_circle,
-          color: Colors.green,
-        );
-        // Save Check-In Time
-        checkInTime = DateTime.now();
-
-        print(
-          "Check-In Time: "
-          "${checkInTime.toString().split('.').first}",
-        );
-
-        print("Latitude: $latitude");
-        print("Longitude: $longitude");
-
-        // Start Timer
-        timer = Timer.periodic(const Duration(seconds: 1), (_) {
-          setState(() {
-            workingDuration = DateTime.now().difference(checkInTime!);
-          });
-        });
-
-        setState(() {
-          isCheckedIn = !isCheckedIn;
-          islocation = !islocation;
-          isImage = !isImage;
-          isLoading = !isLoading;
-        });
-      } else {
-        CustomDialog.show(
-          context: context,
-          title: "Check In",
-          message: "${response["message"]}",
-          icon: Icons.error,
-          color: Colors.red,
-        );
-
-        print(response["message"]);
-
-        TopMessage.show(context, response["message"], color: Colors.red);
-        setState(() {
-          isLoading = !isLoading;
-        });
-      }
-    } else {
-      CustomDialog.show(
-        context: context,
-        title: "Face Not Detected",
-        message: "Please capture a clear selfie.",
-        icon: Icons.error,
-        color: Colors.red,
-      );
-      setState(() {
-        isLoading = !isLoading;
-      });
-    }
-  }
-
-  // =========================
-  // CHECK OUT
-  // =========================
-
-  Future<void> checkOut() async {
-    // Get Location
-    final location = await LocationHelper.getCurrentLocation();
-
-    if (location != null) {
-      TopMessage.show(context, " location Detected", color: Colors.green);
-      setState(() {
-        latitude = location["latitude"];
-        longitude = location["longitude"];
-        islocation = !islocation;
-      });
-      print("latitude>>>>>>>longitude>>>>>>$latitude,$longitude");
-    } else {
-      TopMessage.show(
-        context,
-        "No location Detected",
-        color: Colors.deepOrange,
-      );
-    }
-
-    // Capture Face
-    print("islocation---> $islocation");
-    islocation
-        ? await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => FaceCaptureWidget(
-                onCaptured: (File? image) {
-                  if (image != null) {
-                    setState(() {
-                      isImage = !isImage;
-                      isLoading = true;
-                      imagefile = image;
-                    });
-                    CustomDialog.show(
-                      context: context,
-                      title: "face  detacted ",
-                      message: "face  detacted ",
-                      icon: Icons.pageview,
-                      color: const Color.fromARGB(255, 45, 162, 60),
-                    );
-
-                    print("Face detected ✔");
-                    print(image.path);
-                  } else {
-                    CustomDialog.show(
-                      context: context,
-                      title: "face not detacted ",
-                      message: "face not detacted ",
-                      icon: Icons.pageview,
-                      color: Colors.orange,
-                    );
-                    setState(() {
-                      isLoading = !isLoading;
-                    });
-                  }
-                },
-              ),
-            ),
-          )
-        : CustomDialog.show(
-            context: context,
-            title: "Location Required",
-            message: "Enable GPS to continue attendance.",
-            icon: Icons.location_off,
-            color: Colors.orange,
-          );
     setState(() {
-      isLoading = !isLoading;
+      isLoading = true;
+      islocation = false;
+      isImage = false;
+      imagefile = null;
     });
 
-    if (isImage == true) {
-      final apiService = ApiService();
-      final response = await apiService.checkinData(
-        imagefile!,
-        latitude!,
-        longitude!,
-      );
-      isLoading = !isLoading;
+    final location = await LocationHelper.getCurrentLocation();
+    if (!mounted) return;
+    debugPrint("this location>>>>");
 
-      if (response["success"] == true) {
-        print(response["data"]);
-
-        CustomDialog.show(
-          context: context,
-          title: "Check-Out Success",
-          message: "Your attendance has been marked successfully.",
-          icon: Icons.check_circle,
-          color: Colors.green,
-        );
-        print(response["data"]["message"]);
-
-        // Save Check-In Time
-        checkoutTime = DateTime.now();
-
-        print(
-          "Check-Out Time: "
-          "${checkoutTime.toString().split('.').first}",
-        );
-
-        print("Latitude: $latitude");
-        print("Longitude: $longitude");
-
-        timer?.cancel();
-
-        setState(() {
-          isLoading = !isLoading;
-          islocation = !islocation;
-          isImage = isImage;
-          isCheckedIn = !isCheckedIn;
-        });
-      } else {
-        CustomDialog.show(
-          context: context,
-          title: "Check Out",
-          message: "${response["message"]}",
-          icon: Icons.error,
-          color: Colors.red,
-        );
-
-        print(response["message"]);
-        setState(() {
-          isLoading = false;
-        });
-        TopMessage.show(context, response["message"], color: Colors.red);
-      }
-    } else {
-      TopMessage.show(context, "this is no image", color: Colors.red);
+    if (location == null) {
       CustomDialog.show(
         context: context,
-        title: "Face Not Detected",
-        message: "Please capture a clear selfie.",
+        title: "Location Not Detected",
+        message: "Please enable GPS to continue.",
         icon: Icons.error,
         color: Colors.red,
       );
       setState(() {
-        isLoading = !isLoading;
+        isLoading = false;
       });
+      return;
     }
+
+    setState(() {
+      latitude = location["latitude"];
+      longitude = location["longitude"];
+      islocation = true;
+    });
+    print("Location detected: $latitude, $longitude");
+
+    CustomDialog.show(
+      context: context,
+      title: "Location Detected",
+      message: "GPS location captured successfully.",
+      icon: Icons.check_circle,
+      color: Colors.green,
+    );
+
+    await _captureFace();
+    if (!mounted) return;
+
+    if (!isImage || imagefile == null) {
+      _showMissingFaceMessage();
+      setState(() {
+        isLoading = false;
+        islocation = false;
+      });
+      return;
+    }
+
+    final response = await ApiService().checkinData(
+      imagefile!,
+      latitude!,
+      longitude!,
+    );
+    if (!mounted) return;
+
+    if (response["success"] == true) {
+      checkInTime = DateTime.now();
+      workingDuration = Duration.zero;
+      await SessionService.save(workingDuration);
+      if (!mounted) return;
+
+      timer?.cancel();
+      timer = Timer.periodic(const Duration(seconds: 1), (_) {
+        if (!mounted || checkInTime == null) return;
+
+        setState(() {
+          workingDuration = DateTime.now().difference(checkInTime!);
+        });
+        SessionService.save(workingDuration);
+      });
+
+      CustomDialog.show(
+        context: context,
+        title: "Check-In Success",
+        message: "Your attendance has been marked successfully.",
+        icon: Icons.check_circle,
+        color: Colors.green,
+      );
+
+      setState(() {
+        isCheckedIn = true;
+        islocation = false;
+        isImage = false;
+        isLoading = false;
+      });
+      return;
+    }
+
+    final message = response["message"]?.toString() ?? "Check-in failed.";
+    CustomDialog.show(
+      context: context,
+      title: "Check In",
+      message: message,
+      icon: Icons.error,
+      color: Colors.red,
+    );
+    TopMessage.show(context, message, color: Colors.red);
+
+    setState(() {
+      isCheckedIn = false;
+      islocation = false;
+      isImage = false;
+      isLoading = false;
+    });
   }
 
-  // =========================
-  // FORMAT TIMER
-  // =========================
+  Future<void> checkOut() async {
+    if (isLoading) return;
+
+    setState(() {
+      isLoading = true;
+      islocation = false;
+      isImage = false;
+      imagefile = null;
+    });
+
+    final location = await LocationHelper.getCurrentLocation();
+    if (!mounted) return;
+
+    if (location == null) {
+      CustomDialog.show(
+        context: context,
+        title: "Location Required",
+        message: "Enable GPS to continue attendance.",
+        icon: Icons.location_off,
+        color: Colors.orange,
+      );
+      setState(() {
+        isLoading = false;
+      });
+      return;
+    }
+
+    setState(() {
+      latitude = location["latitude"];
+      longitude = location["longitude"];
+      islocation = true;
+    });
+
+    TopMessage.show(context, "Location detected", color: Colors.green);
+
+    await _captureFace();
+    if (!mounted) return;
+
+    if (!isImage || imagefile == null) {
+      _showMissingFaceMessage();
+      setState(() {
+        isLoading = false;
+        islocation = false;
+      });
+      return;
+    }
+
+    final response = await ApiService().checkoutData(
+      imagefile!,
+      latitude!,
+      longitude!,
+    );
+    if (!mounted) return;
+
+    if (response["success"] == true) {
+      checkoutTime = DateTime.now();
+      timer?.cancel();
+      await SessionService.cleartime();
+      if (!mounted) return;
+
+      CustomDialog.show(
+        context: context,
+        title: "Check-Out Success",
+        message: "Your attendance has been marked successfully.",
+        icon: Icons.check_circle,
+        color: Colors.green,
+      );
+
+      setState(() {
+        workingDuration = Duration.zero;
+        isCheckedIn = false;
+        islocation = false;
+        isImage = false;
+        isLoading = false;
+      });
+      return;
+    }
+
+    final message = response["message"]?.toString() ?? "Check-out failed.";
+    CustomDialog.show(
+      context: context,
+      title: "Check Out",
+      message: message,
+      icon: Icons.error,
+      color: Colors.red,
+    );
+    TopMessage.show(context, message, color: Colors.red);
+
+    setState(() {
+      isLoading = false;
+      islocation = false;
+      isImage = false;
+    });
+  }
+
+  Future<void> _captureFace() async {
+    debugPrint("this image>>>>");
+    // final File? image = await context.push<File>('/get_face');
+     final File? image = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const FaceCaptureView()),
+    );
+
+
+    if (image != null) {
+      setState(() {
+        isImage = true;
+        imagefile = image;
+      });
+
+      print("Image path: ${image.path}");
+    }
+
+    CustomDialog.show(
+        context: context,
+        title: "face capture done ",
+        message: "Your attendance has been marked successfully.",
+        icon: Icons.check_circle,
+        color: Colors.green,
+      );
+
+
+
+
+    // 
+  }
+
+  void _showMissingFaceMessage() {
+    CustomDialog.show(
+      context: context,
+      title: "Face Not Detected",
+      message: "Please capture a clear selfie.",
+      icon: Icons.error,
+      color: Colors.red,
+    );
+  }
 
   String formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, '0');
 
     final hours = twoDigits(duration.inHours);
-
     final minutes = twoDigits(duration.inMinutes.remainder(60));
-
     final seconds = twoDigits(duration.inSeconds.remainder(60));
 
     return "$hours:$minutes:$seconds";
   }
-
-  // =========================
-  // DISPOSE
-  // =========================
 
   @override
   void dispose() {
@@ -359,23 +337,17 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
       drawer: const HrDrawer(),
-
       appBar: AppBar(
         title: const Text("HR Dashboard"),
         backgroundColor: const Color.fromARGB(255, 196, 204, 244),
         elevation: 0,
       ),
-
       body: RefreshIndicator(
-        onRefresh: () async {
-          // Refresh logic herer
-        },
+        onRefresh: loadWorkingDuration,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
-
           child: Padding(
             padding: const EdgeInsets.all(16),
-
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -386,29 +358,25 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
                     color: const Color.fromARGB(255, 73, 75, 70),
                     borderRadius: BorderRadius.circular(20),
                   ),
-
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
+                      const Row(
                         children: [
-                          const SizedBox(width: 12),
-
-                          const Expanded(
+                          SizedBox(width: 12),
+                          Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  "Welcome HR 👋",
+                                  "Welcome HR",
                                   style: TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                   ),
                                 ),
-
                                 SizedBox(height: 4),
-
                                 Text(
                                   "Manage your employees efficiently",
                                   style: TextStyle(
@@ -421,9 +389,7 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
                           ),
                         ],
                       ),
-
                       const SizedBox(height: 20),
-
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 14,
@@ -440,15 +406,15 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
                               color: Colors.white,
                               size: 20,
                             ),
-
                             SizedBox(width: 10),
-
-                            Text(
-                              "Have a productive day 🚀",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
+                            Expanded(
+                              child: Text(
+                                "Have a productive day",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ),
                           ],
@@ -458,7 +424,6 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
@@ -466,93 +431,65 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
                     color: const Color.fromARGB(255, 184, 211, 233),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Center(
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              "Working Hours",
-                              style: TextStyle(
-                                color: Color.fromARGB(255, 43, 37, 37),
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(width: 50),
-                            Text(
-                              "3h : 20m",
-                              style: TextStyle(
-                                color: Color.fromARGB(255, 43, 37, 37),
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
+                  child: Column(
+                    children: [
+                      const Text(
+                        "Working Hours",
+                        style: TextStyle(
+                          color: Color.fromARGB(255, 43, 37, 37),
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
                         ),
-
-                        const SizedBox(height: 10),
-
-                        Row(
-                          children: [
-                            Text(
-                              formatDuration(workingDuration),
-                              style: const TextStyle(
-                                fontSize: 40,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        formatDuration(workingDuration),
+                        style: const TextStyle(
+                          fontSize: 40,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
-
-                        const SizedBox(height: 20),
-
-                        isLoading
-                            ? Center(child: CircularProgressIndicator())
-                            : SwipeableButtonView(
-                                buttonText: isCheckedIn
-                                    ? "Swipe to Check-Out"
-                                    : "Swipe to Check-In",
-
-                                buttonWidget: const Icon(
-                                  Icons.arrow_forward_ios_rounded,
-                                  color: Colors.grey,
-                                ),
-
-                                activeColor: isCheckedIn
-                                    ? Colors.red
-                                    : Colors.green,
-
-                                isFinished: isFinished,
-
-                                onWaitingProcess: () {
-                                  Future.delayed(
-                                    const Duration(seconds: 1),
-                                    () {
-                                      setState(() {
-                                        isFinished = true;
-                                      });
-                                    },
-                                  );
-                                },
-
-                                onFinish: () async {
-                                  isCheckedIn ? checkOut() : checkIn();
-
+                      ),
+                      const SizedBox(height: 20),
+                      isLoading
+                          ? const Center(child: CircularProgressIndicator())
+                          : SwipeableButtonView(
+                              buttonText: isCheckedIn
+                                  ? "Swipe to Check-Out"
+                                  : "Swipe to Check-In",
+                              buttonWidget: const Icon(
+                                Icons.arrow_forward_ios_rounded,
+                                color: Colors.grey,
+                              ),
+                              activeColor: isCheckedIn
+                                  ? Colors.red
+                                  : Colors.green,
+                              isFinished: isFinished,
+                              onWaitingProcess: () {
+                                Future.delayed(const Duration(seconds: 1), () {
+                                  if (!mounted) return;
                                   setState(() {
-                                    isFinished = false;
-                                    isLoading = true;
+                                    isFinished = true;
                                   });
-                                },
-                              ),
-                      ],
-                    ),
+                                });
+                              },
+                              onFinish: () async {
+                                if (isCheckedIn) {
+                                  await checkOut();
+                                } else {
+                                  await checkIn();
+                                }
+
+                                if (!mounted) return;
+                                setState(() {
+                                  isFinished = false;
+                                });
+                              },
+                            ),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 20),
-
-                /// ================= STATS =================
                 GridView.count(
                   crossAxisCount: 2,
                   shrinkWrap: true,
@@ -560,7 +497,6 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
                   crossAxisSpacing: 12,
                   mainAxisSpacing: 12,
                   childAspectRatio: 1.25,
-
                   children: [
                     StatCard(
                       title: "Employees",
@@ -589,17 +525,12 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 20),
-
-                /// ================= QUICK ACTIONS =================
                 const Text(
                   "Quick Actions",
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-
                 const SizedBox(height: 12),
-
                 Wrap(
                   spacing: 10,
                   runSpacing: 10,
@@ -660,24 +591,18 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 20),
-
-                /// ================= ATTENDANCE =================
                 const Text(
                   "Today Attendance",
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-
                 const SizedBox(height: 12),
-
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
                   ),
-
                   child: const Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
@@ -687,17 +612,12 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 20),
-
-                /// ================= TASKS =================
                 const Text(
                   "Pending Tasks",
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-
                 const SizedBox(height: 12),
-
                 const TaskTile(title: "5 Leave Requests Pending"),
                 const TaskTile(title: "3 Onboarding Reviews"),
                 const TaskTile(title: "2 Salary Approvals"),
@@ -714,13 +634,12 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.indigo.withOpacity(0.3),
+              color: Colors.indigo.withValues(alpha: 0.3),
               blurRadius: 10,
               offset: const Offset(0, 5),
             ),
           ],
         ),
-
         child: FloatingActionButton.extended(
           onPressed: () {
             Navigator.push(
@@ -728,12 +647,9 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
               MaterialPageRoute(builder: (_) => const AddEmployeeScreen()),
             );
           },
-
           backgroundColor: Colors.transparent,
           elevation: 0,
-
           icon: const Icon(Icons.person_add_alt_1, color: Colors.white),
-
           label: const Text(
             "Add Employee",
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),

@@ -4,12 +4,15 @@ class StatCard extends StatelessWidget {
   final String? title;
   final String? count;
   final IconData? icon;
+  final Color? color;
 
   const StatCard({
     super.key,
      this.title,
      this.count,
      this.icon, 
+     this.color,
+    // this.color = Colors.blue,
       onPress,
   });
 

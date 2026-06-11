@@ -1,15 +1,12 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image/image.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../login_screen.dart';
-import '../../state/auth/auth_bloc.dart';
-import '../../state/auth/auth_event.dart';
-import '../../widgets/menu_widget.dart';
-import 'admin_prifile.dart';
-import 'company_reg.dart';
-import 'companys_list.dart';
-import 'subscription_plans.dart';
+import '../../core/state/auth/auth_bloc.dart';
+import '../../core/state/auth/auth_event.dart';
+import '../../core/widgets/menu_widget.dart';
+
 
 class AdminDrawer extends StatelessWidget {
   const AdminDrawer({super.key});
@@ -35,11 +32,7 @@ class AdminDrawer extends StatelessWidget {
                   title: 'Profile',
                   subtitle: 'Admin account details',
                   onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const ProfileScreen()),
-                    );
+                    context.go("/admin/profile");
                   },
                 ),
                 DrawerWidgets.sectionTitle('Company Management'),
@@ -49,13 +42,7 @@ class AdminDrawer extends StatelessWidget {
                   title: 'Add Company',
                   subtitle: 'Register a new company',
                   onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const AddCompanyScreen(),
-                      ),
-                    );
+                    context.push("/admin/addcompany");
                   },
                 ),
                 DrawerWidgets.menuTile(
@@ -64,11 +51,19 @@ class AdminDrawer extends StatelessWidget {
                   title: 'Companies List',
                   subtitle: 'View and manage companies',
                   onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const CompanyScreen()),
-                    );
+                    
+                    context.push("/company/companies");
+                  },
+                ),
+
+                DrawerWidgets.menuTile(
+                  context,
+                  icon: Icons.list_alt,
+                  title: ' Deleted Companies',
+                  subtitle: 'View and manage companies deleted',
+                  onTap: () {
+                   
+                    context.push("/admin/deletedcompanies");
                   },
                 ),
                 DrawerWidgets.sectionTitle('Platform'),
@@ -78,13 +73,8 @@ class AdminDrawer extends StatelessWidget {
                   title: 'Subscription Plans',
                   subtitle: 'Plans, pricing, and duration',
                   onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const SubscriptionAdminPage(),
-                      ),
-                    );
+               
+                    context.push("/admin/subscriptionadmin");
                   },
                 ),
                 DrawerWidgets.menuTile(
@@ -92,6 +82,37 @@ class AdminDrawer extends StatelessWidget {
                   icon: Icons.people,
                   title: 'Company Management',
                   subtitle: 'User access',
+                  onTap: () {
+                
+                    Navigator.pushNamed(context, '/users');
+                  },
+                ),
+
+                DrawerWidgets.menuTile(
+                  context,
+                  icon: Icons.people,
+                  title: 'Industries',
+                  subtitle: 'Manage industries',
+                  onTap: () {
+             
+                    Navigator.pushNamed(context, '/users');
+                  },
+                ),
+                DrawerWidgets.menuTile(
+                  context,
+                  icon: Icons.people,
+                  title: 'Departments',
+                  subtitle: 'Manage departments',
+                  onTap: () {
+                    
+                    Navigator.pushNamed(context, '/users');
+                  },
+                ),
+                DrawerWidgets.menuTile(
+                  context,
+                  icon: Icons.people,
+                  title: 'Designations',
+                  subtitle: 'Manage designations',
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.pushNamed(context, '/users');
@@ -105,36 +126,6 @@ class AdminDrawer extends StatelessWidget {
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.pushNamed(context, '/reports');
-                  },
-                ),
-                DrawerWidgets.menuTile(
-                  context,
-                  icon: Icons.people,
-                  title: 'Industries',
-                  subtitle: 'Manage industries',
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.pushNamed(context, '/users');
-                  },
-                ),
-                DrawerWidgets.menuTile(
-                  context,
-                  icon: Icons.people,
-                  title: 'Departments',
-                  subtitle: 'Manage departments',
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.pushNamed(context, '/users');
-                  },
-                ),
-                DrawerWidgets.menuTile(
-                  context,
-                  icon: Icons.people,
-                  title: 'Designations',
-                  subtitle: 'Manage designations',
-                  onTap: () {
-                    Navigator.pop(context);
-                    Navigator.pushNamed(context, '/users');
                   },
                 ),
 

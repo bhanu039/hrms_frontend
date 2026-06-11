@@ -2,10 +2,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 
-import '../../state/auth/auth_bloc.dart';
-import '../../widgets/Adding_Employee_Screen.dart';
-import '../../widgets/dashboard_card.dart';
-import '../../widgets/top_message.dart';
+import '../../core/state/auth/auth_bloc.dart';
+import '../../core/widgets/Adding_Employee_Screen.dart';
+import '../../core/widgets/dashboard_card.dart';
+import '../../core/widgets/top_message.dart';
 import 'company_menu.dart';
 import 'company_profile_screen.dart';
 

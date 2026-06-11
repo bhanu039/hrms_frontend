@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:goexperts/admin/Screens/companys_list.dart';
-import '../../services/api_service.dart';
-import '../../widgets/top_message.dart';
+import '../../core/services/api_service.dart';
+import '../../core/widgets/top_message.dart';
 import 'admin_menu.dart';
 import 'company_reg.dart';
 
-class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key});
+class AdminDashboardScreen extends StatefulWidget {
+  const AdminDashboardScreen({super.key});
 
   @override
-  State<DashboardScreen> createState() => _DashboardScreenState();
+  State<AdminDashboardScreen> createState() => _DashboardScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> {
+class _DashboardScreenState extends State<AdminDashboardScreen> {
   List companies = [];
   List filteredCompanies = [];
   bool isLoading = true;
@@ -113,10 +114,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       // ➕ Floating Button
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const AddCompanyScreen()),
-          );
+          context.push("/admin/addcompany");
         },
         label: const Text("Add Company"),
         icon: const Icon(Icons.add),
@@ -185,7 +183,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (_) =>
-                                      const CompanyScreen(), // 👈 create this screen
+                                      const CompanyListScreen(), // 👈 create this screen
                                 ),
                               );
                             },
@@ -322,7 +320,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 decoration: BoxDecoration(
                                   color: getStatusColor(
                                     company["status"],
-                                  ).withValues(alpha:0.15),
+                                  ).withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(

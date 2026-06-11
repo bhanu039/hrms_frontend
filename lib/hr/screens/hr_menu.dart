@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:goexperts/company/Screens/employee_screen.dart';
+import 'package:goexperts/employe/emp_full_reg/screen/emp_full_reg_ui.dart';
+import 'package:goexperts/hr/screens/hr_Profile.dart';
 
 import '../../login_screen.dart';
-import '../../state/auth/auth_bloc.dart';
-import '../../state/auth/auth_event.dart';
-import '../../widgets/menu_widget.dart';
-
+import '../../core/state/auth/auth_bloc.dart';
+import '../../core/state/auth/auth_event.dart';
+import '../../core/widgets/menu_widget.dart';
+import '../attendance/screen/emps_attendence.dart';
 
 class HrDrawer extends StatelessWidget {
   const HrDrawer({super.key});
@@ -32,15 +35,15 @@ class HrDrawer extends StatelessWidget {
                   icon: Icons.business,
                   title: 'Hr Profile',
                   subtitle: 'Details, address, logo',
-                  // onTap: () {
-                  //   Navigator.pop(context);
-                  //   Navigator.push(
-                  //     context,
-                  //     MaterialPageRoute(
-                  //       builder: (_) => const CompanyProfileScreen(),
-                  //     ),
-                  //   );
-                  // },
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const EmployeeOnboardingScreen(),
+                      ),
+                    );
+                  },
                 ),
 
                 DrawerWidgets.menuTile(
@@ -55,24 +58,14 @@ class HrDrawer extends StatelessWidget {
                   icon: Icons.people,
                   title: 'Attendance',
                   subtitle: 'manage attendance',
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const EmployeeListScreen(),
-                    ),
-                  ),
+                  onTap: () => context.push('/hr/onbording'),
                 ),
                 DrawerWidgets.menuTile(
                   context,
                   icon: Icons.people,
                   title: 'Employees',
                   subtitle: 'Teams and staff records',
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const EmployeeListScreen(),
-                    ),
-                  ),
+                  onTap: () => context.push('/hr/employees'),
                 ),
                 DrawerWidgets.menuTile(
                   context,
@@ -100,7 +93,7 @@ class HrDrawer extends StatelessWidget {
                   title: 'Reports & Analytics',
                   subtitle: 'Performance and activity',
                 ),
-                
+
                 DrawerWidgets.menuTile(
                   context,
                   icon: Icons.settings,
@@ -110,12 +103,18 @@ class HrDrawer extends StatelessWidget {
                     MenuSubItem(
                       icon: Icons.payments,
                       title: 'Payroll Settings',
-                      onTap: () => DrawerWidgets.showComingSoon(context, 'Payroll Settings'),
+                      onTap: () => DrawerWidgets.showComingSoon(
+                        context,
+                        'Payroll Settings',
+                      ),
                     ),
-                   MenuSubItem(
+                    MenuSubItem(
                       icon: Icons.work_history,
                       title: 'Work Settings',
-                      onTap: () => DrawerWidgets.showComingSoon(context, 'Work Settings'),
+                      onTap: () => DrawerWidgets.showComingSoon(
+                        context,
+                        'Work Settings',
+                      ),
                     ),
                   ],
                 ),

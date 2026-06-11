@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:goexperts/main_tabs_screen.dart';
-import 'package:goexperts/widgets/top_message.dart';
+import 'package:go_router/go_router.dart';
+import 'package:goexperts/core/widgets/top_message.dart';
 
-import 'state/auth/auth_bloc.dart';
-import 'state/auth/auth_event.dart';
-import 'state/auth/auth_state.dart';
-
+import 'core/state/auth/auth_bloc.dart';
+import 'core/state/auth/auth_event.dart';
+import 'core/state/auth/auth_state.dart';
 
 import 'forgot_password_screen.dart';
-import 'services/api_service.dart';
-import 'widgets/app_primary_button.dart';
+import 'core/services/api_service.dart';
+import 'core/widgets/app_primary_button.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -61,7 +60,6 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
-        
         final session = state.session;
 
         print(
@@ -73,19 +71,15 @@ class _LoginScreenState extends State<LoginScreen> {
         if (state.status == AuthStatus.error) {
           showError(state.message ?? 'Invalid credentials');
           return;
-        }if(state.status == AuthStatus.authenticated) {
-          print("Navigating to MainTabScreen");
-
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const MainTabScreen()),
-            (route) => false,
-          );
-        }else{
-
         }
+        if (state.status == AuthStatus.authenticated) {
+          print("Navigating to routs");
+
+          context.go('/');
+        } else {}
       },
       child: Scaffold(
-        backgroundColor: const Color(0xff07111f), 
+        backgroundColor: const Color(0xff07111f),
         body: LayoutBuilder(
           builder: (context, constraints) {
             final isWide = constraints.maxWidth >= 820;
@@ -392,12 +386,7 @@ class _ThreeDLoginPanel extends StatelessWidget {
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ForgotPasswordScreen(),
-                        ),
-                      );
+                      context.push("///");
                     },
                     child: const Text('Forgot Password?'),
                   ),

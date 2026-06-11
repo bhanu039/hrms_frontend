@@ -3,15 +3,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app_links/app_links.dart';
-import 'package:goexperts/main_tabs_screen.dart';
-import 'package:goexperts/widgets/top_message.dart';
+import 'package:go_router/go_router.dart';
+import 'package:goexperts/core/widgets/top_message.dart';
 
-import 'login_screen.dart';
-import 'services/api_service.dart';
-import 'services/set_pass_token.dart';
-import 'state/auth/auth_bloc.dart';
-import 'state/auth/auth_state.dart';
-import 'widgets/set_password_screen.dart';
+import 'core/services/api_service.dart';
+import 'core/services/sessionservice.dart';
+import 'core/state/auth/auth_bloc.dart';
+import 'core/state/auth/auth_state.dart';
+import 'core/set_password_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -32,7 +31,7 @@ class _SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
     ApiService.wakeUpServer();
-   
+
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
@@ -42,8 +41,6 @@ class _SplashScreenState extends State<SplashScreen>
 
     startFlow(); // ✅ single entry point
   }
-
- 
 
   Future<void> startFlow() async {
     final state = context.read<AuthBloc>().state;
@@ -81,20 +78,16 @@ class _SplashScreenState extends State<SplashScreen>
     print('Path: ${uri.path}');
     print('Params: ${uri.queryParameters}');
 
-    if (uri.path == '/setup-password') {
+    if (uri.path == '/setup-password' || uri.path == '/reset') {
       final token = uri.queryParameters["token"];
 
-      if (token == null) {
+      if (token == null || token.isEmpty) {
         print('Token missing');
         return;
       }
-      
-      _navigated = true;
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => SetPasswordScreen(token: token)),
-      );
+      _navigated = true;
+      context.go('${uri.path}?token=$token');
     } else {
       print('Unknown deep link: $uri');
     }
@@ -111,21 +104,25 @@ class _SplashScreenState extends State<SplashScreen>
     _navigated = true;
 
     if (state.status != AuthStatus.authenticated || session == null) {
-      TopMessage.show(
-        context,
-        "Please log in to continue.",
-        color: Colors.blue,
-      );
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
-      );
+      bool isExpired = await SessionService.isTokenExpired();
+      if (isExpired) {
+        TopMessage.show(
+          context,
+          "session has expired please log in again",
+          color: Colors.orange,
+        );
+        context.go("/login");
+      } else {
+        TopMessage.show(
+          context,
+          "welcome back to Hrms Please log in to continue",
+          color: Colors.green,
+        );
+      }
+
       return;
     } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const MainTabScreen()),
-      );
+      context.go('/');
     }
   }
 

@@ -75,5 +75,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs camera access to capture your face for verification</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs access to your photo library</string>
 </dict>
 </plist>

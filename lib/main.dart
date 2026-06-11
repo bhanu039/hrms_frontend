@@ -1,13 +1,15 @@
 ﻿import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'splash_screen.dart';
-import 'state/auth/auth_bloc.dart';
-import 'state/auth/auth_event.dart';
-import 'state/bloc/deep_link/deep_link_bloc.dart';
-import 'state/bloc/deep_link/deep_link_event.dart';
-import 'state/profile/profile_cubit.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:goexperts/core/router/go_router.dart';
+
+
+import 'core/state/auth/auth_bloc.dart';
+import 'core/state/auth/auth_event.dart';
+import 'core/state/bloc/deep_link/deep_link_bloc.dart';
+import 'core/state/bloc/deep_link/deep_link_event.dart';
+import 'admin/admin_profile/profile_cubit.dart';
 
 void main() {
   runApp(const MyAppRoot());
@@ -47,9 +49,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return  MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      home: SplashScreen(),
+       routerConfig: router,
+       
+      
     );
   }
 }

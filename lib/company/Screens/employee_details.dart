@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../services/api_service.dart';
-import '../../state/models/Employee_data_Model.dart';
+import '../../core/services/api_service.dart';
+import '../../core/state/models/Employee_data_Model.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class EmployeeReviewScreen extends StatefulWidget {
@@ -26,7 +26,7 @@ class _EmployeeReviewScreenState extends State<EmployeeReviewScreen> {
 
   Future<void> fetchEmployee() async {
     try {
-      final data = await ApiService.getEmployee(widget.employeecode);
+      final data = await ApiService.getFullDetailsEmployee(widget.employeecode);
 
       setState(() {
         employee = data;

@@ -1,12 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../services/api_service.dart';
-import '../../services/sessionservice.dart';
-import '../../widgets/top_message.dart';
+import '../../core/services/api_service.dart';
+import '../../core/services/sessionservice.dart';
+import '../../core/widgets/top_message.dart';
 
 class HrProfileScreen extends StatefulWidget {
   const HrProfileScreen({super.key});
@@ -32,14 +33,12 @@ class _HrProfileScreenState extends State<HrProfileScreen>
     "personal": false,
     "education": false,
     "experience": false,
-
     "bank": false,
     "nominee": false,
   };
 
   // ---------------- CONTROLLERS ----------------
   final emailCtrl = TextEditingController();
-
   final phoneCtrl = TextEditingController();
   final altPhoneCtrl = TextEditingController();
   final cityCtrl = TextEditingController();
@@ -73,7 +72,7 @@ class _HrProfileScreenState extends State<HrProfileScreen>
   @override
   void initState() {
     super.initState();
-    tabController = TabController(length: 6, vsync: this);
+    tabController = TabController(length: 5, vsync: this);
     fetchProfile();
   }
 
@@ -82,10 +81,18 @@ class _HrProfileScreenState extends State<HrProfileScreen>
     String? id = (await SessionService.getID())!;
     print("Session ID: $id");
     setState(() => loading = true);
+    try {
+      final res = await ApiService.getEmpProfile(id: id);
+      print("API Response: $res");
+   
 
-    final res = await ApiService.getEmpProfile(id: id);
-
+  
     if (res["success"] == true) {
+      if (res["data"] == null) {
+        setState(() => loading = false);
+        TopMessage.show(context, "Profile data is null", color: Colors.red);
+        return;
+      }
       profile = res["data"];
 
       // backup for cancel
@@ -102,9 +109,9 @@ class _HrProfileScreenState extends State<HrProfileScreen>
       pinCtrl.text = p["pincode"] ?? "";
       final s = profile["skills"] ?? {};
 
-      primarySkillCtrl.text = listToText(s["primarySkills"]);
-      secondarySkillCtrl.text = listToText(s["secondarySkills"]);
-      certificateCtrl.text = listToText(s["certifications"]);
+      primarySkillCtrl.text = parseList(s["primarySkills"]).join(", ");
+      secondarySkillCtrl.text = parseList(s["secondarySkills"]).join(", ");
+      certificateCtrl.text = parseList(s["certifications"]).join(", ");
 
       linkedinCtrl.text = s["linkedinUrl"] ?? "";
 
@@ -138,6 +145,11 @@ class _HrProfileScreenState extends State<HrProfileScreen>
       setState(() => loading = false);
       TopMessage.show(context, "Failed to load", color: Colors.red);
     }
+     } catch (e) {
+      print("Error fetching profile: $e");
+      setState(() => loading = false);
+      TopMessage.show(context, "Error: $e", color: Colors.red);
+    }
   }
 
   // ---------------- IMAGE PICK (NO UI CHANGE) ----------------
@@ -148,52 +160,67 @@ class _HrProfileScreenState extends State<HrProfileScreen>
     }
   }
 
-  String listToText(dynamic value) {
-    if (value == null) return "";
-    return (value as List).join(", ");
+  List<String> parseList(dynamic data) {
+  if (data == null) return [];
+
+  if (data is List) {
+    return data.map((e) => e.toString()).toList();
   }
+
+  return data.toString().split(",").map((e) => e.trim()).toList();
+}
 
   // ---------------- SAVE PERSONAL ONLY ----------------
   Future<void> savePersonal() async {
-    final body = {
-      "personal": {
-        "phone": phoneCtrl.text,
-        "alternatePhone": altPhoneCtrl.text,
-        "addressLine1": addressLine1ctrl.text,
-        "city": cityCtrl.text,
-        "state": stateCtrl.text,
-        "country": countryCtrl.text,
-        "pincode": pinCtrl.text,
-      },
-      "skills": {
-        "primarySkills": primarySkillCtrl.text
-            .split(",")
-            .map((e) => e.trim())
-            .toList(),
+    FormData formData = FormData.fromMap({
+      if (imageFile != null)
+        "profilePhoto": await MultipartFile.fromFile(
+          imageFile!.path,
+          filename: imageFile!.path.split('/').last,
+        ),
 
-        "secondarySkills": secondarySkillCtrl.text
-            .split(",")
-            .map((e) => e.trim())
-            .toList(),
+      "personal[addressLine1]": addressLine1ctrl.text,
+      "personal[city]": cityCtrl.text,
+      "personal[state]": stateCtrl.text,
 
-        "certifications": certificateCtrl.text
-            .split(",")
-            .map((e) => e.trim())
-            .toList(),
+      "personal[pincode]": pinCtrl.text,
 
-        "linkedinUrl": linkedinCtrl.text,
-      },
-    };
+      "skills[primarySkills]": primarySkillCtrl.text
+          .split(",")
+          .map((e) => e.trim())
+          .toList(),
+
+      "skills[secondarySkills]": secondarySkillCtrl.text
+          .split(",")
+          .map((e) => e.trim())
+          .toList(),
+
+      "skills[certifications]": certificateCtrl.text
+          .split(",")
+          .map((e) => e.trim())
+          .toList(),
+
+      "skills[linkedinUrl]": linkedinCtrl.text,
+    });
 
     final res = await ApiService.updateEmpProfile(
       id: profile["id"] ?? "",
-      body: body,
+      body: formData,
     );
 
     if (res["success"] == true) {
       editMode["personal"] = false;
       TopMessage.show(context, "Personal Updated", color: Colors.green);
       fetchProfile();
+    } else {
+      editMode["personal"] = false;
+      fetchProfile();
+     
+    TopMessage.show(
+      context,
+      "Failed: ${res["message"] ?? res}",
+      color: Colors.red,
+    );
     }
   }
 
@@ -587,22 +614,22 @@ class _HrProfileScreenState extends State<HrProfileScreen>
                       field(
                         "Primary Skills",
                         primarySkillCtrl,
-                        "skills",
+                        "personal",
                         Icons.star,
                       ),
                       field(
                         "Secondary Skills",
                         secondarySkillCtrl,
-                        "skills",
+                        "personal",
                         Icons.star,
                       ),
                       field(
                         "Certifications",
                         certificateCtrl,
-                        "skills",
+                        "personal",
                         Icons.star,
                       ),
-                      field("LinkedIn", linkedinCtrl, "skills", Icons.link),
+                      field("LinkedIn", linkedinCtrl, "personal", Icons.link),
 
                       action("personal", savePersonal),
                     ],

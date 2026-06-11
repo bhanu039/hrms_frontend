@@ -3,11 +3,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:goexperts/company/Screens/employee_screen.dart';
 
 import '../../login_screen.dart';
-import '../../state/auth/auth_bloc.dart';
-import '../../state/auth/auth_event.dart';
-import '../../widgets/menu_widget.dart';
+import '../../core/state/auth/auth_bloc.dart';
+import '../../core/state/auth/auth_event.dart';
+import '../../core/widgets/menu_widget.dart';
 import 'company_profile_screen.dart';
 import 'subscription_plans.dart';
+import '../../core/widgets/location_get.dart';
+import 'open_map.dart';
 
 class CompanyDrawer extends StatelessWidget {
   const CompanyDrawer({super.key});
@@ -43,12 +45,12 @@ class CompanyDrawer extends StatelessWidget {
                     );
                   },
                 ),
-                 DrawerWidgets.menuTile(
+                DrawerWidgets.menuTile(
                   context,
                   icon: Icons.workspace_premium,
                   title: 'Documents',
                   subtitle: 'Core Documents',
-                   onTap: () {
+                  onTap: () {
                     // Navigator.pop(context);
                     Navigator.push(
                       context,
@@ -57,7 +59,6 @@ class CompanyDrawer extends StatelessWidget {
                       ),
                     );
                   },
-
                 ),
 
                 DrawerWidgets.menuTile(
@@ -157,10 +158,41 @@ class CompanyDrawer extends StatelessWidget {
                     MenuSubItem(
                       icon: Icons.payments,
                       title: 'Location Settings',
-                      onTap: () => DrawerWidgets.showComingSoon(
-                        context,
-                        'Location Settings',
-                      ),
+                      onTap: () async {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            duration: Duration(seconds: 2),
+                            content: Row(
+                              children: [
+                                CircularProgressIndicator(),
+                                SizedBox(width: 20),
+                                Text("Fetching location..."),
+                              ],
+                            ),
+                          ),
+                        );
+
+                        final locationData =
+                            await LocationHelper.getCurrentLocation();
+
+                        if (locationData != null) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => MapScreen(
+                                latitude: locationData["latitude"],
+                                longitude: locationData["longitude"],
+                              ),
+                            ),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(" fetching location"),
+                            ),
+                          );
+                        }
+                      },
                     ),
                     MenuSubItem(
                       icon: Icons.work_history,

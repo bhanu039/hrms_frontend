@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:goexperts/services/api_service.dart';
+import 'package:goexperts/core/services/api_service.dart';
 import '../models/company_model.dart';
 
 class CompanyProfileScreen extends StatefulWidget {
