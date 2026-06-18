@@ -187,9 +187,10 @@ class EmpFullRegBloc extends Bloc<EmpFullRegEvent, EmpFullRegState> {
 
       // ================= SUBMIT TO API =================
       final response = await _repository.submitOnboarding(model);
+      print("$response");
 
       // ================= SUCCESS RESPONSE =================
-      emit(state.copyWith(isLoading: false, error: null));
+      emit(state.copyWith(isLoading: false, success: true, error: null));
 
       // You can handle response here (e.g., show success message, navigate)
       print("Onboarding submitted successfully: ${response.statusCode}");

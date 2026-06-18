@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:goexperts/core/router/go_router.dart';
 
-
 import 'core/state/auth/auth_bloc.dart';
 import 'core/state/auth/auth_event.dart';
 import 'core/state/bloc/deep_link/deep_link_bloc.dart';
@@ -49,11 +48,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return  MaterialApp.router(
+    final router = createRouter(context.read<AuthBloc>());
+    return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-       routerConfig: router,
-       
-      
+      routerConfig: router,
     );
   }
 }

@@ -1,10 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:goexperts/core/widgets/top_message.dart';
 import 'package:goexperts/splash_screen.dart';
 import 'sessionservice.dart';
 
 class ApiClient {
-    static final GlobalKey<NavigatorState> navigatorKey =
+  static final GlobalKey<NavigatorState> navigatorKey =
       GlobalKey<NavigatorState>();
   static final Dio dio =
       Dio(
@@ -52,11 +53,49 @@ class ApiClient {
               return handler.next(response);
             },
 
-            onError: (e, handler) async {
+            onError: (DioException e, ErrorInterceptorHandler handler) async {
               if (e.response?.statusCode == 401) {
                 await SessionService.clearSession();
               }
-              return handler.next(e);
+
+              String message;
+
+              switch (e.type) {
+                case DioExceptionType.connectionTimeout:
+                  message = "No internet connection or server unreachable.";
+                  break;
+
+                case DioExceptionType.receiveTimeout:
+                  message = "Server response timeout.";
+                  break;
+
+                case DioExceptionType.sendTimeout:
+                  message = "Request timeout.";
+                  break;
+
+                case DioExceptionType.connectionError:
+                  message = "Please check your internet connection.";
+                  break;
+
+                default:
+                  message = e.message ?? "Something went wrong";
+              }
+
+              // Show message using navigatorKey context
+              final context = ApiClient.navigatorKey.currentContext;
+              if (context != null) {
+                TopMessage.show(context, message, color: Colors.red);
+              }
+
+              return handler.reject(
+                DioException(
+                  requestOptions: e.requestOptions,
+                  response: e.response,
+                  type: e.type,
+                  error: message,
+                  message: message,
+                ),
+              );
             },
           ),
 

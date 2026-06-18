@@ -6,20 +6,34 @@ import 'company_reg_state.dart';
 class AddCompanyBloc extends Bloc<AddCompanyEvent, AddCompanyState> {
   final AddCompanyRepository repository;
 
-  AddCompanyBloc(this.repository)
-      : super(AddCompanyState(industries: [])) {
-
+  AddCompanyBloc(this.repository) : super(AddCompanyState(industries: [])) {
     // ================= FIELD EVENTS =================
     on<NameChanged>((e, emit) => emit(state.copyWith(name: e.value)));
     on<EmailChanged>((e, emit) => emit(state.copyWith(email: e.value)));
     on<OwnerNameChanged>((e, emit) => emit(state.copyWith(ownerName: e.value)));
-    on<OwnerEmailChanged>((e, emit) => emit(state.copyWith(ownerEmail: e.value)));
+    on<OwnerEmailChanged>(
+      (e, emit) => emit(state.copyWith(ownerEmail: e.value)),
+    );
     on<LocationChanged>((e, emit) => emit(state.copyWith(location: e.value)));
     on<IndustryChanged>((e, emit) => emit(state.copyWith(industryId: e.value)));
 
     // ================= API EVENTS =================
     on<LoadIndustries>(_loadIndustries);
     on<SubmitCompany>(_submit);
+    on<ResetCompanyForm>((event, emit) {
+      emit(
+        state.copyWith(
+          name: "",
+          email: "",
+          ownerName: "",
+          ownerEmail: "",
+          location: "",
+          industryId: null,
+          success: false,
+          error: null,
+        ),
+      );
+    });
   }
 
   // ================= LOAD INDUSTRIES =================
@@ -32,15 +46,9 @@ class AddCompanyBloc extends Bloc<AddCompanyEvent, AddCompanyState> {
     try {
       final industries = await repository.getIndustries();
 
-      emit(state.copyWith(
-        loading: false,
-        industries: industries,
-      ));
+      emit(state.copyWith(loading: false, industries: industries));
     } catch (e) {
-      emit(state.copyWith(
-        loading: false,
-        error: e.toString(),
-      ));
+      emit(state.copyWith(loading: false, error: e.toString()));
     }
   }
 
@@ -51,7 +59,7 @@ class AddCompanyBloc extends Bloc<AddCompanyEvent, AddCompanyState> {
   ) async {
     emit(state.copyWith(submitting: true, error: null));
 
-    try {
+    
       final success = await repository.createCompany(
         name: state.name,
         email: state.email,
@@ -60,17 +68,16 @@ class AddCompanyBloc extends Bloc<AddCompanyEvent, AddCompanyState> {
         ownerEmail: state.ownerEmail,
         industryId: state.industryId ?? "",
       );
+      
 
-      emit(state.copyWith(
-        submitting: false,
-        success: success,
-        error: success ? null : "Failed to create company",
-      ));
-    } catch (e) {
-      emit(state.copyWith(
-        submitting: false,
-        error: e.toString(),
-      ));
-    }
+      emit(
+        state.copyWith(
+          submitting: false,
+          industryId: null,
+          success: success["success"] ?? false,
+          error: success["message"] ?? "Failed to create company",
+        ),
+      );
+    
   }
 }

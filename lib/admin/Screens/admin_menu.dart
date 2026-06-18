@@ -7,7 +7,6 @@ import '../../core/state/auth/auth_bloc.dart';
 import '../../core/state/auth/auth_event.dart';
 import '../../core/widgets/menu_widget.dart';
 
-
 class AdminDrawer extends StatelessWidget {
   const AdminDrawer({super.key});
 
@@ -51,8 +50,7 @@ class AdminDrawer extends StatelessWidget {
                   title: 'Companies List',
                   subtitle: 'View and manage companies',
                   onTap: () {
-                    
-                    context.push("/company/companies");
+                    context.push('/admin/companies');
                   },
                 ),
 
@@ -62,7 +60,6 @@ class AdminDrawer extends StatelessWidget {
                   title: ' Deleted Companies',
                   subtitle: 'View and manage companies deleted',
                   onTap: () {
-                   
                     context.push("/admin/deletedcompanies");
                   },
                 ),
@@ -73,18 +70,7 @@ class AdminDrawer extends StatelessWidget {
                   title: 'Subscription Plans',
                   subtitle: 'Plans, pricing, and duration',
                   onTap: () {
-               
                     context.push("/admin/subscriptionadmin");
-                  },
-                ),
-                DrawerWidgets.menuTile(
-                  context,
-                  icon: Icons.people,
-                  title: 'Company Management',
-                  subtitle: 'User access',
-                  onTap: () {
-                
-                    Navigator.pushNamed(context, '/users');
                   },
                 ),
 
@@ -94,8 +80,7 @@ class AdminDrawer extends StatelessWidget {
                   title: 'Industries',
                   subtitle: 'Manage industries',
                   onTap: () {
-             
-                    Navigator.pushNamed(context, '/users');
+                    DrawerWidgets.showComingSoon(context, 'Industries');
                   },
                 ),
                 DrawerWidgets.menuTile(
@@ -104,8 +89,7 @@ class AdminDrawer extends StatelessWidget {
                   title: 'Departments',
                   subtitle: 'Manage departments',
                   onTap: () {
-                    
-                    Navigator.pushNamed(context, '/users');
+                    DrawerWidgets.showComingSoon(context, 'Departments');
                   },
                 ),
                 DrawerWidgets.menuTile(
@@ -114,8 +98,7 @@ class AdminDrawer extends StatelessWidget {
                   title: 'Designations',
                   subtitle: 'Manage designations',
                   onTap: () {
-                    Navigator.pop(context);
-                    Navigator.pushNamed(context, '/users');
+                    DrawerWidgets.showComingSoon(context, 'Designations');
                   },
                 ),
                 DrawerWidgets.menuTile(
@@ -124,8 +107,10 @@ class AdminDrawer extends StatelessWidget {
                   title: 'Reports & Analytics',
                   subtitle: 'Platform performance',
                   onTap: () {
-                    Navigator.pop(context);
-                    Navigator.pushNamed(context, '/reports');
+                    DrawerWidgets.showComingSoon(
+                      context,
+                      'Reports & Analytics',
+                    );
                   },
                 ),
 
@@ -139,8 +124,10 @@ class AdminDrawer extends StatelessWidget {
                       icon: Icons.security,
                       title: 'Security Settings',
                       onTap: () {
-                        Navigator.pop(context);
-                        Navigator.pushNamed(context, '/settings');
+                        DrawerWidgets.showComingSoon(
+                          context,
+                          'Security Settings',
+                        );
                       },
                     ),
                     MenuSubItem(
@@ -164,13 +151,11 @@ class AdminDrawer extends StatelessWidget {
               title: 'Logout',
               subtitle: 'Exit admin account',
               color: Colors.red,
-              onTap: () {
+              onTap: () async {
                 context.read<AuthBloc>().add(AuthLogoutRequested());
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                  (route) => false,
-                );
+                await Future.delayed(const Duration(milliseconds: 100));
+
+                context.go("/login");
               },
             ),
           ),

@@ -5,7 +5,9 @@ import '../models/employee_model.dart';
 import 'employee_details.dart';
 
 class EmployeeListScreen extends StatefulWidget {
-  const EmployeeListScreen({super.key});
+  final String employeeType;
+
+  const EmployeeListScreen({super.key, required this.employeeType});
 
   @override
   State<EmployeeListScreen> createState() => _EmployeeListScreenState();
@@ -13,12 +15,14 @@ class EmployeeListScreen extends StatefulWidget {
 
 class _EmployeeListScreenState extends State<EmployeeListScreen> {
   List<EmployeeModel> employees = [];
+  String? employeeTypes;
 
   bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    employeeTypes = widget.employeeType;
     fetchEmployees();
   }
 
@@ -26,7 +30,7 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
 
   Future<void> fetchEmployees() async {
     try {
-      final data = await ApiService.getEmployees();
+      final data = await ApiService.getEmployees(employeeTypes);
 
       setState(() {
         employees = data;

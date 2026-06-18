@@ -65,6 +65,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         );
         return;
       }
+      print("Login response data: ${response.data}");
 
       final session = UserSession.fromLoginResponse(
         Map<String, dynamic>.from(response.data as Map),
@@ -96,6 +97,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     await SessionService.clearSession();
     currentUserSession = null;
+    print("User logged out");
+  
 
     emit(const AuthState(status: AuthStatus.unauthenticated, session: null));
   }

@@ -73,10 +73,10 @@ class _LoginScreenState extends State<LoginScreen> {
           return;
         }
         if (state.status == AuthStatus.authenticated) {
-          print("Navigating to routs");
+          print("login page Navigating to routs");
 
-          context.go('/');
-        } else {}
+         
+        } 
       },
       child: Scaffold(
         backgroundColor: const Color(0xff07111f),

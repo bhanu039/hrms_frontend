@@ -7,6 +7,7 @@ class AppDropdown extends StatelessWidget {
   final void Function(String value)? onChanged;
    final Widget? prefixIcon;
   final Widget? suffixIcon;
+    final String? Function(String?)? validator;
 
   final IconData? icon;
 
@@ -15,6 +16,7 @@ class AppDropdown extends StatelessWidget {
     required this.label,
     required this.value,
     required this.items,
+    this.validator,
     this.prefixIcon,
     this.suffixIcon,
     this.onChanged,
@@ -29,6 +31,7 @@ class AppDropdown extends StatelessWidget {
         value: (value != null && value!.isNotEmpty) ? value : null,
         isExpanded: true,
         icon: const Icon(Icons.keyboard_arrow_down_rounded),
+        validator: validator,
 
         decoration: InputDecoration(
           

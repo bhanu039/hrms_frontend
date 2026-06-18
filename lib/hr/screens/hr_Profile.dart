@@ -437,7 +437,9 @@ class _HrProfileScreenState extends State<HrProfileScreen>
                     ],
                   ),
                 ),
+                
               ],
+              
             ),
           ),
 

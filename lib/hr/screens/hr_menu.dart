@@ -5,6 +5,9 @@ import 'package:goexperts/company/Screens/employee_screen.dart';
 import 'package:goexperts/employe/emp_full_reg/screen/emp_full_reg_ui.dart';
 import 'package:goexperts/hr/screens/hr_Profile.dart';
 
+import '../../company/Screens/open_map.dart';
+import '../../core/widgets/location_get.dart';
+import '../../core/widgets/top_message.dart';
 import '../../login_screen.dart';
 import '../../core/state/auth/auth_bloc.dart';
 import '../../core/state/auth/auth_event.dart';
@@ -36,13 +39,8 @@ class HrDrawer extends StatelessWidget {
                   title: 'Hr Profile',
                   subtitle: 'Details, address, logo',
                   onTap: () {
-                    Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const EmployeeOnboardingScreen(),
-                      ),
-                    );
+                    // Navigator.pop(context);
+                    context.push('/hr/profile');
                   },
                 ),
 
@@ -58,7 +56,7 @@ class HrDrawer extends StatelessWidget {
                   icon: Icons.people,
                   title: 'Attendance',
                   subtitle: 'manage attendance',
-                  onTap: () => context.push('/hr/onbording'),
+                  onTap: () => context.push('/hr/attendance'),
                 ),
                 DrawerWidgets.menuTile(
                   context,
@@ -72,20 +70,13 @@ class HrDrawer extends StatelessWidget {
                   icon: Icons.work,
                   title: 'Projects',
                   subtitle: 'Active and completed work',
+                  onTap: () => TopMessage.show(
+                    context,
+                    "Projects feature is under development.\nComing Soon ",
+                    color: Colors.orange,
+                  ),
                 ),
-                DrawerWidgets.menuTile(
-                  context,
-                  icon: Icons.apartment,
-                  title: 'Departments',
-                  subtitle: 'Business units',
-                ),
-                DrawerWidgets.sectionTitle('Growth'),
-                DrawerWidgets.menuTile(
-                  context,
-                  icon: Icons.apartment,
-                  title: 'Departments',
-                  subtitle: 'Business units',
-                ),
+               
                 DrawerWidgets.sectionTitle('Growth'),
                 DrawerWidgets.menuTile(
                   context,
@@ -101,12 +92,75 @@ class HrDrawer extends StatelessWidget {
                   subtitle: 'Account preferences',
                   subItems: [
                     MenuSubItem(
+                      icon: Icons.people,
+                      title: 'Departments',
+
+                      onTap: () {
+                        DrawerWidgets.showComingSoon(context, 'Departments');
+                      },
+                    ),
+                    MenuSubItem(
+                      icon: Icons.people,
+                      title: 'Designations',
+
+                      onTap: () {
+                        DrawerWidgets.showComingSoon(context, 'Designations');
+                      },
+                    ),
+
+                    MenuSubItem(
                       icon: Icons.payments,
                       title: 'Payroll Settings',
                       onTap: () => DrawerWidgets.showComingSoon(
                         context,
                         'Payroll Settings',
                       ),
+                    ),
+                    MenuSubItem(
+                      icon: Icons.payments,
+                      title: 'Date & Time Settings',
+                      onTap: () => DrawerWidgets.showComingSoon(
+                        context,
+                        'Date & Time Settings',
+                      ),
+                    ),
+                    
+                    MenuSubItem(
+                      icon: Icons.payments,
+                      title: 'Location Settings',
+                      onTap: () async {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            duration: Duration(seconds: 2),
+                            content: Row(
+                              children: [
+                                CircularProgressIndicator(),
+                                SizedBox(width: 20),
+                                Text("Fetching location..."),
+                              ],
+                            ),
+                          ),
+                        );
+
+                        final locationData =
+                            await LocationHelper.getCurrentLocation();
+
+                        if (locationData != null) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => MapScreen(
+                                latitude: locationData["latitude"],
+                                longitude: locationData["longitude"],
+                              ),
+                            ),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text(" fetching location")),
+                          );
+                        }
+                      },
                     ),
                     MenuSubItem(
                       icon: Icons.work_history,
@@ -116,6 +170,7 @@ class HrDrawer extends StatelessWidget {
                         'Work Settings',
                       ),
                     ),
+                  
                   ],
                 ),
               ],

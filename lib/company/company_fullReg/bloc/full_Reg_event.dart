@@ -1,27 +1,23 @@
+
 import 'dart:io';
 
-abstract class FullRegEvent {}
+abstract class FullRegEvent  {
+  const FullRegEvent();
 
-class NextStep extends FullRegEvent {
- 
+  @override
+  List<Object?> get props => [];
 }
 
-class PrevStep extends FullRegEvent {
-  
-}
-
+/// Update any field dynamically
 class UpdateField extends FullRegEvent {
   final String key;
   final dynamic value;
 
-  UpdateField(this.key, this.value);
+  const UpdateField(this.key, this.value);
+
+  @override
+  List<Object?> get props => [key, value];
 }
 
-class PickFile extends FullRegEvent {
-  final String type;
-  final File file;
-
-  PickFile(this.type, this.file);
-}
-
-class SubmitForm extends FullRegEvent {}
+/// Submit form
+class SubmitCompanyRegistration extends FullRegEvent {}

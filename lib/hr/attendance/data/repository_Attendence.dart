@@ -13,7 +13,7 @@ class AttendenceRepository {
   String? toDate,
 }) async {
   final response = await ApiClient.dio.get(
-    'attendance/company',
+    '/api/attendance/company',
     queryParameters: {
       'currentPage': currentPage,
       'page_size': 20,
@@ -31,7 +31,7 @@ Future<AttendanceResponse> getEmpFullAttendence({
  
 }) async {
   final response = await ApiClient.dio.get(
-    'attendance/company/$eid',
+    '/api/attendance/company/$eid',
    
   );
 

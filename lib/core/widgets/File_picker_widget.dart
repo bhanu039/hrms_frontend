@@ -76,6 +76,7 @@ class _FileUploadWidgetState extends State<FileUploadWidget> {
           const SizedBox(width: 12),
           Text(
             widget.label,
+             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,

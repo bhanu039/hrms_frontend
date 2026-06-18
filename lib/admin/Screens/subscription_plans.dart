@@ -89,258 +89,294 @@ class _SubscriptionAdminPageState extends State<SubscriptionAdminPage> {
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: Container(
-                padding: const EdgeInsets.all(16),
-                width: 500,
-                child: SingleChildScrollView(
-                  child: Form(
-                    key: formKey,
-                    child: Column(
-                      children: [
-                        Text(
-                          plan == null ? "Create Plan" : "Edit Plan",
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
+              child: Center(
+                child: SafeArea(
+                  child: Container(
+                    width: 520,
+                    constraints: const BoxConstraints(maxWidth: 520),
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                  
+                      // modern soft shadow
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.08),
+                          blurRadius: 30,
+                          offset: const Offset(0, 12),
                         ),
-
-                        const SizedBox(height: 16),
-
-                        // TITLE
-                        TextFormField(
-                          controller: titleController,
-                          decoration: const InputDecoration(
-                            labelText: "Title",
-                            border: OutlineInputBorder(),
-                          ),
-                          validator: (v) =>
-                              v == null || v.isEmpty ? "Enter title" : null,
-                        ),
-
-                        const SizedBox(height: 12),
-
-                        // PRICE
-                        TextFormField(
-                          controller: priceController,
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            labelText: "Price",
-                            border: OutlineInputBorder(),
-                          ),
-                          validator: (v) =>
-                              v == null || v.isEmpty ? "Enter price" : null,
-                        ),
-
-                        const SizedBox(height: 12),
-
-                        // DURATION
-                        TextFormField(
-                          controller: durationController,
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            labelText: "Duration",
-                            border: OutlineInputBorder(),
-                          ),
-                          validator: (v) =>
-                              v == null || v.isEmpty ? "Enter duration" : null,
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // FEATURES HEADER
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      ],
+                  
+                      // subtle border for SaaS look
+                      border: Border.all(color: Colors.grey.shade200),
+                    ),
+                  
+                    child: SingleChildScrollView(
+                      child: Form(
+                        key: formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              "Features",
-                              style: TextStyle(
-                                fontSize: 16,
+                            Text(
+                              plan == null ? "Create Plan" : "Edit Plan",
+                              style: const TextStyle(
+                                fontSize: 20,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            IconButton(
-                              icon: const Icon(
-                                Icons.add_circle,
-                                color: Colors.blue,
+                  
+                            const SizedBox(height: 16),
+                  
+                            // TITLE
+                            TextFormField(
+                              controller: titleController,
+                              decoration: const InputDecoration(
+                                labelText: "Title",
+                                border: OutlineInputBorder(),
                               ),
-                              onPressed: () {
-                                setState(() {
-                                  checker = true;
-
-                                  featureControllers.add(
-                                    MapEntry(
-                                      TextEditingController(),
-                                      TextEditingController(),
-                                    ),
-                                  );
-                                });
-                              },
+                              validator: (v) =>
+                                  v == null || v.isEmpty ? "Enter title" : null,
                             ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 10),
-
-                        // FEATURES LIST
-                        Column(
-                          children: featureControllers.asMap().entries.map((
-                            entry,
-                          ) {
-                            final index = entry.key;
-
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 6),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: TextFormField(
-                                      controller: entry.value.key,
-                                      decoration: const InputDecoration(
-                                        labelText: "Feature Name",
-                                        border: OutlineInputBorder(),
-                                      ),
-                                      validator: (v) => v == null || v.isEmpty
-                                          ? "Enter feature"
-                                          : null,
-                                    ),
-                                  ),
-
-                                  const SizedBox(width: 8),
-
-                                  Expanded(
-                                    child: TextFormField(
-                                      controller: entry.value.value,
-                                      decoration: const InputDecoration(
-                                        labelText: "Feature Value",
-                                        border: OutlineInputBorder(),
-                                      ),
-                                      validator: (v) => v == null || v.isEmpty
-                                          ? "Enter value"
-                                          : null,
-                                    ),
-                                  ),
-                                  checker
-                                      ? IconButton(
-                                          icon: const Icon(
-                                            Icons.delete,
-                                            color: Colors.red,
-                                          ),
-                                          onPressed: () {
-                                            setState(() {
-                                              featureControllers.removeAt(
-                                                index,
-                                              );
-                                            });
-                                          },
-                                        )
-                                      : Text(""),
-                                ],
+                  
+                            const SizedBox(height: 12),
+                  
+                            // PRICE
+                            TextFormField(
+                              controller: priceController,
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                labelText: "Price",
+                                border: OutlineInputBorder(),
                               ),
-                            );
-                          }).toList(),
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        Row(
-                          children: [
-                            const SizedBox(width: 30),
-                            SizedBox(
-                              width: 100,
-                              height: 42,
-                              child: Expanded(
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.grey.shade300,
-                                    foregroundColor: Colors.black,
+                              validator: (v) =>
+                                  v == null || v.isEmpty ? "Enter price" : null,
+                            ),
+                  
+                            const SizedBox(height: 12),
+                  
+                            // DURATION
+                            TextFormField(
+                              controller: durationController,
+                              keyboardType: TextInputType.number,
+                              decoration: const InputDecoration(
+                                labelText: "Duration",
+                                border: OutlineInputBorder(),
+                              ),
+                              validator: (v) => v == null || v.isEmpty
+                                  ? "Enter duration"
+                                  : null,
+                            ),
+                  
+                            const SizedBox(height: 16),
+                  
+                            // FEATURES HEADER
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  "Features",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.add_circle,
+                                    color: Colors.blue,
                                   ),
                                   onPressed: () {
-                                    Navigator.pop(context);
+                                    setState(() {
+                                      checker = true;
+                  
+                                      featureControllers.add(
+                                        MapEntry(
+                                          TextEditingController(),
+                                          TextEditingController(),
+                                        ),
+                                      );
+                                    });
                                   },
-                                  child: const Text("Cancel"),
                                 ),
-                              ),
+                              ],
                             ),
-
-                            const SizedBox(width: 20),
-
-                            // SAVE BUTTON
-                            SizedBox(
-                              child: ElevatedButton(
-                                onPressed: () async {
-                                  if (!formKey.currentState!.validate()) {
-                                    return;
-                                  }
-
-                                  // ✅ BUILD MAP
-                                  Map<String, String> finalFeatures = {};
-
-                                  for (var f in featureControllers) {
-                                    final key = f.key.text.trim();
-                                    final value = f.value.text.trim();
-
-                                    if (key.isNotEmpty && value.isNotEmpty) {
-                                      finalFeatures[key] = value;
-                                    }
-                                  }
-
-                                  // ✅ CONVERT MAP TO LIST
-                                  final List<String> apiFeatures = finalFeatures
-                                      .entries
-                                      .map((e) => "${e.key}: ${e.value}")
-                                      .toList();
-
-                                  try {
-                                    // CREATE
-                                    if (plan == null) {
-                                      await ApiService.createSubscriptionPlan(
-                                        title: titleController.text,
-                                        price: int.parse(priceController.text),
-                                        duration: int.parse(
-                                          durationController.text,
-                                        ),
-                                        features: apiFeatures,
-                                      );
-                                    }
-                                    // UPDATE
-                                    else {
-                                      await ApiService.updateSubscriptionPlan(
-                                        id: plan.id,
-                                        title: titleController.text,
-                                        price: int.parse(priceController.text),
-                                        duration: int.parse(
-                                          durationController.text,
-                                        ),
-                                        features: apiFeatures,
-                                      );
-                                    }
-
-                                    Navigator.pop(context);
-
-                                    fetchPlans();
-
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          plan == null
-                                              ? "Plan Created Successfully"
-                                              : "Plan Updated Successfully",
+                  
+                            const SizedBox(height: 10),
+                  
+                            // FEATURES LIST
+                            Column(
+                              children: featureControllers.asMap().entries.map((
+                                entry,
+                              ) {
+                                final index = entry.key;
+                  
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 6,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: TextFormField(
+                                          controller: entry.value.key,
+                                          decoration: const InputDecoration(
+                                            labelText: "Feature Name",
+                                            border: OutlineInputBorder(),
+                                          ),
+                                          validator: (v) => v == null || v.isEmpty
+                                              ? "Enter feature"
+                                              : null,
                                         ),
                                       ),
-                                    );
-                                  } catch (e) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text(e.toString())),
-                                    );
-                                  }
-                                },
-                                child: Text(plan == null ? "Create" : "Update"),
-                              ),
+                  
+                                      const SizedBox(width: 8),
+                  
+                                      Expanded(
+                                        child: TextFormField(
+                                          controller: entry.value.value,
+                                          decoration: const InputDecoration(
+                                            labelText: "Feature Value",
+                                            border: OutlineInputBorder(),
+                                          ),
+                                          validator: (v) => v == null || v.isEmpty
+                                              ? "Enter value"
+                                              : null,
+                                        ),
+                                      ),
+                                      checker
+                                          ? IconButton(
+                                              icon: const Icon(
+                                                Icons.delete,
+                                                color: Colors.red,
+                                              ),
+                                              onPressed: () {
+                                                setState(() {
+                                                  featureControllers.removeAt(
+                                                    index,
+                                                  );
+                                                });
+                                              },
+                                            )
+                                          : Text(""),
+                                    ],
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                  
+                            const SizedBox(height: 20),
+                  
+                            Row(
+                              children: [
+                                const SizedBox(width: 30),
+                                SizedBox(
+                                  width: 100,
+                                  height: 42,
+                                  child: Expanded(
+                                    child: ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.grey.shade300,
+                                        foregroundColor: Colors.black,
+                                      ),
+                                      onPressed: () {
+                                        Navigator.pop(context);
+                                      },
+                                      child: const Text("Cancel"),
+                                    ),
+                                  ),
+                                ),
+                  
+                                const SizedBox(width: 20),
+                  
+                                // SAVE BUTTON
+                                SizedBox(
+                                  child: ElevatedButton(
+                                    onPressed: () async {
+                                      if (!formKey.currentState!.validate()) {
+                                        return;
+                                      }
+                  
+                                      // ✅ BUILD MAP
+                                      Map<String, String> finalFeatures = {};
+                  
+                                      for (var f in featureControllers) {
+                                        final key = f.key.text.trim();
+                                        final value = f.value.text.trim();
+                  
+                                        if (key.isNotEmpty && value.isNotEmpty) {
+                                          finalFeatures[key] = value;
+                                        }
+                                      }
+                  
+                                      // ✅ CONVERT MAP TO LIST
+                                      final List<String> apiFeatures =
+                                          finalFeatures.entries
+                                              .map((e) => "${e.key}: ${e.value}")
+                                              .toList();
+                  
+                                      try {
+                                        // CREATE
+                                        if (plan == null) {
+                                          await ApiService.createSubscriptionPlan(
+                                            title: titleController.text,
+                                            price: int.parse(
+                                              priceController.text,
+                                            ),
+                                            duration: int.parse(
+                                              durationController.text,
+                                            ),
+                                            features: apiFeatures,
+                                          );
+                                        }
+                                        // UPDATE
+                                        else {
+                                          await ApiService.updateSubscriptionPlan(
+                                            id: plan.id,
+                                            title: titleController.text,
+                                            price: int.parse(
+                                              priceController.text,
+                                            ),
+                                            duration: int.parse(
+                                              durationController.text,
+                                            ),
+                                            features: apiFeatures,
+                                          );
+                                        }
+                  
+                                        Navigator.pop(context);
+                  
+                                        fetchPlans();
+                  
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text(
+                                              plan == null
+                                                  ? "Plan Created Successfully"
+                                                  : "Plan Updated Successfully",
+                                            ),
+                                          ),
+                                        );
+                                      } catch (e) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(content: Text(e.toString())),
+                                        );
+                                      }
+                                    },
+                                    child: Text(
+                                      plan == null ? "Create" : "Update",
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
@@ -410,8 +446,8 @@ class _SubscriptionAdminPageState extends State<SubscriptionAdminPage> {
                                 Colors.cyan.withValues(alpha: 0.08),
                               ]
                             : [
-                                const Color.fromARGB(255, 53, 38, 38),
-                                const Color.fromARGB(26, 255, 206, 206),
+                                const Color.fromARGB(255, 63, 56, 56),
+                                const Color.fromARGB(26, 69, 57, 57),
                               ],
                       ),
                       border: Border.all(
@@ -438,7 +474,7 @@ class _SubscriptionAdminPageState extends State<SubscriptionAdminPage> {
                             Text(
                               plan.name,
                               style: const TextStyle(
-                                color: Colors.white,
+                                color: Color.fromARGB(255, 0, 0, 0),
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                               ),

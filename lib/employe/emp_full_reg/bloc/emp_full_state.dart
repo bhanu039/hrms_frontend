@@ -6,6 +6,8 @@ class EmpFullRegState {
   final String? error;
   final bool isActive;
 
+  final bool? success;
+
   final EmpFullRegModel model;
 
   EmpFullRegState({
@@ -13,7 +15,8 @@ class EmpFullRegState {
     this.isLoading = false,
     required this.model,
     this.error,
-    this.isActive=false,
+    this.success,
+    this.isActive = false,
   });
 
   EmpFullRegState copyWith({
@@ -21,14 +24,17 @@ class EmpFullRegState {
     bool? isLoading,
     EmpFullRegModel? model,
     String? error,
-    bool ? isActive,
+    bool? isActive,
+    bool?success,
   }) {
     return EmpFullRegState(
       currentStep: currentStep ?? this.currentStep,
       isLoading: isLoading ?? this.isLoading,
       model: model ?? this.model,
       error: error,
-      isActive:isActive??this.isActive,
+      success:success,
+
+      isActive: isActive ?? this.isActive,
     );
   }
 }

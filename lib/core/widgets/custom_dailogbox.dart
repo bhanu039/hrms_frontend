@@ -13,80 +13,74 @@ class CustomDialog {
       barrierDismissible: true,
       builder: (context) {
         return Dialog(
-          backgroundColor: Colors.transparent,
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(28),
-            ),
-
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 // ICON
                 Container(
-                  height: 80,
-                  width: 80,
+                  padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.15),
+                    color: color.withOpacity(0.12),
                     shape: BoxShape.circle,
                   ),
-
                   child: Icon(
                     icon,
                     color: color,
-                    size: 45,
+                    size: 34,
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 16),
 
                 // TITLE
                 Text(
                   title,
+                  textAlign: TextAlign.center,
                   style: const TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
 
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
 
                 // MESSAGE
                 Text(
                   message,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 15,
-                    color: Colors.grey.shade700,
+                    fontSize: 14,
+                    color: Colors.grey.shade600,
+                    height: 1.4,
                   ),
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
 
                 // BUTTON
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-
+                    onPressed: () => Navigator.pop(context),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: color,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
-
                     child: const Text(
                       "OK",
                       style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
                         color: Colors.white,
-                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),

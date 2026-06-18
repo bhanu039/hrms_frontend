@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:goexperts/core/services/api_service.dart';
+import 'package:goexperts/core/state/auth/auth_bloc.dart';
+import '../../core/state/auth/auth_event.dart';
 import '../models/company_model.dart';
 
 class CompanyProfileScreen extends StatefulWidget {
@@ -49,8 +53,20 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
         title: const Text("Company Profile"),
         centerTitle: true,
         elevation: 0,
-        backgroundColor: Colors.white,
+        backgroundColor: const Color.fromARGB(255, 203, 203, 203),
         foregroundColor: Colors.black,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Color.fromARGB(255, 248, 0, 0)),
+            onPressed: () async {
+              context.read<AuthBloc>().add(AuthLogoutRequested());
+              await Future.delayed(const Duration(milliseconds: 100));
+
+              context.go("/login");
+            },
+          ),
+          SizedBox(width: 12),
+        ],
       ),
 
       body: isLoading
@@ -73,6 +89,23 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
                 ),
               ),
             ),
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: const Color.fromARGB(255, 168, 216, 231),
+        icon: isLoading
+            ? const SizedBox(
+                height: 18,
+                width: 18,
+                child: CircularProgressIndicator(
+                  color: Colors.white,
+                  strokeWidth: 2,
+                ),
+              )
+            : const Icon(Icons.edit),
+        label: const Text("Edit"),
+        onPressed: () => {
+          // showEditProfileDialog()
+          },
+      ),
     );
   }
 
@@ -214,7 +247,6 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen> {
         _infoRow("Price", "₹${plan["price"] ?? "N/A"}"),
       ],
     );
-    
   }
 
   // ================= WIDGET HELPERS =================

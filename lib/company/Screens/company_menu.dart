@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:goexperts/company/Screens/employee_screen.dart';
 
-import '../../login_screen.dart';
 import '../../core/state/auth/auth_bloc.dart';
 import '../../core/state/auth/auth_event.dart';
 import '../../core/widgets/menu_widget.dart';
+import '../../core/widgets/top_message.dart';
 import 'company_profile_screen.dart';
-import 'subscription_plans.dart';
+
 import '../../core/widgets/location_get.dart';
 import 'open_map.dart';
 
@@ -37,12 +38,7 @@ class CompanyDrawer extends StatelessWidget {
                   subtitle: 'Details, address, logo',
                   onTap: () {
                     // Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const CompanyProfileScreen(),
-                      ),
-                    );
+                    context.push('/company/profile');
                   },
                 ),
                 DrawerWidgets.menuTile(
@@ -52,12 +48,7 @@ class CompanyDrawer extends StatelessWidget {
                   subtitle: 'Core Documents',
                   onTap: () {
                     // Navigator.pop(context);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const CompanyProfileScreen(),
-                      ),
-                    );
+                    context.push('/company/profile');
                   },
                 ),
 
@@ -73,46 +64,38 @@ class CompanyDrawer extends StatelessWidget {
                   icon: Icons.people,
                   title: 'HRs',
                   subtitle: 'Teams and staff records',
+                   onTap: () => context.push('/company/employees' ,extra: 'Hr',),
                 ),
                 DrawerWidgets.menuTile(
                   context,
                   icon: Icons.people,
                   title: 'Employees',
                   subtitle: 'Teams and staff records',
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const EmployeeListScreen(),
-                    ),
-                  ),
+                  onTap: () => context.push('/company/employees' ,extra: 'EMPLOYEE',),
                 ),
                 DrawerWidgets.menuTile(
                   context,
                   icon: Icons.work,
                   title: 'Projects',
                   subtitle: 'Active and completed work',
+                  onTap: () => TopMessage.show(context, "Coming Soon" "Projects feature is under development.",color: Colors.orange),
                 ),
 
                 DrawerWidgets.sectionTitle('Growth'),
-                DrawerWidgets.menuTile(
-                  context,
-                  icon: Icons.insights,
-                  title: 'Reports & Analytics',
-                  subtitle: 'Performance and activity',
-                ),
+
                 DrawerWidgets.menuTile(
                   context,
                   icon: Icons.subscriptions,
                   title: 'Subscription',
                   subtitle: 'Plan and billing status',
-                  onTap: () => {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const SubscriptionPage(),
-                      ),
-                    ),
-                  },
+                  onTap: () => {context.push("/company/subscription")},
+                ),
+
+                DrawerWidgets.menuTile(
+                  context,
+                  icon: Icons.insights,
+                  title: 'Reports & Analytics',
+                  subtitle: 'Performance and activity',
                 ),
                 DrawerWidgets.menuTile(
                   context,
@@ -125,8 +108,7 @@ class CompanyDrawer extends StatelessWidget {
                       title: 'Departments',
 
                       onTap: () {
-                        Navigator.pop(context);
-                        Navigator.pushNamed(context, '/users');
+                        DrawerWidgets.showComingSoon(context, 'Departments');
                       },
                     ),
                     MenuSubItem(
@@ -134,8 +116,7 @@ class CompanyDrawer extends StatelessWidget {
                       title: 'Designations',
 
                       onTap: () {
-                        Navigator.pop(context);
-                        Navigator.pushNamed(context, '/users');
+                        DrawerWidgets.showComingSoon(context, 'Designations');
                       },
                     ),
 
@@ -155,6 +136,7 @@ class CompanyDrawer extends StatelessWidget {
                         'Date & Time Settings',
                       ),
                     ),
+                    
                     MenuSubItem(
                       icon: Icons.payments,
                       title: 'Location Settings',
@@ -187,9 +169,7 @@ class CompanyDrawer extends StatelessWidget {
                           );
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(" fetching location"),
-                            ),
+                            const SnackBar(content: Text(" fetching location")),
                           );
                         }
                       },
@@ -220,11 +200,7 @@ class CompanyDrawer extends StatelessWidget {
 
                 await Future.delayed(const Duration(milliseconds: 300));
 
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                  (route) => false,
-                );
+                context.go("/login");
               },
             ),
           ),

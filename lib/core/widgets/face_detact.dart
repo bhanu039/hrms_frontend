@@ -1,7 +1,9 @@
 import 'dart:io';
+
 import 'package:camera/camera.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 
 class FaceCaptureView extends StatefulWidget {
   const FaceCaptureView({super.key});
@@ -12,172 +14,190 @@ class FaceCaptureView extends StatefulWidget {
 
 class _FaceCaptureViewState extends State<FaceCaptureView> {
   CameraController? _controller;
+  late FaceDetector _faceDetector;
+
   bool isReady = false;
   bool isFaceDetected = false;
-  String? errorMessage;
+  bool areEyesOpen = false;
+  bool _isProcessing = false;
 
   @override
   void initState() {
     super.initState();
-
-    print("this is face ditection");
-    _init();
+    _initDetector();
+    _initCamera();
   }
 
-  Future<void> _init() async {
-    await _start();
-    if (isReady) {
-      _mockFaceDetection();
-    }
+  void _initDetector() {
+    _faceDetector = FaceDetector(
+      options: FaceDetectorOptions(
+        enableLandmarks: true,
+        enableClassification: true, // 👈 required for eyes open detection
+        performanceMode: FaceDetectorMode.fast,
+      ),
+    );
   }
 
-  Future<bool> requestCameraPermission() async {
-    var status = await Permission.camera.status;
+  Future<void> _initCamera() async {
+    final cameras = await availableCameras();
+    final front = cameras.firstWhere(
+      (camera) => camera.lensDirection == CameraLensDirection.front,
+      orElse: () => cameras.first,
+    );
 
-    if (status.isGranted) {
-      return true;
-    }
+    _controller = CameraController(
+      front,
+      ResolutionPreset.high,
+      enableAudio: false,
+    );
 
-    status = await Permission.camera.request();
+    await _controller!.initialize();
 
-    return status.isGranted;
+    if (!mounted) return;
+
+    setState(() => isReady = true);
+
+    _startFaceDetection();
   }
 
-  Future<void> _start() async {
-    setState(() {
-      errorMessage = null;
+  void _startFaceDetection() {
+    _controller!.startImageStream((CameraImage image) async {
+      if (_isProcessing) return;
+      _isProcessing = true;
+
+      try {
+        final inputImage = _convertCameraImage(image);
+        final faces = await _faceDetector.processImage(inputImage);
+
+        if (faces.isNotEmpty) {
+          final face = faces.first;
+          final leftEye = face.leftEyeOpenProbability ?? 0.0;
+          final rightEye = face.rightEyeOpenProbability ?? 0.0;
+
+          debugPrint('Face detected! Left eye: $leftEye, Right eye: $rightEye');
+
+          setState(() {
+            isFaceDetected = true; // Green border when face appears
+            // Button enabled only when both eyes are open (> 0.5)
+            areEyesOpen = leftEye > 0.5 && rightEye > 0.5;
+            debugPrint('Eyes open: $areEyesOpen');
+          });
+        } else {
+          debugPrint('No face detected');
+          setState(() {
+            isFaceDetected = false;
+            areEyesOpen = false;
+          });
+        }
+      } catch (e) {
+        debugPrint('Face detection error: $e');
+      } finally {
+        _isProcessing = false;
+      }
     });
+  }
 
-    print("STEP 1: Requesting permission");
+  InputImage _convertCameraImage(CameraImage image) {
+    final WriteBuffer allBytes = WriteBuffer();
 
-    final granted = await requestCameraPermission();
+    for (final plane in image.planes) {
+      allBytes.putUint8List(plane.bytes);
+    }
 
-    print("STEP 2: Permission granted = $granted");
+    final bytes = allBytes.done().buffer.asUint8List();
 
-    if (!granted) {
-      print("Permission denied");
-      setState(() {
-        errorMessage = "Camera permission is required to use this feature.";
-      });
+    final Size imageSize = Size(
+      image.width.toDouble(),
+      image.height.toDouble(),
+    );
+
+    final camera = _controller!.description;
+
+    // Use actual sensor orientation for both front and back cameras
+    final imageRotation =
+        InputImageRotationValue.fromRawValue(camera.sensorOrientation) ??
+        InputImageRotation.rotation0deg;
+
+    final inputImageFormat =
+        InputImageFormatValue.fromRawValue(image.format.raw) ??
+        InputImageFormat.yuv420;
+
+    debugPrint(
+      'Image: ${image.width}x${image.height}, Format: ${image.format}, Rotation: $imageRotation, SensorOrientation: ${camera.sensorOrientation}',
+    );
+
+    return InputImage.fromBytes(
+      bytes: bytes,
+      metadata: InputImageMetadata(
+        size: imageSize,
+        rotation: imageRotation,
+        format: inputImageFormat,
+        bytesPerRow: image.planes.first.bytesPerRow,
+      ),
+    );
+  }
+
+  Future<void> _capture() async {
+    if (_controller == null || !_controller!.value.isInitialized) {
+      debugPrint('Camera not ready for capture');
       return;
     }
 
     try {
-      await _initCamera();
-    } catch (e) {
+      debugPrint('Starting capture process...');
+
+      // Stop image stream before capture
+      await _controller!.stopImageStream();
+      debugPrint('Image stream stopped');
+
+      // Add a small delay to ensure stream is fully stopped
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      debugPrint('Taking picture...');
+      final xfile = await _controller!.takePicture();
+      debugPrint('Image captured successfully: ${xfile.path}');
+      final file = File(xfile.path);
+
       if (mounted) {
-        setState(() {
-          errorMessage = "Unable to open the camera. $e";
-        });
+        Navigator.pop(context, file);
       }
-      debugPrint("Camera initialization error: $e");
-    }
-  }
-
-  Future<void> _initCamera() async {
-    print("STEP 3: Getting cameras");
-
-    try {
-      final cameras = await availableCameras();
-
-      print("STEP 4: Cameras found = ${cameras.length}");
-
-      if (cameras.isEmpty) {
-        throw Exception("No cameras found on this device.");
-      }
-
-      final frontCamera = cameras.firstWhere(
-        (camera) => camera.lensDirection == CameraLensDirection.front,
-        orElse: () => cameras.first,
-      );
-
-      _controller = CameraController(
-        frontCamera,
-        ResolutionPreset.medium,
-        enableAudio: false,
-      );
-
-      await _controller!.initialize();
-
-      if (!mounted) return;
-
-      setState(() {
-        isReady = true;
-      });
     } catch (e) {
-      debugPrint("Error initializing camera: $e");
-      rethrow;
+      debugPrint('Capture error type: ${e.runtimeType}');
+      debugPrint('Capture error message: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Capture failed: ${e.toString().substring(0, 50)}'),
+          ),
+        );
+      }
+      // Resume stream on error
+      _startFaceDetection();
     }
-  }
-
-  void _mockFaceDetection() {
-    // ⚠️ FOR TESTING ONLY - Remove this in production
-    // This simulates face detection for testing purposes
-    Future.delayed(const Duration(seconds: 3), () {
-      if (!mounted) return;
-      setState(() {
-        isFaceDetected = true;
-      });
-    });
-  }
-
-  Future<void> _capture() async {
-    if (_controller == null || !_controller!.value.isInitialized) return;
-
-    final file = await _controller!.takePicture();
-
-    // ✅ RETURN FILE TO PREVIOUS SCREEN
-    Navigator.pop(context, File(file.path));
   }
 
   @override
   void dispose() {
     _controller?.dispose();
+    _faceDetector.close();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (errorMessage != null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text('Camera error')),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const Icon(Icons.error_outline, size: 64, color: Colors.red),
-                const SizedBox(height: 20),
-                Text(
-                  errorMessage!,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 16),
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton(onPressed: _init, child: const Text('Retry')),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-
     if (!isReady || _controller == null) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
+    final canCapture = isFaceDetected && areEyesOpen;
+
     return Scaffold(
       body: Stack(
         children: [
-          /// CAMERA
           CameraPreview(_controller!),
 
-          /// OVERLAY
           Container(color: Colors.black.withOpacity(0.2)),
 
-          /// FACE FRAME
           Center(
             child: Container(
               width: 260,
@@ -185,27 +205,13 @@ class _FaceCaptureViewState extends State<FaceCaptureView> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(200),
                 border: Border.all(
-                  color: isFaceDetected ? Colors.green : Colors.red,
+                  color: canCapture ? Colors.green : Colors.red,
                   width: 4,
                 ),
               ),
             ),
           ),
 
-          /// CLOSE
-          Positioned(
-            top: 50,
-            left: 20,
-            child: GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: const CircleAvatar(
-                backgroundColor: Colors.black45,
-                child: Icon(Icons.close, color: Colors.white),
-              ),
-            ),
-          ),
-
-          /// STATUS
           Positioned(
             bottom: 120,
             left: 0,
@@ -213,27 +219,28 @@ class _FaceCaptureViewState extends State<FaceCaptureView> {
             child: Column(
               children: [
                 Icon(
-                  isFaceDetected ? Icons.check_circle : Icons.error,
-                  color: isFaceDetected ? Colors.green : Colors.red,
+                  canCapture ? Icons.check_circle : Icons.error,
+                  color: canCapture ? Colors.green : Colors.red,
+                  size: 30,
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  "Place your face inside the frame",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.white),
+                Text(
+                  canCapture
+                      ? "Perfect! Ready to capture"
+                      : "Keep your face inside frame & open eyes",
+                  style: const TextStyle(color: Colors.white),
                 ),
               ],
             ),
           ),
 
-          /// CAPTURE BUTTON
           Positioned(
             bottom: 40,
             left: 0,
             right: 0,
             child: Center(
               child: ElevatedButton(
-                onPressed: isFaceDetected ? _capture : null,
+                onPressed: canCapture ? _capture : null,
                 child: const Text("Capture"),
               ),
             ),

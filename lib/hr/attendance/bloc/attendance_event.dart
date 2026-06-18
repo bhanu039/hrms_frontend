@@ -9,31 +9,36 @@ class AttendanceSearchChanged extends AttendanceEvent {
 }
 
 class AttendanceStatusChanged extends AttendanceEvent {
-  final String status;
+  final String? status;
 
   AttendanceStatusChanged(this.status);
 }
 
 class FromDateChanged extends AttendanceEvent {
   final String? fromDate;
+
   FromDateChanged(this.fromDate);
 }
 
 class ToDateChanged extends AttendanceEvent {
   final String? toDate;
+
   ToDateChanged(this.toDate);
 }
 
 class ApplyFilters extends AttendanceEvent {}
 
 class LoadMoreEmployees extends AttendanceEvent {
-  final int currentPage;
-  LoadMoreEmployees({required this.currentPage});
-}
+    final int currentPage;
 
-class FullAttendanceid extends AttendanceEvent {
-  final String? eId;
-  FullAttendanceid({required this.eId});
+  LoadMoreEmployees(this.currentPage);
+
 }
 
 class ResetFilters extends AttendanceEvent {}
+
+class FullAttendanceid extends AttendanceEvent {
+  final String employeeId;
+
+  FullAttendanceid(this.employeeId);
+}

@@ -2,16 +2,18 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:goexperts/core/services/api_service.dart';
 
 import 'package:swipeable_button_view/swipeable_button_view.dart';
-import '../../hr/screens/hr_menu.dart';
+import '../../hr/hr_dashbord/data/hr_dashbord_repo.dart';
+import 'employee_menu.dart';
 import '../../hr/widgets/action_button.dart';
 import '../../hr/widgets/small_info.dart';
 import '../../hr/widgets/stat_card.dart';
 import '../../hr/widgets/task_tile.dart';
 import '../../core/services/sessionservice.dart';
-import '../../core/widgets/Adding_Employee_Screen.dart';
 import '../../core/widgets/custom_dailogbox.dart';
 import '../../core/widgets/face_detact.dart';
 import '../../core/widgets/location_get.dart';
@@ -48,6 +50,7 @@ class _EmpDashboardScreenState extends State<EmpDashboardScreen> {
   // =========================
   // CHECK IN
   // =========================
+  final repository = HrDashboardRepository();
 
   Future<void> checkIn() async {
     if (isLoading) return;
@@ -103,11 +106,7 @@ class _EmpDashboardScreenState extends State<EmpDashboardScreen> {
       return;
     }
 
-    final response = await ApiService().checkinData(
-      imagefile!,
-      latitude!,
-      longitude!,
-    );
+    final response = await repository.checkinData(imagefile!, latitude!, longitude!);
     if (!mounted) return;
 
     if (response["success"] == true) {
@@ -208,7 +207,7 @@ class _EmpDashboardScreenState extends State<EmpDashboardScreen> {
       return;
     }
 
-    final response = await ApiService().checkoutData(
+    final response = await repository.checkoutData(
       imagefile!,
       latitude!,
       longitude!,
@@ -270,30 +269,7 @@ class _EmpDashboardScreenState extends State<EmpDashboardScreen> {
 
       print("Image path: ${image.path}");
     }
-    //   await Navigator.push(
-    //     context,
-    //     MaterialPageRoute(
-    //       builder: (_) => FaceCaptureWidget(
-    //         onCaptured: (File? image) {
-    //           if (!mounted) return;
-
-    //           if (image == null) {
-    //             setState(() {
-    //               isImage = false;
-    //               imagefile = null;
-    //             });
-    //             return;
-    //           }
-
-    //           setState(() {
-    //             isImage = true;
-    //             imagefile = image;
-    //           });
-    //         },
-    //       ),
-    //     ),
-    //   );
-    // }
+    //
   }
 
   void _showMissingFaceMessage() {
@@ -326,7 +302,7 @@ class _EmpDashboardScreenState extends State<EmpDashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6FA),
-      drawer: const HrDrawer(),
+      drawer: const EmployeeDrawer(),
 
       appBar: AppBar(
         title: const Text("HR Dashboard"),
@@ -336,7 +312,7 @@ class _EmpDashboardScreenState extends State<EmpDashboardScreen> {
 
       body: RefreshIndicator(
         onRefresh: () async {
-          // Refresh logic herer
+          // Refresh logic here
         },
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
@@ -674,6 +650,7 @@ class _EmpDashboardScreenState extends State<EmpDashboardScreen> {
           ),
         ),
       ),
+
       floatingActionButton: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(18),
@@ -691,10 +668,7 @@ class _EmpDashboardScreenState extends State<EmpDashboardScreen> {
 
         child: FloatingActionButton.extended(
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const AddEmployeeScreen()),
-            );
+            context.push("/company/empcreate");
           },
 
           backgroundColor: Colors.transparent,

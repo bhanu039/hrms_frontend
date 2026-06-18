@@ -4,6 +4,7 @@ abstract class EmpFullRegEvent {}
 
 class NextStep extends EmpFullRegEvent {
   
+  
 }
 
 class PrevStep extends EmpFullRegEvent {}

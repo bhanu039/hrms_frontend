@@ -228,8 +228,18 @@ class ApiService {
     return null;
   }
 
-  static Future<List<EmployeeModel>> getEmployees() async {
-    final response = await ApiClient.dio.get("api/employee");
+  static Future<List<EmployeeModel>> getEmployees(employeeTypes) async {
+    final response;
+    if(employeeTypes == 'EMPLOYEE'){
+    response = await ApiClient.dio.get("api/employee?role=$employeeTypes");
+    }
+    else if(employeeTypes == 'HR'){
+      response = await ApiClient.dio.get("api/employee?role=$employeeTypes");
+    }
+    else{
+      response = await ApiClient.dio.get("api/employee");
+    }
+    
 
     print("EMPLOYEE RESPONSE => ${response.data}");
 
@@ -290,62 +300,7 @@ class ApiService {
     return await ApiClient.dio.put("api/company/update", data: formData);
   }
 
-  Future<Map<String, dynamic>> checkinData(
-    File livePhotoFile,
-    double latitude,
-    double longitude,
-  ) async {
-    try {
-      FormData formData = FormData.fromMap({
-        "livePhoto": await MultipartFile.fromFile(
-          livePhotoFile.path,
-          filename: "face.jpg",
-        ),
 
-        "latitude": latitude,
-        "longitude": longitude,
-      });
-
-      Response response = await ApiClient.dio.post(
-        "api/attendance/clock-in",
-        data: formData,
-        options: Options(validateStatus: (status) => true),
-      );
-
-      return response.data;
-    } catch (e) {
-      print("this is the catch block");
-      return {"success": false, "message": e.toString()};
-    }
-  }
-
-  Future<Map<String, dynamic>> checkoutData(
-    File livePhotoFile,
-    double latitude,
-    double longitude,
-  ) async {
-    try {
-      FormData formData = FormData.fromMap({
-        "api/livePhoto": await MultipartFile.fromFile(
-          livePhotoFile.path,
-          filename: "face.jpg",
-        ),
-
-        "latitude": latitude,
-        "longitude": longitude,
-      });
-
-      Response response = await ApiClient.dio.post(
-        "api/attendance/clock-out",
-        data: formData,
-        options: Options(validateStatus: (status) => true),
-      );
-
-      return response.data;
-    } catch (e) {
-      return {"success": false, "message": e.toString()};
-    }
-  }
 
   static Future<Map<String, dynamic>> getEmpProfile({
     required String id,

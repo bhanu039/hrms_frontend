@@ -33,3 +33,5 @@ class IndustryChanged extends AddCompanyEvent {
 }
 
 class SubmitCompany extends AddCompanyEvent {}
+
+class ResetCompanyForm extends AddCompanyEvent {}

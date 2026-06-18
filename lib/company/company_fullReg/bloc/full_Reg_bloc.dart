@@ -1,78 +1,245 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:goexperts/company/company_fullReg/bloc/full_Reg_event.dart';
-import 'package:goexperts/company/company_fullReg/bloc/full_Reg_state.dart';
 
+import '../../../core/services/sessionservice.dart';
 import '../data/modal/full_Reg_modal.dart';
-
-
-
+import '../data/repository/repository_empFullreg.dart';
+import 'full_Reg_event.dart';
+import 'full_Reg_state.dart';
 
 class FullRegBloc extends Bloc<FullRegEvent, FullRegState> {
-  FullRegBloc()
-      : super(
-          FullRegState(model: FullRegModel()),
-        ) {
-    on<UpdateField>(_onUpdate);
-    on<NextStep>(_onNext);
-    on<PrevStep>(_onPrev);
-    on<SubmitForm>(_onSubmit);
+  final FullRegRepository repository;
+
+  FullRegBloc(this.repository)
+    : super(FullRegState(model: const FullRegModel())) {
+    on<UpdateField>(_onUpdateField);
+    on<SubmitCompanyRegistration>(_onSubmit);
   }
 
-  void _onUpdate(UpdateField event, Emitter<FullRegState> emit) {
-    final updated = state.model.copyWith(
-      name: event.key == "name" ? event.value : state.model.name,
-      legalName: event.key == "legalName" ? event.value : state.model.legalName,
-      domain: event.key == "domain" ? event.value : state.model.domain,
-      website: event.key == "website" ? event.value : state.model.website,
-      phone: event.key == "phone" ? event.value : state.model.phone,
-      companyLogo: event.key == "companyLogo" ? event.value : state.model.companyLogo,
-      signature: event.key == "signature" ? event.value : state.model.signature,
+  void _onUpdateField(UpdateField event, Emitter<FullRegState> emit) {
+  final m = state.model;
 
-      companySize: event.key == "companySize" ? event.value : state.model.companySize,
-      foundedYear: event.key == "foundedYear" ? event.value : state.model.foundedYear,
-      workModel: event.key == "workModel" ? event.value : state.model.workModel,
-      shiftType: event.key == "shiftType" ? event.value : state.model.shiftType,
+  FullRegModel updated = m;
 
-      currency: event.key == "currency" ? event.value : state.model.currency,
-      salaryCycle: event.key == "salaryCycle" ? event.value : state.model.salaryCycle,
-      pfPercentage: event.key == "pfPercentage" ? event.value : state.model.pfPercentage,
-      pfEnabled: event.key == "pfEnabled" ? event.value : state.model.pfEnabled,
+  switch (event.key) {
+    // BASIC
+    case "legalName":
+      updated = m.copyWith(legalName: event.value);
+      break;
 
-      timezone: event.key == "timezone" ? event.value : state.model.timezone,
-      dateFormat: event.key == "dateFormat" ? event.value : state.model.dateFormat,
-      language: event.key == "language" ? event.value : state.model.language,
+    case "phone":
+      updated = m.copyWith(phone: event.value);
+      break;
 
-      address1: event.key == "address1" ? event.value : state.model.address1,
-      city: event.key == "city" ? event.value : state.model.city,
-      state: event.key == "state" ? event.value : state.model.state,
-      country: event.key == "country" ? event.value : state.model.country,
-      pincode: event.key == "pincode" ? event.value : state.model.pincode,
+    case "website":
+      updated = m.copyWith(website: event.value);
+      break;
 
-      gstNumber: event.key == "gstNumber" ? event.value : state.model.gstNumber,
-      panNumber: event.key == "panNumber" ? event.value : state.model.panNumber,
-      tanNumber: event.key == "tanNumber" ? event.value : state.model.tanNumber,
-      cinNumber: event.key == "cinNumber" ? event.value : state.model.cinNumber,
+    case "linkedinUrl":
+      updated = m.copyWith(linkedinUrl: event.value);
+      break;
+
+    case "companySize":
+      updated = m.copyWith(companySize: event.value);
+      break;
+
+    case "foundedYear":
+      updated = m.copyWith(foundedYear: event.value);
+      break;
+
+    case "cinNumber":
+      updated = m.copyWith(cinNumber: event.value);
+      break;
 
 
-      declared:event.key=="declared"?event.value:state.model.declared,
-    );
+    // ADDRESS
+    case "address1":
+      updated = m.copyWith(address1: event.value);
+      break;
 
-    emit(state.copyWith(model: updated));
+    case "city":
+      updated = m.copyWith(city: event.value);
+      break;
+
+    case "state":
+      updated = m.copyWith(state: event.value);
+      break;
+
+    case "country":
+      updated = m.copyWith(country: event.value);
+      break;
+
+    case "pincode":
+      updated = m.copyWith(pincode: event.value);
+      break;
+
+    case "landmark":
+      updated = m.copyWith(landmark: event.value);
+      break;
+
+    case "latitude":
+      updated = m.copyWith(latitude: event.value);
+      break;
+
+    case "longitude":
+      updated = m.copyWith(longitude: event.value);
+      break;
+      case "geofencRadius":
+      updated = m.copyWith(longitude: event.value);
+      break;
+
+
+    // HR
+    case "companyPolicy":
+      updated = m.copyWith(companyPolicy: event.value);
+      break;
+
+    case "employeeTerms":
+      updated = m.copyWith(employeeTerms: event.value);
+      break;
+
+    case "workingHours":
+      updated = m.copyWith(workingHours: event.value);
+      break;
+
+    case "workingDays":
+      updated = m.copyWith(workingDays: event.value);
+      break;
+
+    case "workModel":
+      updated = m.copyWith(workModel: event.value);
+      break;
+
+    case "shiftType":
+      updated = m.copyWith(shiftType: event.value);
+      break;
+
+
+    // TAX
+    case "gstNumber":
+      updated = m.copyWith(gstNumber: event.value);
+      break;
+
+    case "panNumber":
+      updated = m.copyWith(panNumber: event.value);
+      break;
+
+    case "tanNumber":
+      updated = m.copyWith(tanNumber: event.value);
+      break;
+
+    case "pfEnabled":
+      updated = m.copyWith(pfEnabled: event.value);
+      break;
+
+    case "pfPercentage":
+      updated = m.copyWith(pfPercentage: event.value);
+      break;
+
+    case "pfRegistrationNumber":
+      updated = m.copyWith(
+        pfRegistrationNumber: event.value,
+      );
+      break;
+
+    case "esiEnabled":
+      updated = m.copyWith(esiEnabled: event.value);
+      break;
+
+    case "esiRegistrationNumber":
+      updated = m.copyWith(
+        esiRegistrationNumber: event.value,
+      );
+      break;
+
+    case "ptRegistrationNumber":
+      updated = m.copyWith(
+        ptRegistrationNumber: event.value,
+      );
+      break;
+
+
+    // PAYROLL
+    case "currency":
+      updated = m.copyWith(currency: event.value);
+      break;
+
+    case "salaryCycle":
+      updated = m.copyWith(salaryCycle: event.value);
+      break;
+
+    case "payrollStartDay":
+      updated = m.copyWith(
+        payrollStartDay: event.value,
+      );
+      break;
+
+    case "payrollEndDay":
+      updated = m.copyWith(
+        payrollEndDay: event.value,
+      );
+      break;
+
+    case "termsAndConditions":
+      updated = m.copyWith(
+        termsAndConditions: event.value,
+      );
+      break;
+
+
+    // FILES
+    case "companyLogo":
+      updated = m.copyWith(companyLogo: event.value);
+      break;
+
+    case "signature":
+      updated = m.copyWith(signature: event.value);
+      break;
+
+    case "regCertificate":
+      updated = m.copyWith(
+        regCertificate: event.value,
+      );
+      break;
+
+    case "gstProof":
+      updated = m.copyWith(gstProof: event.value);
+      break;
+
+    case "panProof":
+      updated = m.copyWith(panProof: event.value);
+      break;
+
+    case "tanProof":
+      updated = m.copyWith(tanProof: event.value);
+      break;
+
+
+    // EXTRA
+    case "declared":
+      updated = m.copyWith(declared: event.value);
+      break;
   }
 
-  void _onNext(NextStep event, Emitter<FullRegState> emit) {
-    emit(state.copyWith(currentStep: state.currentStep + 1));
-  }
+  emit(
+    state.copyWith(model: updated),
+  );
+}
 
-  void _onPrev(PrevStep event, Emitter<FullRegState> emit) {
-    emit(state.copyWith(currentStep: state.currentStep - 1));
-  }
+  Future<void> _onSubmit(
+    SubmitCompanyRegistration event,
+    Emitter<FullRegState> emit,
+  ) async {
+    try {
+      emit(state.copyWith(loading: true, error: null, success: false));
 
-  void _onSubmit(SubmitForm event, Emitter<FullRegState> emit) async {
-    emit(state.copyWith(isLoading: true));
+      final result = await repository.submit(state.model);
+        
+         await SessionService.isFullRegisteredupdate(true);
 
-    await Future.delayed(const Duration(seconds: 2)); // API call
-
-    emit(state.copyWith(isLoading: false));
+      emit(state.copyWith(loading: false, success: true));
+    } catch (e) {
+      print(e);
+      emit(state.copyWith(loading: false, success: false, error: e.toString()));
+    }
   }
 }

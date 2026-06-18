@@ -144,33 +144,14 @@ class _DeletedCompaniesScreenState extends State<DeletedCompaniesScreen> {
     );
   }
 
-  String _getSubscriptionStatus(Map company) {
-    final rawStatus =
-        company['subscriptionStatus'] ??
-        company['subscription_status'] ??
-        company['subscription'] ??
-        company['subStatus'] ??
-        company['planStatus'] ??
-        company['subscriptionState'];
-
-    if (rawStatus == null) return 'Unknown';
-    if (rawStatus is String) return rawStatus;
-    if (rawStatus is Map) {
-      return rawStatus['status']?.toString() ??
-          rawStatus['name']?.toString() ??
-          'Unknown';
-    }
-    return rawStatus.toString();
-  }
+ 
 
   Widget _subscriptionChip(Map company) {
-    final status = _getSubscriptionStatus(company);
-    final lower = status.toLowerCase();
+    final status =company['isSubscriptionActive'] == true
+        ? 'Subscribed'
+        : 'Not Subscribed';
     final active =
-        lower == 'active' ||
-        lower == 'subscribed' ||
-        lower == 'paid' ||
-        lower == 'active subscription';
+        company['isSubscriptionActive'] == true;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -439,7 +420,7 @@ class _DeletedCompaniesScreenState extends State<DeletedCompaniesScreen> {
                                                       ),
                                                       const SizedBox(width: 4),
                                                       Text(
-                                                        domain,
+                                                        c['domain'] ?? 'No domain',
                                                         style: TextStyle(
                                                           color:
                                                               Colors.blue[800],
@@ -476,7 +457,7 @@ class _DeletedCompaniesScreenState extends State<DeletedCompaniesScreen> {
                                                       ),
                                                       const SizedBox(width: 4),
                                                       Text(
-                                                        location,
+                                                        c['location'] ?? 'No location',
                                                         style: TextStyle(
                                                           color:
                                                               Colors.green[800],

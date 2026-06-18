@@ -1,16 +1,6 @@
-﻿import 'dart:async';
-
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:app_links/app_links.dart';
-import 'package:go_router/go_router.dart';
-import 'package:goexperts/core/widgets/top_message.dart';
+﻿import 'package:flutter/material.dart';
 
 import 'core/services/api_service.dart';
-import 'core/services/sessionservice.dart';
-import 'core/state/auth/auth_bloc.dart';
-import 'core/state/auth/auth_state.dart';
-import 'core/set_password_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -23,9 +13,7 @@ class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
-  bool _navigated = false;
-  final AppLinks _deepLinkService = AppLinks();
-  StreamSubscription<Uri?>? _linkSub;
+ 
   bool isProfileCompleted = false;
   @override
   void initState() {
@@ -39,97 +27,15 @@ class _SplashScreenState extends State<SplashScreen>
 
     _animation = Tween<double>(begin: 0.8, end: 1.2).animate(_controller);
 
-    startFlow(); // ✅ single entry point
+    
   }
 
-  Future<void> startFlow() async {
-    final state = context.read<AuthBloc>().state;
-    if (state.status == AuthStatus.authenticated) {
-      await checkLogin(); // ✅ if already authenticated, skip deep link
-      return;
-    }
 
-    try {
-      final uri = await _deepLinkService.getInitialLink();
-
-      if (uri != null) {
-        handleLink(uri);
-        return; // ✅ STOP here if deep link exists
-      }
-
-      // If no deep link → continue normal flow
-      await checkLogin();
-
-      // Listen for future links
-      _linkSub = _deepLinkService.uriLinkStream.listen((uri) {
-        handleLink(uri);
-      });
-    } catch (e) {
-      print("Deep link error: $e");
-      await checkLogin(); // fallback
-    }
-  }
-
-  void handleLink(Uri uri) async {
-    if (_navigated) return;
-
-    print('Received link: $uri');
-    print('Host: ${uri.host}');
-    print('Path: ${uri.path}');
-    print('Params: ${uri.queryParameters}');
-
-    if (uri.path == '/setup-password' || uri.path == '/reset') {
-      final token = uri.queryParameters["token"];
-
-      if (token == null || token.isEmpty) {
-        print('Token missing');
-        return;
-      }
-
-      _navigated = true;
-      context.go('${uri.path}?token=$token');
-    } else {
-      print('Unknown deep link: $uri');
-    }
-  }
-
-  Future<void> checkLogin() async {
-    await Future.delayed(const Duration(seconds: 2));
-
-    if (!mounted || _navigated) return; // 🚨 important
-
-    final state = context.read<AuthBloc>().state;
-    final session = state.session;
-
-    _navigated = true;
-
-    if (state.status != AuthStatus.authenticated || session == null) {
-      bool isExpired = await SessionService.isTokenExpired();
-      if (isExpired) {
-        TopMessage.show(
-          context,
-          "session has expired please log in again",
-          color: Colors.orange,
-        );
-        context.go("/login");
-      } else {
-        TopMessage.show(
-          context,
-          "welcome back to Hrms Please log in to continue",
-          color: Colors.green,
-        );
-      }
-
-      return;
-    } else {
-      context.go('/');
-    }
-  }
 
   @override
   void dispose() {
     _controller.dispose();
-    _linkSub?.cancel(); // ✅ prevent memory leak
+    // _linkSub?.cancel(); // ✅ prevent memory leak
     super.dispose();
   }
 

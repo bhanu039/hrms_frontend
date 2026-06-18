@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/services/api_service.dart';
-
+import 'company_view_screen.dart';
 
 class CompanyListScreen extends StatefulWidget {
   const CompanyListScreen({super.key});
@@ -49,11 +49,11 @@ class _CompanyListScreenState extends State<CompanyListScreen> {
   // 🔍 SEARCH
   void searchCompanies(String query) {
     final results = companies.where((c) {
-      final name = (c['name'] ?? '').toLowerCase();
-      final email = (c['email'] ?? '').toLowerCase();
+      final companyName = (c['companyName'] ?? '').toLowerCase();
+      final companyEmail = (c['companyEmail'] ?? '').toLowerCase();
 
-      return name.contains(query.toLowerCase()) ||
-          email.contains(query.toLowerCase());
+      return companyName.contains(query.toLowerCase()) ||
+          companyEmail.contains(query.toLowerCase());
     }).toList();
 
     setState(() => filteredCompanies = results);
@@ -107,8 +107,8 @@ class _CompanyListScreenState extends State<CompanyListScreen> {
     );
   }
 
-  String _companyInitials(String name) {
-    final words = name.trim().split(' ');
+  String _companyInitials(String companyName) {
+    final words = companyName.trim().split(' ');
     if (words.isEmpty) return '';
     if (words.length == 1) {
       return words.first.substring(0, 1).toUpperCase();
@@ -143,33 +143,8 @@ class _CompanyListScreenState extends State<CompanyListScreen> {
     );
   }
 
-  String _getSubscriptionStatus(Map company) {
-    final rawStatus =
-        company['subscriptionStatus'] ??
-        company['subscription_status'] ??
-        company['subscription'] ??
-        company['subStatus'] ??
-        company['planStatus'] ??
-        company['subscriptionState'];
-
-    if (rawStatus == null) return 'Unknown';
-    if (rawStatus is String) return rawStatus;
-    if (rawStatus is Map) {
-      return rawStatus['status']?.toString() ??
-          rawStatus['name']?.toString() ??
-          'Unknown';
-    }
-    return rawStatus.toString();
-  }
-
   Widget _subscriptionChip(Map company) {
-    final status = _getSubscriptionStatus(company);
-    final lower = status.toLowerCase();
-    final active =
-        lower == 'active' ||
-        lower == 'subscribed' ||
-        lower == 'paid' ||
-        lower == 'active subscription';
+    final active = (company['isSubscriptionActive'] == "ACTIVE") ? true : false;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -180,7 +155,7 @@ class _CompanyListScreenState extends State<CompanyListScreen> {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
-        status,
+        company['subscriptionStatus'],
         style: TextStyle(
           color: active ? Colors.blue[800] : Colors.orange[800],
           fontWeight: FontWeight.w600,
@@ -329,11 +304,12 @@ class _CompanyListScreenState extends State<CompanyListScreen> {
                                 const SizedBox(height: 12),
                             itemBuilder: (context, index) {
                               final c = filteredCompanies[index];
-                              final name = c['name'] ?? '';
-                              final email = c['email'] ?? '';
-                              final domain = c['domain'] ?? 'No domain';
+                              final companyName = c['companyName'] ?? '';
+                              final companyEmail = c['companyEmail'] ?? '';
+                              final website = c['website'] ?? 'No website';
                               final location =
                                   c['location'] ?? 'Location not set';
+                              final logo = c["companyLogo"];
 
                               return Card(
                                 shape: RoundedRectangleBorder(
@@ -343,9 +319,12 @@ class _CompanyListScreenState extends State<CompanyListScreen> {
                                 child: InkWell(
                                   borderRadius: BorderRadius.circular(18),
                                   onTap: () {
-                                    context.push(
-                                      '/company-view',
-                                      extra: c, // your object
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            CompanyViewScreen(company: c),
+                                      ),
                                     );
                                   },
                                   child: Padding(
@@ -357,15 +336,21 @@ class _CompanyListScreenState extends State<CompanyListScreen> {
                                         CircleAvatar(
                                           radius: 26,
                                           backgroundColor: primaryColor
-                                              .withValues(alpha: 0.16),
-                                          child: Text(
-                                            _companyInitials(name),
-                                            style: TextStyle(
-                                              color: primaryColor,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 18,
-                                            ),
-                                          ),
+                                              .withOpacity(0.16),
+                                          backgroundImage:
+                                              logo != null
+                                              ? NetworkImage(logo)
+                                              : null,
+                                          child: logo == null
+                                              ? Text(
+                                                  _companyInitials(companyName),
+                                                  style: TextStyle(
+                                                    color: primaryColor,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 18,
+                                                  ),
+                                                )
+                                              : null,
                                         ),
                                         const SizedBox(width: 14),
                                         Expanded(
@@ -377,7 +362,7 @@ class _CompanyListScreenState extends State<CompanyListScreen> {
                                                 children: [
                                                   Expanded(
                                                     child: Text(
-                                                      name,
+                                                      companyName,
                                                       style: const TextStyle(
                                                         fontSize: 16,
                                                         fontWeight:
@@ -399,7 +384,7 @@ class _CompanyListScreenState extends State<CompanyListScreen> {
                                                   const SizedBox(width: 6),
                                                   Expanded(
                                                     child: Text(
-                                                      email,
+                                                      companyEmail,
                                                       style: TextStyle(
                                                         color: Colors.grey[700],
                                                       ),
@@ -444,7 +429,7 @@ class _CompanyListScreenState extends State<CompanyListScreen> {
                                                           width: 4,
                                                         ),
                                                         Text(
-                                                          domain,
+                                                          website,
                                                           style: TextStyle(
                                                             color: Colors
                                                                 .blue[800],

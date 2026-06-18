@@ -1,9 +1,8 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
+import 'package:go_router/go_router.dart';
 
 import '../../core/state/auth/auth_bloc.dart';
-import '../../core/widgets/Adding_Employee_Screen.dart';
 import '../../core/widgets/dashboard_card.dart';
 import '../../core/widgets/top_message.dart';
 import 'company_menu.dart';
@@ -17,23 +16,13 @@ class CDashboardScreen extends StatefulWidget {
 }
 
 class _CDashboardScreenState extends State<CDashboardScreen> {
-
-
-   @override
+  @override
   void initState() {
     super.initState();
-    //  TopMessage.show(
-    //         context,
-    //         "Welcome, Super Admin!",
-    //         color: Colors.green,
-    //       );
-    
   }
+
   @override
   Widget build(BuildContext context) {
-
-
-    
     final session = context.watch<AuthBloc>().state.session;
     final companyName = (session?.name ?? '').trim();
     final displayName = companyName.isEmpty ? 'Company' : companyName;
@@ -121,52 +110,37 @@ class _CDashboardScreenState extends State<CDashboardScreen> {
         ),
       ),
       floatingActionButton: Container(
-  decoration: BoxDecoration(
-    borderRadius: BorderRadius.circular(18),
-    gradient: LinearGradient(
-      colors: [
-        Colors.indigo,
-        Colors.indigo.shade400,
-      ],
-    ),
-    boxShadow: [
-      BoxShadow(
-        color: Colors.indigo.withOpacity(0.3),
-        blurRadius: 10,
-        offset: const Offset(0, 5),
-      ),
-    ],
-  ),
-
-  child: FloatingActionButton.extended(
-    onPressed: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const AddEmployeeScreen(),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          gradient: LinearGradient(
+            colors: [Colors.indigo, Colors.indigo.shade400],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.indigo.withOpacity(0.3),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
+          ],
         ),
-      );
-    },
 
-    backgroundColor: Colors.transparent,
-    elevation: 0,
+        child: FloatingActionButton.extended(
+          onPressed: () {
+            context.push("/company/empcreate");
+          },
 
-    icon: const Icon(
-      Icons.person_add_alt_1,
-      color: Colors.white,
-    ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
 
-    label: const Text(
-      "Add Employee",
-      style: TextStyle(
-        color: Colors.white,
-        fontWeight: FontWeight.bold,
+          icon: const Icon(Icons.person_add_alt_1, color: Colors.white),
+
+          label: const Text(
+            "Add Employee",
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+        ),
       ),
-    ),
-  ),
-),
     );
-    
   }
 }
 

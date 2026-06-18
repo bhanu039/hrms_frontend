@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../login_screen.dart';
 import 'services/set_pass_token.dart';
+import 'state/auth/auth_bloc.dart';
+import 'state/auth/auth_event.dart';
 import 'widgets/app_primary_button.dart';
 import 'widgets/top_message.dart';
 
@@ -48,14 +52,14 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
       print("Submitting new password with token: ${widget.token}");
       print(" Password: $password");
       final response = await dio.post(
-        "api/invite/setup-password", // 🔁 your API
+        "https://goexperts-hrms-coun.onrender.com/api/invite/setup-password", // 🔁 your API
         data: {"token": widget.token, "password": password},
         options: Options(validateStatus: (status) => true),
       );
 
       print("Response: ${response.data}");
 
-      if (response.statusCode == 200||response.data["success"]==true ) {
+      if (response.statusCode == 200 || response.data["success"] == true) {
         // ✅ MARK TOKEN USED ONLY AFTER SUCCESS
         await DeepLinkService.markTokenUsed(widget.token);
 
@@ -64,14 +68,13 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
           "Password set successfully",
           color: Colors.green,
         );
-        Future.microtask(() {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (_) => const LoginScreen()),
-            (route) => false,
-          );
+        Future.microtask(() async {
+          context.read<AuthBloc>().add(AuthLogoutRequested());
+          await Future.delayed(const Duration(milliseconds: 100));
+          context.go("/login");
         });
       } else {
+        print("Failed to set password: ${response.data}");
         TopMessage.show(
           context,
           response.data["message"] ?? "Failed to set password",

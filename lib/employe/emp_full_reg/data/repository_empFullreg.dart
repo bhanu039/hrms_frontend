@@ -110,7 +110,7 @@ class EmpFullRegRepository {
       }
 
       // ================= API CALL =================
-      final response = await _dio.post("onboarding/finish", data: formData);
+      final response = await _dio.put("/api/onboarding/finish", data: formData);
 
       return response;
     } catch (e) {

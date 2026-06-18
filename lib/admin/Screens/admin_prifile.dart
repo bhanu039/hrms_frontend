@@ -4,9 +4,12 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:goexperts/core/widgets/top_message.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../core/state/auth/auth_bloc.dart';
+import '../../core/state/auth/auth_event.dart';
 import '../admin_profile/profile_cubit.dart';
 import '../admin_profile/profile_state.dart';
 import '../../core/widgets/Change_Password.dart';
@@ -91,7 +94,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
       backgroundColor: const Color(0xfff4f6fb),
 
       floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: Colors.blue,
+        backgroundColor: const Color.fromARGB(255, 168, 216, 231),
         icon: isLoading
             ? const SizedBox(
                 height: 18,
@@ -112,83 +115,117 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
         title: const Text('Profile', style: TextStyle(color: Colors.black)),
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.black),
+        actions:  [
+          IconButton(
+            icon: const Icon(Icons.logout, color: Color.fromARGB(255, 210, 0, 0)),
+            onPressed: () async{
+               context.read<AuthBloc>().add(AuthLogoutRequested());
+                await Future.delayed(const Duration(milliseconds: 100));
+
+                context.go("/login");
+            },
+          ),
+          SizedBox(width: 12),
+        ],
       ),
 
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.only(top: 30, bottom: 20),
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xff4facfe), Color(0xff00f2fe)],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.only(top: 30, bottom: 20),
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Color.fromARGB(255, 146, 245, 243),
+                      Color.fromARGB(255, 232, 229, 137),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.vertical(
+                    bottom: Radius.circular(30),
+                  ),
                 ),
-                borderRadius: BorderRadius.vertical(
-                  bottom: Radius.circular(30),
+                child: Column(
+                  children: [
+                    GestureDetector(
+                      onTap: showEditProfileDialog,
+                      child: CircleAvatar(
+                        radius: 50,
+                        backgroundColor: const Color.fromARGB(
+                          255,
+                          156,
+                          156,
+                          156,
+                        ),
+                        backgroundImage: imageFile != null
+                            ? FileImage(imageFile!)
+                            : null,
+                        child: imageFile == null
+                            ? const Icon(
+                                Icons.person,
+                                size: 80,
+                                color: Color.fromARGB(255, 0, 0, 0),
+                              )
+                            : null,
+                      ),
+                    ),
+
+                    const SizedBox(height: 15),
+
+                    Text(
+                      name,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    const SizedBox(height: 5),
+
+                    Text(
+                      email,
+                      style: const TextStyle(
+                        color: Color.fromARGB(255, 82, 61, 61),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              child: Column(
+
+              const SizedBox(height: 20),
+
+              _card(
                 children: [
-                  GestureDetector(
-                    onTap: showEditProfileDialog,
-                    child: CircleAvatar(
-                      radius: 50,
-                      backgroundColor: Colors.white,
-                      backgroundImage: imageFile != null
-                          ? FileImage(imageFile!)
-                          : null,
-                      child: imageFile == null
-                          ? const Icon(
-                              Icons.person,
-                              size: 50,
-                              color: Colors.blue,
-                            )
-                          : null,
-                    ),
-                  ),
-
-                  const SizedBox(height: 15),
-
-                  Text(
-                    name,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  const SizedBox(height: 5),
-
-                  Text(email, style: const TextStyle(color: Colors.white70)),
+                  _tile(Icons.person, 'Name', name),
+                  _tile(Icons.email, 'Email', email),
+                  const _StatusTile(),
                 ],
               ),
-            ),
 
-            const SizedBox(height: 20),
+              const SizedBox(height: 15),
 
-            _card(
-              children: [
-                _tile(Icons.person, 'Name', name),
-                _tile(Icons.email, 'Email', email),
-                const _StatusTile(),
-              ],
-            ),
+              _card(
+                children: [
+                  _action(Icons.lock, 'Change Password', () {
+                    showChangePasswordDialog(context);
+                  }),
+                  _action(Icons.settings, 'Settings', () {
+                    TopMessage.show(
+                      context,
+                      "Settings Coming Soon",
+                      color: Colors.brown,
+                    );
+                  }),
+                ],
+              ),
 
-            const SizedBox(height: 15),
-
-            _card(
-              children: [
-                _action(Icons.lock, 'Change Password', () {
-                  showChangePasswordDialog(context);
-                }),
-                _action(Icons.settings, 'Settings', () {}),
-              ],
-            ),
-
-            const SizedBox(height: 80),
-          ],
+              const SizedBox(height: 80),
+            ],
+          ),
         ),
       ),
     );
@@ -200,7 +237,6 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
       context: context,
 
       builder: (dialogContext) {
-      
         return StatefulBuilder(
           builder: (context, setStateDialog) {
             var profileImage;
@@ -236,8 +272,7 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                             : null,
                         child:
                             imageFile == null &&
-                                (profileImage == null ||
-                                    profileImage!.isEmpty)
+                                (profileImage == null || profileImage!.isEmpty)
                             ? const Icon(
                                 Icons.person,
                                 size: 40,
@@ -283,6 +318,11 @@ class _AdminProfileScreenState extends State<AdminProfileScreen> {
                         const SizedBox(width: 10),
                         Expanded(
                           child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color.fromARGB(255, 0, 255, 47),
+                            ),
+
+                           
                             onPressed: () async {
                               await saveProfile();
                               Navigator.pop(context);

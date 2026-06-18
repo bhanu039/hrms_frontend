@@ -26,6 +26,7 @@ void showChangePasswordDialog(BuildContext context) {
               borderRadius: BorderRadius.circular(20),
             ),
             child: Padding(
+              
               padding: const EdgeInsets.all(20),
               child: Form(
                 key: formKey,
@@ -161,16 +162,13 @@ void showChangePasswordDialog(BuildContext context) {
                                     if (!formKey.currentState!.validate()) {
                                       return;
                                     }
-
                                     final userId = await SessionService.getID();
 
                                     if (userId == null || userId.isEmpty) {
-                                      ScaffoldMessenger.of(
+                                      TopMessage.show(
                                         context,
-                                      ).showSnackBar(
-                                        const SnackBar(
-                                          content: Text("User ID not found"),
-                                        ),
+                                        "User ID not found. Please log in again.",
+                                        color: Colors.red,
                                       );
                                       return;
                                     }

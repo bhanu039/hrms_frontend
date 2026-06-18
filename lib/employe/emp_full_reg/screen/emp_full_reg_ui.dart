@@ -3,12 +3,14 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:goexperts/core/widgets/custom_text_field.dart';
 import 'package:goexperts/core/widgets/top_message.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/widgets/File_picker_widget.dart';
 import '../../../core/widgets/dropdown_list.dart';
+import '../../../core/widgets/face_detact.dart';
 import '../../../core/widgets/location_get.dart';
 import '../../../core/widgets/switch_bool.dart';
 import '../bloc/emp_full_bloc.dart';
@@ -25,16 +27,37 @@ class EmployeeOnboardingScreen extends StatefulWidget {
 
 class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
   bool isexpirences = false;
+
+  late final List<GlobalKey<FormState>> formKeys = List.generate(
+    6,
+    (_) => GlobalKey<FormState>(),
+  );
+
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<EmpFullRegBloc, EmpFullRegState>(
+    return BlocConsumer<EmpFullRegBloc, EmpFullRegState>(
+      listener: (context, state) {
+        if (state.success == true) {
+          TopMessage.show(
+            context,
+            "Company onboarding completed successfully!",
+            color: Colors.green,
+          );
+          context.go('/');
+        }
+
+        if (state.error != null) {
+          TopMessage.show(context, state.error!, color: Colors.red);
+        }
+      },
+
       builder: (context, state) {
         return Scaffold(
           backgroundColor: const Color(0xffF4F7FC),
 
           /// ================= APP BAR =================
           appBar: AppBar(
-            title: const Text("Company Full Registration"),
+            title: const Text("Employee Full Registration"),
             centerTitle: true,
             backgroundColor: Colors.white,
             foregroundColor: Colors.black,
@@ -96,19 +119,40 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
   Widget _buildStep(BuildContext context, EmpFullRegState state) {
     switch (state.currentStep) {
       case 0:
-        return KeyedSubtree(key: ValueKey(0), child: _step1(context, state));
+        return KeyedSubtree(
+          key: ValueKey(0),
+          child: Form(key: formKeys[0], child: _step1(context, state)),
+        );
       case 1:
-        return KeyedSubtree(key: ValueKey(1), child: _step2(context, state));
+        return KeyedSubtree(
+          key: ValueKey(1),
+          child: Form(key: formKeys[1], child: _step2(context, state)),
+        );
       case 2:
-        return KeyedSubtree(key: ValueKey(2), child: _step3(context, state));
+        return KeyedSubtree(
+          key: ValueKey(2),
+          child: Form(key: formKeys[2], child: _step3(context, state)),
+        );
       case 3:
-        return KeyedSubtree(key: ValueKey(3), child: _step4(context, state));
+        return KeyedSubtree(
+          key: ValueKey(3),
+          child: Form(key: formKeys[3], child: _step4(context, state)),
+        );
       case 4:
-        return KeyedSubtree(key: ValueKey(4), child: _step5(context, state));
+        return KeyedSubtree(
+          key: ValueKey(4),
+          child: Form(key: formKeys[4], child: _step5(context, state)),
+        );
       case 5:
-        return KeyedSubtree(key: ValueKey(5), child: _step6(context, state));
+        return KeyedSubtree(
+          key: ValueKey(5),
+          child: Form(key: formKeys[5], child: _step6(context, state)),
+        );
       case 6:
-        return KeyedSubtree(key: ValueKey(6), child: _step7(context, state));
+        return KeyedSubtree(
+          key: ValueKey(6),
+          child: Form(key: formKeys[6], child: _step7(context, state)),
+        );
       case 7:
         return KeyedSubtree(key: ValueKey(7), child: _preview(context, state));
       default:
@@ -162,6 +206,8 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
         onChanged: (val) {
           context.read<EmpFullRegBloc>().add(UpdateField("gender", val));
         },
+        validator: (value) =>
+            value == null || value.isEmpty ? "Gender is required" : null,
       ),
 
       /// 📅 DOB
@@ -208,7 +254,7 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
           /// Profile Photo
           Expanded(
             child: GestureDetector(
-              onTap: () => pickImage(1),
+              onTap: () => profilePhoto(),
               child: Container(
                 height: 150,
                 decoration: BoxDecoration(
@@ -233,7 +279,7 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
           /// Signature
           Expanded(
             child: GestureDetector(
-              onTap: () => pickImage(2),
+              onTap: () => pickImage(),
               child: Container(
                 height: 150,
                 decoration: BoxDecoration(
@@ -278,20 +324,28 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
     ]);
   }
 
-  Future<void> pickImage(int index) async {
+  Future<void> profilePhoto() async {
+    final File? image = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const FaceCaptureView()),
+    );
+
+    if (image != null) {
+      context.read<EmpFullRegBloc>().add(UpdateField("signature", image));
+      print("Image path: ${image.path}");
+    }
+    //
+  }
+
+  Future<void> pickImage() async {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(
       source: ImageSource.gallery,
       imageQuality: 80,
     );
-
     if (image != null) {
       final file = File(image.path);
-      if (index == 1) {
-        context.read<EmpFullRegBloc>().add(UpdateField("profilePhoto", file));
-      } else {
-        context.read<EmpFullRegBloc>().add(UpdateField("signature", file));
-      }
+      context.read<EmpFullRegBloc>().add(UpdateField("profilePhoto", file));
     }
   }
 
@@ -319,6 +373,8 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
         onChanged: (value) {
           context.read<EmpFullRegBloc>().add(UpdateField("phone", value));
         },
+        validator: (value) =>
+            value == null || value.isEmpty ? "phone is required" : null,
       ),
 
       /// 📱 Alternate Phone
@@ -390,6 +446,59 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
 
       const SizedBox(height: 15),
 
+      CustomTextField(
+        label: "Address",
+        initialValue: state.model.address,
+        onChanged: (value) {
+          context.read<EmpFullRegBloc>().add(UpdateField("address1", value));
+        },
+        validator: (value) =>
+            value == null || value.isEmpty ? "Address is required" : null,
+      ),
+
+      CustomTextField(
+        label: "City",
+        initialValue: state.model.city,
+        onChanged: (value) {
+          context.read<EmpFullRegBloc>().add(UpdateField("city", value));
+        },
+        validator: (value) =>
+            value == null || value.isEmpty ? "City is required" : null,
+      ),
+
+      CustomTextField(
+        label: "State",
+        initialValue: state.model.state,
+        onChanged: (value) {
+          context.read<EmpFullRegBloc>().add(UpdateField("state", value));
+        },
+        validator: (value) =>
+            value == null || value.isEmpty ? "State is required" : null,
+      ),
+
+      AppDropdown(
+        label: "Country",
+        value: state.model.country,
+        items: const ["India", "USA", "UK"],
+        onChanged: (val) {
+          context.read<EmpFullRegBloc>().add(UpdateField("country", val));
+        },
+      ),
+
+      CustomTextField(
+        label: "Pincode",
+        initialValue: state.model.pincode,
+        onChanged: (value) {
+          context.read<EmpFullRegBloc>().add(UpdateField("pincode", value));
+        },
+        validator: (value) {
+          if (value == null || value.isEmpty) return "Pincode is required";
+          if (value.length < 5) return "Pincode must be at least 5 digits";
+          return null;
+        },
+      ),
+      const SizedBox(height: 10),
+
       /// 👨‍⚕️ EMERGENCY CONTACT HEADER
       Text(
         "Emergency Contact",
@@ -411,6 +520,10 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
           context.read<EmpFullRegBloc>().add(
             UpdateField("emergencyContactName", value),
           );
+          validator:
+          (value) => value == null || value.isEmpty
+              ? "Contact Person Name is required"
+              : null;
         },
       ),
 
@@ -437,6 +550,9 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
             UpdateField("emergencyNumber", value),
           );
         },
+        validator: (value) => value == null || value.isEmpty
+            ? "Emergency Contact Number is required"
+            : null,
       ),
     ]);
   }
@@ -452,6 +568,8 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
         onChanged: (value) {
           context.read<EmpFullRegBloc>().add(UpdateField("degree", value));
         },
+        validator: (value) =>
+            value == null || value.isEmpty ? "Degree is required" : null,
       ),
 
       /// Specialization
@@ -464,6 +582,9 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
             UpdateField("specialization", value),
           );
         },
+        validator: (value) => value == null || value.isEmpty
+            ? "Specialization is required"
+            : null,
       ),
 
       /// College
@@ -474,6 +595,8 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
         onChanged: (value) {
           context.read<EmpFullRegBloc>().add(UpdateField("college", value));
         },
+        validator: (value) =>
+            value == null || value.isEmpty ? "College is required" : null,
       ),
 
       /// University
@@ -484,6 +607,8 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
         onChanged: (value) {
           context.read<EmpFullRegBloc>().add(UpdateField("university", value));
         },
+        validator: (value) =>
+            value == null || value.isEmpty ? "University is required" : null,
       ),
 
       /// Percentage
@@ -495,6 +620,8 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
         onChanged: (value) {
           context.read<EmpFullRegBloc>().add(UpdateField("percentage", value));
         },
+        validator: (value) =>
+            value == null || value.isEmpty ? "Percentage is required" : null,
       ),
 
       const SizedBox(height: 10),
@@ -513,6 +640,9 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
                   UpdateField("startYear", value),
                 );
               },
+              validator: (value) => value == null || value.isEmpty
+                  ? "Start Year is required"
+                  : null,
             ),
           ),
 
@@ -529,6 +659,9 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
                   UpdateField("endYear", value),
                 );
               },
+              validator: (value) => value == null || value.isEmpty
+                  ? "End Year is required"
+                  : null,
             ),
           ),
         ],
@@ -814,6 +947,8 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
         onChanged: (value) {
           context.read<EmpFullRegBloc>().add(UpdateField("bankName", value));
         },
+        validator: (value) =>
+            value == null || value.isEmpty ? "Bank Name is required" : null,
       ),
 
       CustomTextField(
@@ -825,6 +960,9 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
             UpdateField("accountHolderName", value),
           );
         },
+        validator: (value) => value == null || value.isEmpty
+            ? "Account Holder Name is required"
+            : null,
       ),
 
       CustomTextField(
@@ -837,6 +975,9 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
             UpdateField("accountNumber", value),
           );
         },
+        validator: (value) => value == null || value.isEmpty
+            ? "Account Number is required"
+            : null,
       ),
 
       CustomTextField(
@@ -846,6 +987,8 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
         onChanged: (value) {
           context.read<EmpFullRegBloc>().add(UpdateField("ifscCode", value));
         },
+        validator: (value) =>
+            value == null || value.isEmpty ? "IFSC Code is required" : null,
       ),
 
       CustomTextField(
@@ -855,6 +998,8 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
         onChanged: (value) {
           context.read<EmpFullRegBloc>().add(UpdateField("branchName", value));
         },
+        validator: (value) =>
+            value == null || value.isEmpty ? "Branch Name is required" : null,
       ),
 
       CustomTextField(
@@ -942,6 +1087,12 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
           context.read<EmpFullRegBloc>().add(
             UpdateField("nomineeAadhaar", value),
           );
+        },
+
+        validator: (value) {
+          if (value == null || value.isEmpty) return "Pincode is required";
+          if (value.length < 5) return "Pincode must be at least 5 digits";
+          return null;
         },
       ),
 
@@ -1198,7 +1349,15 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
                     );
                   }
                 } else {
-                  bloc.add(NextStep());
+                  if (formKeys[state.currentStep].currentState!.validate()) {
+                    bloc.add(NextStep());
+                  } else {
+                    TopMessage.show(
+                      context,
+                      "Please fill all required fields correctly",
+                      color: Colors.orange,
+                    );
+                  }
                 }
               },
               child: Text(

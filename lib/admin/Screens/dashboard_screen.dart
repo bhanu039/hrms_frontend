@@ -23,11 +23,7 @@ class _DashboardScreenState extends State<AdminDashboardScreen> {
   @override
   void initState() {
     super.initState();
-    //  TopMessage.show(
-    //         context,
-    //         "Welcome, Super Admin!",
-    //         color: Colors.green,
-    //       );
+
     fetchCompanies();
   }
 
@@ -133,7 +129,7 @@ class _DashboardScreenState extends State<AdminDashboardScreen> {
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Colors.blue, Colors.blue.shade700],
+                    colors: [const Color.fromARGB(255, 163, 199, 231), const Color.fromARGB(255, 241, 195, 124)],
                   ),
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -150,7 +146,10 @@ class _DashboardScreenState extends State<AdminDashboardScreen> {
                       ),
                     ),
                     IconButton(
-                      onPressed: fetchCompanies,
+                      onPressed: isLoading ? null : () {
+                        fetchCompanies();
+                      },
+                      
                       icon: const Icon(Icons.refresh, color: Colors.white),
                     ),
                   ],
@@ -294,7 +293,7 @@ class _DashboardScreenState extends State<AdminDashboardScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      company["name"] ?? "No Name",
+                                      company["companyName"] ?? "No Name",
                                       style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                       ),

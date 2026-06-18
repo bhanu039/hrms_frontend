@@ -1,28 +1,38 @@
+
 import '../data/modal/full_Reg_modal.dart';
 
-class FullRegState {
-  final int currentStep;
-  final bool isLoading;
-
+class FullRegState  {
   final FullRegModel model;
+  final bool loading;
+  final bool success;
+  final String? error;
 
-  
-
-  FullRegState({
-    this.currentStep = 0,
-    this.isLoading = false,
+  const FullRegState({
     required this.model,
+    this.loading = false,
+    this.success = false,
+    this.error,
   });
 
   FullRegState copyWith({
-    int? currentStep,
-    bool? isLoading,
     FullRegModel? model,
+    bool? loading,
+    bool? success,
+    String? error,
   }) {
     return FullRegState(
-      currentStep: currentStep ?? this.currentStep,
-      isLoading: isLoading ?? this.isLoading,
       model: model ?? this.model,
+      loading: loading ?? this.loading,
+      success: success ?? this.success,
+      error: error,
     );
   }
+
+  @override
+  List<Object?> get props => [
+        model,
+        loading,
+        success,
+        error,
+      ];
 }
