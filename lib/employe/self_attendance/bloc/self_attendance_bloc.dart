@@ -5,12 +5,12 @@ import '../data/self_attendance_repository.dart';
 import 'self_attendance_event.dart';
 import 'self_attendance_state.dart';
 
-class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
+class SelfAttendanceBloc extends Bloc<SelfAttendanceEvent, SelfAttendanceState> {
   final SelfAttendanceRepository repository;
 
-  AttendanceBloc({SelfAttendanceRepository? repository})
+  SelfAttendanceBloc({SelfAttendanceRepository? repository})
     : repository = repository ?? SelfAttendanceRepository(),
-      super(const AttendanceState()) {
+      super(const SelfAttendanceState()) {
     on<AttendanceStarted>(_onStarted);
     on<AttendanceDateChanged>((event, emit) {
       emit(state.copyWith(date: event.date));
@@ -39,7 +39,7 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
 
   Future<void> _onStarted(
     AttendanceStarted event,
-    Emitter<AttendanceState> emit,
+    Emitter<SelfAttendanceState> emit,
   ) async {
     final now = DateTime.now();
     emit(
@@ -60,7 +60,7 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
 
   Future<void> _applyFilters(
     ApplyFilters event,
-    Emitter<AttendanceState> emit,
+    Emitter<SelfAttendanceState> emit,
   ) async {
     try {
       emit(state.copyWith(isLoading: true, errorMessage: ''));
@@ -83,7 +83,7 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
 
   Future<void> _resetFilters(
     ResetFilters event,
-    Emitter<AttendanceState> emit,
+    Emitter<SelfAttendanceState> emit,
   ) async {
     final now = DateTime.now();
     emit(

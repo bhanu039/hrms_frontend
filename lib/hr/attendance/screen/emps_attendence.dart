@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../core/state/auth/auth_bloc.dart';
 import '../bloc/attendance_bloc.dart';
 import '../bloc/attendance_event.dart';
 import '../bloc/attendance_state.dart';
@@ -15,12 +17,16 @@ class EmployeeAttendanceScreen extends StatefulWidget {
 }
 
 class _EmployeeAttendanceScreenState extends State<EmployeeAttendanceScreen> {
+  String? myempId;
+
   final searchController = TextEditingController();
 
   @override
   void initState() {
-    super.initState();
+    myempId = context.read<AuthBloc>().state.session?.id ?? "";
+
     context.read<AttendanceBloc>().add(AttendanceStarted());
+    super.initState();
   }
 
   @override
@@ -53,6 +59,36 @@ class _EmployeeAttendanceScreenState extends State<EmployeeAttendanceScreen> {
               style: TextStyle(
                 color: Colors.black,
                 fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          floatingActionButton: FloatingActionButton.extended(
+            onPressed:(){
+              context.push("/emp/attendance");
+            },
+                 // Pass your function here to navigate or open a modal
+            elevation: 3,
+            highlightElevation: 6,
+
+            // Modern squircle shape matching premium dashboards
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: const BorderSide(color: Colors.white24, width: 1),
+            ),
+
+            // Vibrant corporate blue palette for action-oriented visibility
+            backgroundColor: const Color(0xFF2563EB), // Energetic Cobalt Blue
+            foregroundColor: Colors.white,
+
+            // Clean, contextual calendar attendance icon
+            icon: const Icon(Icons.calendar_month_rounded, size: 20),
+
+            label: const Text(
+              "Check Attendance",
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.2,
               ),
             ),
           ),

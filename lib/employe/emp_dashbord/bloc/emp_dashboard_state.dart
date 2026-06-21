@@ -7,10 +7,25 @@ class EmpDashboardInitial extends EmpDashboardState {}
 class EmpDashboardLoading extends EmpDashboardState {}
 
 class EmpDashboardLoaded extends EmpDashboardState {
-  final EmpDashboardModel data;
+  final bool? loading;
+  final EmpDashboardModel dashboardData;
+  final String? errorMessage;
 
-  EmpDashboardLoaded(this.data);
+  EmpDashboardLoaded(this.dashboardData, {this.errorMessage, this.loading = false});
+
+  EmpDashboardLoaded copyWith({
+    EmpDashboardModel? dashboardData,
+    bool? loading,
+    String? errorMessage,
+  }) {
+    return EmpDashboardLoaded(
+      dashboardData ?? this.dashboardData,
+      loading: loading ?? this.loading,
+      errorMessage: errorMessage ?? this.errorMessage,
+    );
+  }
 }
+
 
 class EmpDashboardError extends EmpDashboardState {
   final String message;

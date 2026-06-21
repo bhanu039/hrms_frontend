@@ -93,3 +93,11 @@ class CustomDialog {
     );
   }
 }
+
+//  CustomDialog.show(
+//         context: context,
+//         title: "Location Not Detected",
+//         message: "Please enable GPS to continue.",
+//         icon: Icons.error,
+//         color: Colors.red,
+//       );

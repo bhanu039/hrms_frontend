@@ -29,7 +29,7 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
   bool isexpirences = false;
 
   late final List<GlobalKey<FormState>> formKeys = List.generate(
-    6,
+    7,
     (_) => GlobalKey<FormState>(),
   );
 
@@ -331,7 +331,7 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
     );
 
     if (image != null) {
-      context.read<EmpFullRegBloc>().add(UpdateField("signature", image));
+      context.read<EmpFullRegBloc>().add(UpdateField("profilePhoto", image));
       print("Image path: ${image.path}");
     }
     //
@@ -345,12 +345,13 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
     );
     if (image != null) {
       final file = File(image.path);
-      context.read<EmpFullRegBloc>().add(UpdateField("profilePhoto", file));
+      context.read<EmpFullRegBloc>().add(UpdateField("signature", file));
     }
   }
 
   /// ================= STEP 2 =================
   Widget _step2(BuildContext context, EmpFullRegState state) {
+     bool loading =false;
     return _card("Contact Details", [
       /// 📧 Personal Email
       CustomTextField(
@@ -394,8 +395,10 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
       /// 📍 LOCATION PICKER (FIXED + CLEAN)
       GestureDetector(
         onTap: () async {
+          loading=true;
           final location = await LocationHelper.getCurrentLocation();
           if (location == null) return;
+          if (location != null){
 
           context.read<EmpFullRegBloc>().add(
             UpdateField("address", location["address1"]),
@@ -412,6 +415,8 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
           context.read<EmpFullRegBloc>().add(
             UpdateField("pincode", location["pincode"]),
           );
+          loading=false;
+          }
         },
         child: Container(
           padding: const EdgeInsets.all(14),
@@ -426,16 +431,28 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
               const SizedBox(width: 10),
 
               Expanded(
-                child: Text(
-                  state.model.address.isNotEmpty
-                      ? state.model.address
-                      : "Tap to get current location",
-                  style: TextStyle(
-                    color: state.model.address.isEmpty
-                        ? Colors.grey
-                        : Colors.black,
-                  ),
-                ),
+                child:loading! 
+                    ? const Row(
+                        children: [
+                          SizedBox(
+                            width: 18,
+                            height: 18,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                          SizedBox(width: 10),
+                          Text("Fetching location..."),
+                        ],
+                      )
+                    : Text(
+                        state.model.address.isNotEmpty
+                            ? state.model.address
+                            : "Tap to get current location",
+                        style: TextStyle(
+                          color: state.model.address.isEmpty
+                              ? Colors.grey
+                              : Colors.black,
+                        ),
+                      ),
               ),
 
               const Icon(Icons.arrow_forward_ios, size: 14),
@@ -687,11 +704,13 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
     return _card("Experience", [
       SwitchListTile(
         title: const Text("Do you have prior work experience?"),
-        value: isexpirences,
-        onChanged: (v) => setState(() => isexpirences = v),
+        value: state.model.isexperienced,
+        onChanged: (v) =>context.read<EmpFullRegBloc>().add(
+            UpdateField("isexperienced", v),
+          )
       ),
 
-      isexpirences
+      state.model.isexperienced
           ? Column(
               children: [
                 /// Company / Experience Dates Row
@@ -1014,7 +1033,7 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
   }
 
   Widget _step7(BuildContext context, EmpFullRegState state) {
-    return _card("Experience", [
+    return _card("Nominee Details", [
       CustomTextField(
         label: "Nominee Name",
         prefixIcon: const Icon(Icons.person),
@@ -1331,13 +1350,28 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
           if (state.currentStep > 0) const SizedBox(width: 10),
 
           /// NEXT / SUBMIT
-          Expanded(
-            child: ElevatedButton(
+          Expanded( child: state.isLoading
+              ? const Row(
+                  children: [
+                    SizedBox(
+                      width: 18,
+                      height: 18,
+                      child:
+                          CircularProgressIndicator(
+                        strokeWidth: 2,
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    Text("Fetching location..."),
+                  ],
+                )
+              :  ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.indigo,
                 padding: const EdgeInsets.all(14),
               ),
               onPressed: () {
+
                 if (isLastStep) {
                   if (state.model.isDeclaredTrue) {
                     bloc.add(SubmitForm());

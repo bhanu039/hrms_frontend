@@ -23,7 +23,9 @@ class PickFile extends EmpFullRegEvent {
   PickFile(this.type, this.file);
 }
 
-class SubmitForm extends EmpFullRegEvent {}
+class SubmitForm extends EmpFullRegEvent {
+  
+}
 
 class ToggleSwitch extends EmpFullRegEvent {
   final bool value;

@@ -5,6 +5,8 @@ import 'package:goexperts/employe/emp_full_reg/bloc/emp_full_state.dart';
 import 'package:goexperts/employe/emp_full_reg/data/models/emp_fullreg.dart';
 import 'package:goexperts/employe/emp_full_reg/data/repository_empFullreg.dart';
 
+import '../../../core/services/sessionservice.dart';
+
 class EmpFullRegBloc extends Bloc<EmpFullRegEvent, EmpFullRegState> {
   final EmpFullRegRepository _repository = EmpFullRegRepository();
 
@@ -71,6 +73,7 @@ class EmpFullRegBloc extends Bloc<EmpFullRegEvent, EmpFullRegState> {
       endYear: event.key == "endYear" ? event.value : m.endYear,
 
       // ================= EXPERIENCE =================
+      isexperienced: event.key == "isexperienced" ? event.value : m.isexperienced,
       companyName: event.key == "companyName" ? event.value : m.companyName,
       role: event.key == "role" ? event.value : m.role,
       experienceStartDate: event.key == "experienceStartDate"
@@ -186,7 +189,9 @@ class EmpFullRegBloc extends Bloc<EmpFullRegEvent, EmpFullRegState> {
       final model = state.model;
 
       // ================= SUBMIT TO API =================
+      print(model.isDeclaredTrue);
       final response = await _repository.submitOnboarding(model);
+        await SessionService.isFullRegisteredupdate(true);
       print("$response");
 
       // ================= SUCCESS RESPONSE =================
@@ -194,10 +199,11 @@ class EmpFullRegBloc extends Bloc<EmpFullRegEvent, EmpFullRegState> {
 
       // You can handle response here (e.g., show success message, navigate)
       print("Onboarding submitted successfully: ${response.statusCode}");
-    } catch (e) {
+    } on DioException catch (e) {
       // ================= ERROR HANDLING =================
-      emit(state.copyWith(isLoading: false, error: e.toString()));
-      print("Error submitting onboarding: $e");
+      final error = e.response?.data["message"] ?? e.message;
+      emit(state.copyWith(isLoading: false, error:error));
+      print("Error submitting onboarding: $Error");
     }
   }
 }

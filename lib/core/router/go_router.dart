@@ -1,6 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:goexperts/company/Screens/companyShell_tabs.dart';
+import 'package:goexperts/company/company_dashbord/companyShell_tabs.dart';
 import 'package:goexperts/company/company_fullReg/screens/full_com_Reg_screen.dart';
 import 'package:goexperts/core/invite_emp.dart/bloc/invite_emp_bloc.dart';
 import 'package:goexperts/core/invite_emp.dart/modal/invite_emp_repo.dart';
@@ -21,15 +21,27 @@ import '../../company/company_dashbord/data/company_dashbord_repo.dart';
 import '../../company/company_dashbord/data/company_dashbord_screen.dart';
 import '../../company/company_fullReg/bloc/full_Reg_bloc.dart';
 import '../../company/company_fullReg/data/repository/repository_empFullreg.dart';
-import '../../employe/Screens/empShell_tabs.dart';
+import '../../employe/emp_dashbord/bloc/emp_dashboard_bloc.dart';
+import '../../employe/emp_dashbord/data/repository_emp_dashboard.dart';
+import '../../employe/emp_dashbord/empShell_tabs.dart';
+import '../../employe/emp_Profile/bloc/emp_profile_bloc.dart';
+import '../../employe/emp_Profile/screen/emp_profile_screen.dart';
 import '../../employe/emp_full_reg/bloc/emp_full_bloc.dart';
+import '../../employe/self_attendance/bloc/self_attendance_bloc.dart';
+import '../../employe/self_attendance/data/screen/self_attendance_ui.dart';
 import '../../hr/attendance/bloc/attendance_bloc.dart';
 import '../../hr/attendance/bloc/attendance_event.dart';
 import '../../hr/attendance/screen/emps_attendence.dart';
+import '../../hr/emp_acceptence/bloc/emp_acceptence_bloc.dart';
+import '../../hr/emp_acceptence/bloc/emp_acceptence_event.dart';
+import '../../hr/emp_acceptence/data/emp_acceptence_repo.dart';
+import '../../hr/emp_acceptence/data/emp_acceptence_screen.dart';
+import '../../hr/emp_list/employee_list_bloc.dart';
+import '../../hr/emp_list/employee_list_screen.dart';
 import '../../hr/hr_dashbord/bloc/hr_dashbord_bloc.dart';
 import '../../hr/hr_dashbord/data/hr_dashbord_repo.dart';
 import '../../hr/hr_dashbord/data/hr_dashbord_screenui.dart';
-import '../../hr/screens/hrshell_tabs.dart';
+import '../../hr/hr_dashbord/hrshell_tabs.dart';
 import '../../login_screen.dart';
 import '../../splash_screen.dart';
 
@@ -43,10 +55,9 @@ import '../../admin/Screens/subscription_plans.dart';
 
 //company
 import '../../company/Screens/company_profile_screen.dart';
-import '../../company/Screens/employee_screen.dart';
+import '../../company/Screens/employees_list_screen.dart';
 
 // HR
-import '../../hr/screens/hr_Profile.dart';
 
 //employee
 
@@ -74,7 +85,7 @@ GoRouter createRouter(AuthBloc authBloc) {
 
       final role = session?.role;
       final isLoggedIn = session != null;
-      final isFullRegistered = session?.isFullRegistered;
+      final isFullRegistered = session?.isFullRegistered ?? false;
       final path = state.uri.path;
       final isSplash = path == '/';
       final isLogin = path == '/login';
@@ -116,7 +127,6 @@ GoRouter createRouter(AuthBloc authBloc) {
       if (!isLoggedIn) {
         return isLogin ? null : '/login';
       }
-    
 
       // If logged in and currently on the login page, redirect to role dashboard
       if (isLogin) {
@@ -148,7 +158,7 @@ GoRouter createRouter(AuthBloc authBloc) {
       GoRoute(
         path: '/get_face',
         builder: (context, state) {
-          print('GET_FACE ROUTE HIT');
+          debugPrint('GET_FACE ROUTE HIT');
           return const FaceCaptureView();
         },
       ),
@@ -184,6 +194,35 @@ GoRouter createRouter(AuthBloc authBloc) {
           return BlocProvider(
             create: (_) => EmpFullRegBloc(),
             child: const EmployeeOnboardingScreen(),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/emp/attendance',
+        builder: (context, state) {
+          return BlocProvider(
+            create: (_) => SelfAttendanceBloc(),
+            child: const SelfAttendanceScreen(),
+          );
+        },
+      ),
+      GoRoute(
+        // The colon (:) creates a dynamic path parameter named employeeId
+        path: '/onboarding/review/:employeeId',
+        builder: (context, state) {
+          // Extract the dynamic parameter value safely from pathParameters
+          final String employeeId = state.pathParameters['employeeId'] ?? '';
+
+          // Wrap the screen inside BlocProvider to manage local memory states
+          return BlocProvider(
+            create: (context) =>
+                OnboardingReviewBloc(
+                  repository:
+                      OnboardingRepository(), // Inject the API repo layer
+                )..add(
+                  LoadOnboardingDetails(employeeId),
+                ), // Instantly triggers the GET API call on load
+            child: const OnboardingReviewScreen(),
           );
         },
       ),
@@ -256,8 +295,21 @@ GoRouter createRouter(AuthBloc authBloc) {
           GoRoute(
             path: '/company/employees',
             builder: (context, state) {
-              final employeeType = state.extra as String;
-              return EmployeeListScreen(employeeType: employeeType);
+              final Map<String, dynamic>? data =
+                  state.extra as Map<String, dynamic>?;
+
+              // Provide default fallback values to ensure strict linter satisfaction
+              final String role = data?['role'] ?? 'EMPLOYEE';
+              final String? dataType = data?['department'];
+
+              return BlocProvider(
+                // Immediately trigger the fetch call the exact moment this route mounts
+                create: (context) => EmployeeListBloc()
+                  ..add(
+                    FetchEmployeesEvent(role: role, dataType: dataType ?? ''),
+                  ),
+                child: EmployeeListScreen(role: role, dataType: dataType),
+              );
             },
           ),
 
@@ -308,12 +360,24 @@ GoRouter createRouter(AuthBloc authBloc) {
           GoRoute(
             path: '/hr/employees',
             builder: (context, state) {
-              return EmployeeListScreen(employeeType: '');
+              final Map<String, dynamic>? data =
+                  state.extra as Map<String, dynamic>?;
+
+              // Provide null or default values if they are not passed
+              final String? role = data?['role'];
+              final String? dataType = data?['department'];
+
+              return EmployeeListScreen(role: role!, dataType: dataType!);
             },
           ),
           GoRoute(
             path: '/hr/profile',
-            builder: (_, _) => const HrProfileScreen(),
+            builder: (context, state) {
+              return BlocProvider(
+                create: (_) => EmpProfileBloc(),
+                child: const EmpProfileScreen(),
+              );
+            },
           ),
 
           GoRoute(
@@ -345,12 +409,22 @@ GoRouter createRouter(AuthBloc authBloc) {
         routes: [
           GoRoute(
             path: '/emp/dashboard',
-            builder: (_, _) => const EmpDashboardScreen(),
+            builder: (context, state) {
+              return BlocProvider(
+                create: (context) => EmpDashboardBloc(RepositoryEmpDashboard()),
+                child: const EmpDashboardScreen(),
+              );
+            },
           ),
 
           GoRoute(
             path: '/emp/profile',
-            builder: (_, _) => const HrProfileScreen(),
+            builder: (context, state) {
+              return BlocProvider(
+                create: (_) => EmpProfileBloc(),
+                child: const EmpProfileScreen(),
+              );
+            },
           ),
         ],
       ),

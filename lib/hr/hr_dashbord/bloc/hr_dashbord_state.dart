@@ -17,50 +17,27 @@ class HrDashboardError extends HrDashboardState {
 }
 
 class HrDashboardLoaded extends HrDashboardState {
-  final HrDashboardModel data;
+  final bool? loading;
+  final HrDashboardModel dashboardData;
+  final String? errorMessage; // Keeps track of temporary errors like failed check-ins
 
-  const HrDashboardLoaded(this.data);
-}
+  // Remove the closing brace here and pass clean defaults
+  HrDashboardLoaded(
+    this.dashboardData, {
+    this.errorMessage,
+    this.loading = false,
+  }); // <--- FIX: Ended with a semicolon, class body remains open!
 
-/// ================= ATTENDANCE STATUS =================
-enum AttendanceStatus {
-  initial,
-  loading,
-  checkedIn,
-  checkedOut,
-  failure,
-}
-
-/// ================= ATTENDANCE STATE =================
-/// (Still SAME state hierarchy, no splitting)
-class HrDashboardAttendanceState extends HrDashboardState {
-  final AttendanceStatus status;
-  final bool isCheckedIn;
-  final Duration workingDuration;
-  final String? message;
-  final DateTime? checkInTime;
-
-  const HrDashboardAttendanceState({
-    this.status = AttendanceStatus.initial,
-    this.isCheckedIn = false,
-    this.workingDuration = Duration.zero,
-    this.message,
-    this.checkInTime,
-  });
-
-  HrDashboardAttendanceState copyWith({
-    AttendanceStatus? status,
-    bool? isCheckedIn,
-    Duration? workingDuration,
-    String? message,
-    DateTime? checkInTime,
+  // FIX: This method is now safely nested inside the class body parameters
+  HrDashboardLoaded copyWith({
+    HrDashboardModel? dashboardData,
+    bool? loading,
+    String? errorMessage, 
   }) {
-    return HrDashboardAttendanceState(
-      status: status ?? this.status,
-      isCheckedIn: isCheckedIn ?? this.isCheckedIn,
-      workingDuration: workingDuration ?? this.workingDuration,
-      message: message ?? this.message,
-      checkInTime: checkInTime ?? this.checkInTime,
+    return HrDashboardLoaded(
+      dashboardData ?? this.dashboardData,
+      loading: loading ?? this.loading,
+      errorMessage: errorMessage ?? this.errorMessage, 
     );
   }
-}
+} // <--- FIX: This single brace now closes the entire class body correctly

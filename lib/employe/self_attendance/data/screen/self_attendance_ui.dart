@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:goexperts/core/widgets/dropdown_list.dart';
 import 'package:intl/intl.dart';
 
 import '../../bloc/self_attendance_bloc.dart';
@@ -22,7 +23,7 @@ class _SelfAttendanceScreenState extends State<SelfAttendanceScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<AttendanceBloc>().add(AttendanceStarted());
+    context.read<SelfAttendanceBloc>().add(AttendanceStarted());
   }
 
   @override
@@ -35,7 +36,7 @@ class _SelfAttendanceScreenState extends State<SelfAttendanceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AttendanceBloc, AttendanceState>(
+    return BlocBuilder<SelfAttendanceBloc, SelfAttendanceState>(
       builder: (context, state) {
         return Scaffold(
           backgroundColor: const Color(0xFFF4F6FA),
@@ -61,146 +62,182 @@ class _SelfAttendanceScreenState extends State<SelfAttendanceScreen> {
     );
   }
 
-  Widget _buildHeader(AttendanceState state) {
+  Widget _buildHeader(SelfAttendanceState state) {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
-      color: Colors.white,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  width: double.infinity,
+  // 1. Sleek, clean background with standard shadow layer definition
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(16),
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.04),
+        blurRadius: 12,
+        offset: const Offset(0, 4),
+      ),
+    ],
+  ),
+  padding: const EdgeInsets.all(20),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      // 2. Clear visual header section hierarchy
+      const Text(
+        'Attendance Filters',
+        style: TextStyle(
+          fontSize: 16, 
+          color: Color(0xFF111827),
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      const SizedBox(height: 4),
+      const Text(
+        'Summary for the selected period configuration parameters',
+        style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
+      ),
+      
+      const SizedBox(height: 20),
+      
+      // 3. Dynamic layout spacing framework mapping elements explicitly
+      Wrap(
+        spacing: 12,
+        runSpacing: 14,
+        alignment: WrapAlignment.start,
+        crossAxisAlignment: WrapCrossAlignment.center,
         children: [
-          const Text(
-            'Attendance summary for the selected period',
-            style: TextStyle(fontSize: 14, color: Colors.black54),
+          _buildFilterChip(
+            width: 120,
+            label: 'Date',
+            value: state.date.isEmpty ? 'Any' : state.date,
+            onTap: () => _pickDate(context, state.date, (value) {
+              context.read<SelfAttendanceBloc>().add(AttendanceDateChanged(value));
+            }),
           ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: [
-              _buildFilterChip(
-                label: 'Date',
-                value: state.date.isEmpty ? 'Any' : state.date,
-                onTap: () => _pickDate(context, state.date, (value) {
-                  context.read<AttendanceBloc>().add(
-                    AttendanceDateChanged(value),
-                  );
-                }),
-              ),
-              _buildFilterChip(
-                label: 'From',
-                value: state.fromDate.isEmpty ? 'Start' : state.fromDate,
-                onTap: () => _pickDate(context, state.fromDate, (value) {
-                  context.read<AttendanceBloc>().add(
-                    AttendanceFromDateChanged(value),
-                  );
-                }),
-              ),
-              _buildFilterChip(
-                label: 'To',
-                value: state.toDate.isEmpty ? 'End' : state.toDate,
-                onTap: () => _pickDate(context, state.toDate, (value) {
-                  context.read<AttendanceBloc>().add(
-                    AttendanceToDateChanged(value),
-                  );
-                }),
-              ),
-              _buildDropdown(
-                label: 'Month',
-                value: state.month,
-                items: List.generate(12, (index) => (index + 1).toString()),
-                hint: 'Month',
-                onChanged: (value) {
-                  if (value != null) {
-                    context.read<AttendanceBloc>().add(
-                      AttendanceMonthChanged(value),
-                    );
-                  }
-                },
-              ),
-              _buildDropdown(
-                label: 'Year',
-                value: state.year,
-                items: List.generate(
-                  5,
-                  (index) => (DateTime.now().year - index).toString(),
-                ),
-                hint: 'Year',
-                onChanged: (value) {
-                  if (value != null) {
-                    context.read<AttendanceBloc>().add(
-                      AttendanceYearChanged(value),
-                    );
-                  }
-                },
-              ),
-              _buildDropdown(
-                label: 'Status',
-                value: state.status,
-                items: const [
-                  'PRESENT',
-                  'ABSENT',
-                  'LEAVE',
-                  'HALF_DAY',
-                  'EARLY_EXIT',
-                  'WEEK_OFF',
-                  'PENDING_VERIFICATION',
-                  'FUTURE',
-                ],
-                hint: 'Status',
-                onChanged: (value) {
-                  if (value != null) {
-                    context.read<AttendanceBloc>().add(
-                      AttendanceStatusChanged(value),
-                    );
-                  }
-                },
-              ),
-              _buildDropdown(
-                label: 'Sort',
-                value: state.sort,
-                items: const ['asc', 'desc'],
-                hint: 'Sort',
-                onChanged: (value) {
-                  if (value != null) {
-                    context.read<AttendanceBloc>().add(
-                      AttendanceSortChanged(value),
-                    );
-                  }
-                },
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  context.read<AttendanceBloc>().add(ApplyFilters());
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blueAccent,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-                child: const Text('Apply Filters'),
-              ),
-              const SizedBox(width: 10),
-              OutlinedButton(
-                onPressed: () {
-                  context.read<AttendanceBloc>().add(ResetFilters());
-                },
-                style: OutlinedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-                child: const Text('Reset'),
-              ),
+          _buildFilterChip(
+            width: 120,
+            label: 'From',
+            value: state.fromDate.isEmpty ? 'Start' : state.fromDate,
+            onTap: () => _pickDate(context, state.fromDate, (value) {
+              context.read<SelfAttendanceBloc>().add(AttendanceFromDateChanged(value));
+            }),
+          ),
+          _buildFilterChip(
+            label: 'To',
+            width: 120,
+            value: state.toDate.isEmpty ? 'End' : state.toDate,
+            onTap: () => _pickDate(context, state.toDate, (value) {
+              context.read<SelfAttendanceBloc>().add(AttendanceToDateChanged(value));
+            }),
+          ),
+          AppDropdown(
+            width: 120,
+            label: 'Month',
+            value: state.month,
+            items: List.generate(12, (index) => (index + 1).toString()),
+            
+            onChanged: (value) {
+              if (value != null) {
+                context.read<SelfAttendanceBloc>().add(AttendanceMonthChanged(value));
+              }
+            },
+          ),
+          AppDropdown(
+            label: 'Year',
+            value: state.year,
+            width: 120,
+            items: List.generate(5, (index) => (DateTime.now().year - index).toString()),
+           
+            onChanged: (value) {
+              if (value != null) {
+                context.read<SelfAttendanceBloc>().add(AttendanceYearChanged(value));
+              }
+            },
+          ),
+          AppDropdown(
+            width: 120,
+            label: 'Status',
+            value: state.status,
+            items: const [
+              'PRESENT', 'ABSENT', 'LEAVE', 'HALF_DAY', 
+              'EARLY_EXIT', 'WEEK_OFF', 'PENDING_VERIFICATION', 'FUTURE'
             ],
+            onChanged: (value) {
+              if (value != null) {
+                context.read<SelfAttendanceBloc>().add(AttendanceStatusChanged(value));
+              }
+            },
+          ),
+          AppDropdown(
+            width: 150,
+            label: 'Sort',
+            value: state.sort,
+            items: const ['asc', 'desc'],
+           
+            onChanged: (value) {
+              if (value != null) {
+                context.read<SelfAttendanceBloc>().add(AttendanceSortChanged(value));
+              }
+            },
           ),
         ],
       ),
-    );
+  
+      const SizedBox(height: 24),
+      
+      // 4. Clean bottom control deck (Moved out of Wrap layout completely to prevent shifting)
+      Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: ElevatedButton(
+              onPressed: () {
+                context.read<SelfAttendanceBloc>().add(ApplyFilters());
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2563EB), // Premium Cobalt Blue
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text(
+                'Apply Filters',
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            flex: 1,
+            child: OutlinedButton(
+              onPressed: () {
+                context.read<SelfAttendanceBloc>().add(ResetFilters());
+              },
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFF4B5563),
+                side: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text(
+                'Reset',
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+              ),
+            ),
+          ),
+        ],
+      ),
+    ],
+  ),
+
+);
   }
 
-  Widget _buildContent(AttendanceState state) {
+  Widget _buildContent(SelfAttendanceState state) {
     if (state.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -269,7 +306,7 @@ class _SelfAttendanceScreenState extends State<SelfAttendanceScreen> {
 
   Widget _statCard(String label, int value, Color color) {
     return Container(
-      width: 150,
+      width: 120,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -408,11 +445,14 @@ class _SelfAttendanceScreenState extends State<SelfAttendanceScreen> {
   Widget _buildFilterChip({
     required String label,
     required String value,
+    double?width,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
+      
       onTap: onTap,
       child: Container(
+        width: width??double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -436,38 +476,38 @@ class _SelfAttendanceScreenState extends State<SelfAttendanceScreen> {
     );
   }
 
-  Widget _buildDropdown({
-    required String label,
-    required String value,
-    required List<String> items,
-    required String hint,
-    required ValueChanged<String?> onChanged,
-  }) {
-    return SizedBox(
-      width: 130,
-      child: DropdownButtonFormField<String>(
-        value: value.isEmpty ? null : value,
-        decoration: InputDecoration(
-          labelText: label,
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 12,
-            vertical: 12,
-          ),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
-          filled: true,
-          fillColor: Colors.white,
-        ),
-        hint: Text(hint),
-        items: [
-          DropdownMenuItem(value: '', child: Text('Any $label')),
-          ...items.map(
-            (item) => DropdownMenuItem(value: item, child: Text(item)),
-          ),
-        ],
-        onChanged: onChanged,
-      ),
-    );
-  }
+  // Widget _buildDropdown({
+  //   required String label,
+  //   required String value,
+  //   required List<String> items,
+  //   required String hint,
+  //   required ValueChanged<String?> onChanged,
+  // }) {
+  //   return SizedBox(
+  //     width: 130,
+  //     child: DropdownButtonFormField<String>(
+  //       value: value.isEmpty ? null : value,
+  //       decoration: InputDecoration(
+  //         labelText: label,
+  //         contentPadding: const EdgeInsets.symmetric(
+  //           horizontal: 12,
+  //           vertical: 12,
+  //         ),
+  //         border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
+  //         filled: true,
+  //         fillColor: Colors.white,
+  //       ),
+  //       hint: Text(hint),
+  //       items: [
+  //         DropdownMenuItem(value: '', child: Text('Any $label')),
+  //         ...items.map(
+  //           (item) => DropdownMenuItem(value: item, child: Text(item)),
+  //         ),
+  //       ],
+  //       onChanged: onChanged,
+  //     ),
+  //   );
+  // }
 
   Future<void> _pickDate(
     BuildContext context,

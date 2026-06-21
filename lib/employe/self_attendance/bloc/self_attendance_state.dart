@@ -1,6 +1,6 @@
 import '../data/attendance_model.dart';
 
-class AttendanceState {
+class SelfAttendanceState {
   final bool isLoading;
   final String date;
   final String fromDate;
@@ -12,7 +12,7 @@ class AttendanceState {
   final SelfAttendanceResponse? attendanceResponse;
   final String errorMessage;
 
-  const AttendanceState({
+  const SelfAttendanceState({
     this.isLoading = false,
     this.date = '',
     this.fromDate = '',
@@ -25,7 +25,7 @@ class AttendanceState {
     this.errorMessage = '',
   });
 
-  AttendanceState copyWith({
+  SelfAttendanceState copyWith({
     bool? isLoading,
     String? date,
     String? fromDate,
@@ -37,7 +37,7 @@ class AttendanceState {
     SelfAttendanceResponse? attendanceResponse,
     String? errorMessage,
   }) {
-    return AttendanceState(
+    return SelfAttendanceState(
       isLoading: isLoading ?? this.isLoading,
       date: date ?? this.date,
       fromDate: fromDate ?? this.fromDate,

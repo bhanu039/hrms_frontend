@@ -398,14 +398,16 @@ Widget _baseCard({required Widget child}) {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // ================= LEFT ICON =================
-          Container(
-            height: 42,
-            width: 42,
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.15),
-              borderRadius: BorderRadius.circular(12),
+          Expanded(
+            child: Container(
+              height: 42,
+              width: 42,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(Icons.bar_chart_rounded, color: color, size: 22),
             ),
-            child: Icon(Icons.bar_chart_rounded, color: color, size: 22),
           ),
 
           const SizedBox(width: 12),
@@ -443,22 +445,24 @@ Widget _baseCard({required Widget child}) {
 
           // ================= TREND =================
           if (trend.isNotEmpty)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: trend == "up"
-                    ? Colors.green.withOpacity(0.12)
-                    : Colors.red.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                trend == "up" ? "↑" : "↓",
-                style: TextStyle(
-                  color: trend == "up" ? Colors.green : Colors.red,
-                  fontWeight: FontWeight.bold,
+           
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: trend == "up"
+                      ? Colors.green.withOpacity(0.12)
+                      : Colors.red.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  trend == "up" ? "↑" : "↓",
+                  style: TextStyle(
+                    color: trend == "up" ? Colors.green : Colors.red,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            ),
+         
         ],
       ),
     );

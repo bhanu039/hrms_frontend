@@ -25,6 +25,7 @@ class _InviteEmpScreenState extends State<InviteEmpScreen> {
   final salaryController = TextEditingController();
   final joiningDateController = TextEditingController();
   final positionController = TextEditingController();
+  final officeDaysController = TextEditingController();
   String? role;
   String? roleController;
 
@@ -155,10 +156,48 @@ class _InviteEmpScreenState extends State<InviteEmpScreen> {
                                 );
                               },
                             ),
+                            const SizedBox(height: 12),
+                            DropdownButtonFormField<String>(
+                              value: state
+                                  .workModel, // Ensure your state variable maps to the string values below
+                              decoration: _dropdownDecoration("WorkMode"),
+
+                              // FIX: Hardcoded work mode options mapped directly to items
+                              items: const [
+                                DropdownMenuItem(
+                                  value: 'WFH',
+                                  child: Text('Work From Home (WFH)'),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'WFO',
+                                  child: Text('Work From Office (WFO)'),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'HYBRID',
+                                  child: Text('Hybrid Work Model'),
+                                ),
+                              ],
+                              onChanged: (value) {
+                                if (value != null) {
+                                  context.read<InviteEmpBloc>().add(
+                                    SelectDesignation(
+                                      value,
+                                    ), // Sends WFH, WFO, or HYBRID directly to your Bloc
+                                  );
+                                }
+                              },
+                            ),
                           ],
                         ),
 
                         const SizedBox(height: 16),
+                        if (state.workModel == "HYBRID")
+                          CustomTextField(
+                            label: "Expected OfficeDays",
+                            controller: officeDaysController,
+                            maxLength: 2,
+                            keyboardType: TextInputType.number,
+                          ),
 
                         /// ================= EMPLOYMENT TYPE =================
                         _SectionCard(
@@ -259,10 +298,16 @@ class _InviteEmpScreenState extends State<InviteEmpScreen> {
                                       "name": nameController.text.trim(),
                                       "role": roleController,
                                       "isNewHire": isNew,
+
                                       "departmentId":
                                           state.selectedDepartmentId,
                                       "designationId":
                                           state.selectedDesignationId,
+                                      "workModel": state.workModel,
+                                      if (state.workModel == "HYBRID")
+                                        "expectedOfficeDays":
+                                            officeDaysController.text.trim(),
+
                                       if (isNew)
                                         "offerData": {
                                           "salary":

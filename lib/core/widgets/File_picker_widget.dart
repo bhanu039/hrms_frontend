@@ -74,16 +74,18 @@ class _FileUploadWidgetState extends State<FileUploadWidget> {
           const Icon(Icons.upload_file),
 
           const SizedBox(width: 12),
-          Text(
-            widget.label,
-             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey.shade800,
-            ),
-          ),
-          Expanded(
+          Column(
+            children: [
+              Text(
+                widget.label,
+                 overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey.shade800,
+                ),
+              ),
+               Expanded(
             child: Text(
               file != null ? file!.path.split('/').last : "Upload File",
               style: const TextStyle(fontSize: 14),
@@ -96,6 +98,9 @@ class _FileUploadWidgetState extends State<FileUploadWidget> {
           ],
 
           TextButton(onPressed: pickFile, child: const Text("Pick")),
+            ],
+          ),
+         
         ],
       ),
     );

@@ -3,17 +3,14 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import '../../company/models/company_model.dart';
-import '../../company/models/employee_model.dart';
+import '../../hr/emp_list/employee_model.dart';
 import '../../company/models/plan_model.dart';
 import '../state/models/Employee_data_Model.dart';
 import 'api_client.dart';
 import 'dart:io';
 
 class ApiService {
-
   @override
-  
-  
   // 🔥 OPTIONAL: Wake up server (Render fix)
   static Future<void> wakeUpServer() async {
     try {
@@ -35,8 +32,6 @@ class ApiService {
       options: Options(validateStatus: (status) => true),
     );
   }
-
-  
 
   static Future<Map<String, dynamic>> getCompanies() async {
     try {
@@ -228,18 +223,23 @@ class ApiService {
     return null;
   }
 
-  static Future<List<EmployeeModel>> getEmployees(employeeTypes) async {
-    final response;
-    if(employeeTypes == 'EMPLOYEE'){
-    response = await ApiClient.dio.get("api/employee?role=$employeeTypes");
+  static Future<List<EmployeeModel>> getEmployees(
+    String? employeeTypes,
+   String? dataType,
+  ) async {
+    final  response;
+    if (dataType != "saftDelete") {
+      if (employeeTypes == 'EMPLOYEE') {
+        response = await ApiClient.dio.get("api/employee?role=$employeeTypes");
+      } else if (employeeTypes == 'HR') {
+        response = await ApiClient.dio.get("api/employee?role=$employeeTypes");
+      } else {
+        response = await ApiClient.dio.get("api/employee");
+      }
+    }else{
+        response = await ApiClient.dio.get("api/employee/deleted-list");
+      
     }
-    else if(employeeTypes == 'HR'){
-      response = await ApiClient.dio.get("api/employee?role=$employeeTypes");
-    }
-    else{
-      response = await ApiClient.dio.get("api/employee");
-    }
-    
 
     print("EMPLOYEE RESPONSE => ${response.data}");
 
@@ -251,13 +251,25 @@ class ApiService {
 
     throw Exception("Failed to load employees");
   }
+ Future<Response> createEmployee(Map<String, dynamic> data) async {
+    final response = await ApiClient.dio.post("api/invite/invite", data: data);
+    print("CREATE EMPLOYEE RESPONSE => ${response.data}");
+    return response;
+  }
 
-  Future<Response> createEmployee(Map<String, dynamic> data) async {
-    
-      final response = await ApiClient.dio.post("api/invite/invite", data: data);
-      print("CREATE EMPLOYEE RESPONSE => ${response.data}");
-      return response;
-   
+
+
+
+  Future<bool> softDeleteEmp(id) async {
+    final response = await ApiClient.dio.delete("api/employee/$id");
+    print("CREATE EMPLOYEE RESPONSE => ${response.data}");
+    return response.data["success"];
+  }
+  
+  Future<bool> activateEmp(String? id) async {
+    final response = await ApiClient.dio.post("api/onboarding/finalize-joining/$id");
+    print("CREATE EMPLOYEE RESPONSE => ${response.data}");
+    return response.data["success"];
   }
 
   static Future<EmployeeDataModel> getFullDetailsEmployee(
@@ -300,8 +312,6 @@ class ApiService {
     return await ApiClient.dio.put("api/company/update", data: formData);
   }
 
-
-
   static Future<Map<String, dynamic>> getEmpProfile({
     required String id,
   }) async {
@@ -339,7 +349,8 @@ class ApiService {
 
     return res.data;
   }
-   Future<Map<String, dynamic>> fullRegisterEmployee({
+
+  Future<Map<String, dynamic>> fullRegisterEmployee({
     required String id,
     required FormData body,
   }) async {
@@ -353,5 +364,4 @@ class ApiService {
 
     return res.data;
   }
-
 }

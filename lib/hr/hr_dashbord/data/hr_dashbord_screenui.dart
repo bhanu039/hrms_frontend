@@ -1,9 +1,14 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/state/auth/auth_bloc.dart';
+import '../../../core/widgets/face_detact.dart';
+import '../../../core/widgets/location_get.dart';
 import '../../../core/widgets/swipe_checkIn_button.dart';
+import '../../../core/widgets/work_update.dart';
 import '../../screens/hr_menu.dart';
 import '../bloc/hr_dashbord_bloc.dart';
 import '../bloc/hr_dashbord_state.dart';
@@ -19,22 +24,32 @@ class HrDashboardScreen extends StatefulWidget {
 }
 
 class _HrDashboardScreenState extends State<HrDashboardScreen> {
-  late String name;
+    late String name;
+  File? imagefile;
+  String? workType;
   bool condition = false;
   String? errorMessage;
+  double? longitude;
+  double? latitude;
+  String? worktype;
+  String? workDis;
 
-  bool? isCheckedIn;
+  bool isCheckedIn = false;
   bool isFinished = false;
   bool isLoading = false;
+  bool isLocation = false;
+  bool isImage = false;
+  bool iswork = false;
 
   Duration workingDuration = Duration.zero;
 
   @override
   void initState() {
-    super.initState();
-    name = context.read<AuthBloc>().state.session?.name ?? "HR";
+        name = context.read<AuthBloc>().state.session?.name ?? "HR";
 
     context.read<HrDashboardBloc>().add(LoadHrDashboard());
+    super.initState();
+
   }
 
   Future<void> _refresh() async {
@@ -42,10 +57,110 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
   }
 
   Future<void> _checkIn() async {
+    await showReasonDialog(context);
+    workType != null
+        ? await location()
+        : CustomDialog.show(
+            context: context,
+            title: "Work Type",
+            message: "Please Select work type .",
+            icon: Icons.error,
+            color: Colors.red,
+          );
+    isImage
+        ? context.read<HrDashboardBloc>().add(
+            CheckInRequested(
+              image: imagefile!,
+              latitude: latitude!,
+              longitude: longitude!,
+              mode: workType!,
+            ),
+          )
+        : CustomDialog.show(
+            context: context,
+            title: "face Not Detected",
+            message: "Please capture a clear selfie.",
+            icon: Icons.error,
+            color: Colors.red,
+          );
     setState(() => isCheckedIn = true);
   }
 
+  Future<void> facecapture() async {
+    final File? image = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const FaceCaptureView()),
+    );
+
+    if (image != null) {
+      setState(() {
+        isImage = true;
+        imagefile = image;
+      });
+
+      print("Image path: ${image.path}");
+    }
+    setState(() => isCheckedIn = false);
+  }
+
+  Future<void> location() async {
+    final location = await LocationHelper.getCurrentLocation();
+
+    setState(() {
+      latitude = location?["latitude"];
+      longitude = location?["longitude"];
+      isLocation = true;
+    });
+    isLocation
+        ? await facecapture()
+        : CustomDialog.show(
+            context: context,
+            title: "Location Not Detected",
+            message: "Please capture a clear selfie.",
+            icon: Icons.error,
+            color: Colors.red,
+          );
+  }
+
+  Future<void> _workupdate() async {
+    final work = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const WorkSubmissionScreen()),
+    );
+    if (work != null) {
+      setState(() {
+        iswork = true;
+        workType = work["title"];
+        workDis = work["description"];
+      });
+    }
+  }
+
   Future<void> _checkOut() async {
+    await _workupdate();
+    iswork ?await location():CustomDialog.show(
+            context: context,
+            title: "Work not Updated",
+            message: "Please Update Work.",
+            icon: Icons.error,
+            color: Colors.red,
+          );
+
+    isImage
+        ? context.read<HrDashboardBloc>().add(
+            CheckOutRequested(
+              image: imagefile!,
+              latitude: latitude!,
+              longitude: longitude!,
+            ),
+          )
+        : CustomDialog.show(
+            context: context,
+            title: "face Not Detected",
+            message: "Please capture a clear selfie.",
+            icon: Icons.error,
+            color: Colors.red,
+          );
     setState(() => isCheckedIn = false);
   }
 
@@ -88,6 +203,7 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
           builder: (context, state) {
             HrDashboardModel? d;
             if (state is HrDashboardError) {
+            
               condition = false;
               isCheckedIn = false;
 
@@ -96,8 +212,11 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
             }
 
             if (state is HrDashboardLoaded) {
+
+             errorMessage=state.errorMessage;
+             isLoading=state.loading!;
               condition = true;
-              d = state.data;
+              d = state.dashboardData;
               isCheckedIn = d.selfAttendance?.status ?? false;
             }
 
@@ -200,7 +319,7 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
 
   // ---------------- CHECK IN OUT ----------------
   Widget _checkInCard(HrDashboardModel d) {
-    return Container(
+    return isLoading?const Center(child: CircularProgressIndicator()):Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -233,9 +352,11 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
           SwipeCheckInButton(
             isCheckedIn: isCheckedIn!,
             onCheckIn: () async {
+             
               _checkIn();
             },
             onCheckOut: () async {
+              
               _checkOut();
             },
           ),
@@ -548,4 +669,58 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
       ),
     );
   }
+
+  Future<void> showReasonDialog(BuildContext context) async {
+    String? selectedValue;
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text("Select Reason"),
+              content: DropdownButtonFormField<String>(
+                value: selectedValue,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: "Choose Reason",
+                ),
+                items: const [
+                  DropdownMenuItem(value: "WFH", child: Text("Work From Home")),
+                  DropdownMenuItem(
+                    value: "WFO",
+                    child: Text("Work From Office"),
+                  ),
+
+               
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    selectedValue = value;
+                  });
+                },
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("Cancel"),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    workType = selectedValue;
+                    print(selectedValue);
+
+                    Navigator.pop(context);
+                  },
+                  child: const Text("Submit"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
 }
+

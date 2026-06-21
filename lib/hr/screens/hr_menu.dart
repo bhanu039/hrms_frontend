@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:goexperts/company/Screens/employee_screen.dart';
-import 'package:goexperts/employe/emp_full_reg/screen/emp_full_reg_ui.dart';
-import 'package:goexperts/hr/screens/hr_Profile.dart';
 
 import '../../company/Screens/open_map.dart';
 import '../../core/widgets/location_get.dart';
@@ -12,7 +9,6 @@ import '../../login_screen.dart';
 import '../../core/state/auth/auth_bloc.dart';
 import '../../core/state/auth/auth_event.dart';
 import '../../core/widgets/menu_widget.dart';
-import '../attendance/screen/emps_attendence.dart';
 
 class HrDrawer extends StatelessWidget {
   const HrDrawer({super.key});
@@ -63,7 +59,7 @@ class HrDrawer extends StatelessWidget {
                   icon: Icons.people,
                   title: 'Employees',
                   subtitle: 'Teams and staff records',
-                  onTap: () => context.push('/hr/employees'),
+                  onTap: () => context.push('/company/employees' ,extra: {'role': '', 'department': ''},),
                 ),
                 DrawerWidgets.menuTile(
                   context,

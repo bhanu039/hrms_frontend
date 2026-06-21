@@ -1,8 +1,7 @@
 import 'dart:io';
-
 import 'package:camera/camera.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 
 class FaceCaptureView extends StatefulWidget {
@@ -13,235 +12,372 @@ class FaceCaptureView extends StatefulWidget {
 }
 
 class _FaceCaptureViewState extends State<FaceCaptureView> {
-  CameraController? _controller;
+  CameraController? _cameraController;
+  CameraDescription? _camera;
   late FaceDetector _faceDetector;
 
-  bool isReady = false;
-  bool isFaceDetected = false;
-  bool areEyesOpen = false;
+  bool _isInitialized = false;
   bool _isProcessing = false;
+
+  bool _faceDetected = false;
+  bool _eyesOpen = false;
+  String? _statusMessage;
+
+  static const _orientations = {
+    DeviceOrientation.portraitUp: 0,
+    DeviceOrientation.landscapeLeft: 90,
+    DeviceOrientation.portraitDown: 180,
+    DeviceOrientation.landscapeRight: 270,
+  };
 
   @override
   void initState() {
     super.initState();
-    _initDetector();
-    _initCamera();
+    _initializeFaceDetector();
+    _initializeCamera();
   }
 
-  void _initDetector() {
+  void _initializeFaceDetector() {
     _faceDetector = FaceDetector(
       options: FaceDetectorOptions(
+        enableClassification: true,
         enableLandmarks: true,
-        enableClassification: true, // 👈 required for eyes open detection
-        performanceMode: FaceDetectorMode.fast,
+        performanceMode: FaceDetectorMode.accurate,
       ),
     );
   }
 
-  Future<void> _initCamera() async {
-    final cameras = await availableCameras();
-    final front = cameras.firstWhere(
-      (camera) => camera.lensDirection == CameraLensDirection.front,
-      orElse: () => cameras.first,
-    );
+  Future<void> _initializeCamera() async {
+    try {
+      final cameras = await availableCameras();
 
-    _controller = CameraController(
-      front,
-      ResolutionPreset.high,
-      enableAudio: false,
-    );
+      if (cameras.isEmpty) {
+        _setStatus('No camera found on this device');
+        return;
+      }
 
-    await _controller!.initialize();
+      final frontCamera = cameras.firstWhere(
+        (e) => e.lensDirection == CameraLensDirection.front,
+        orElse: () => cameras.first,
+      );
+      _camera = frontCamera;
 
-    if (!mounted) return;
+      _cameraController = CameraController(
+        frontCamera,
+        ResolutionPreset.medium,
+        enableAudio: false,
+        imageFormatGroup: Platform.isAndroid
+            ? ImageFormatGroup.nv21
+            : ImageFormatGroup.bgra8888,
+      );
 
-    setState(() => isReady = true);
+      await _cameraController!.initialize();
 
-    _startFaceDetection();
+      if (!mounted) return;
+      setState(() {
+        _isInitialized = true;
+        _statusMessage = null;
+      });
+
+      _startDetection();
+    } catch (e) {
+      debugPrint('Camera initialization error: $e');
+      _setStatus('Unable to start camera');
+    }
   }
 
-  void _startFaceDetection() {
-    _controller!.startImageStream((CameraImage image) async {
-      if (_isProcessing) return;
+  void _startDetection() {
+    _cameraController?.startImageStream((CameraImage image) async {
+      if (_isProcessing || !mounted) return;
+
       _isProcessing = true;
 
       try {
-        final inputImage = _convertCameraImage(image);
+        final inputImage = _inputImageFromCameraImage(image);
+        if (inputImage == null) {
+          _setStatus('Unsupported camera image format');
+          return;
+        }
+
         final faces = await _faceDetector.processImage(inputImage);
 
         if (faces.isNotEmpty) {
           final face = faces.first;
-          final leftEye = face.leftEyeOpenProbability ?? 0.0;
-          final rightEye = face.rightEyeOpenProbability ?? 0.0;
 
-          debugPrint('Face detected! Left eye: $leftEye, Right eye: $rightEye');
+          final left = face.leftEyeOpenProbability ?? 0.0;
 
-          setState(() {
-            isFaceDetected = true; // Green border when face appears
-            // Button enabled only when both eyes are open (> 0.5)
-            areEyesOpen = leftEye > 0.5 && rightEye > 0.5;
-            debugPrint('Eyes open: $areEyesOpen');
-          });
+          final right = face.rightEyeOpenProbability ?? 0.0;
+
+          final eyesOpen = left > 0.7 && right > 0.7;
+
+          if (mounted) {
+            setState(() {
+              _faceDetected = true;
+              _eyesOpen = eyesOpen;
+              _statusMessage = null;
+            });
+          }
         } else {
-          debugPrint('No face detected');
-          setState(() {
-            isFaceDetected = false;
-            areEyesOpen = false;
-          });
+          if (mounted) {
+            setState(() {
+              _faceDetected = false;
+              _eyesOpen = false;
+            });
+          }
         }
       } catch (e) {
         debugPrint('Face detection error: $e');
+        _setStatus('Face detection is not available right now');
       } finally {
         _isProcessing = false;
       }
     });
   }
 
-  InputImage _convertCameraImage(CameraImage image) {
-    final WriteBuffer allBytes = WriteBuffer();
+  InputImage? _inputImageFromCameraImage(CameraImage image) {
+    final camera = _camera;
+    final controller = _cameraController;
+    if (camera == null || controller == null) return null;
 
-    for (final plane in image.planes) {
-      allBytes.putUint8List(plane.bytes);
+    final sensorOrientation = camera.sensorOrientation;
+    InputImageRotation? rotation;
+
+    if (Platform.isIOS) {
+      rotation = InputImageRotationValue.fromRawValue(sensorOrientation);
+    } else if (Platform.isAndroid) {
+      var rotationCompensation =
+          _orientations[controller.value.deviceOrientation];
+      if (rotationCompensation == null) return null;
+
+      if (camera.lensDirection == CameraLensDirection.front) {
+        rotationCompensation = (sensorOrientation + rotationCompensation) % 360;
+      } else {
+        rotationCompensation =
+            (sensorOrientation - rotationCompensation + 360) % 360;
+      }
+
+      rotation = InputImageRotationValue.fromRawValue(rotationCompensation);
     }
 
-    final bytes = allBytes.done().buffer.asUint8List();
+    if (rotation == null) return null;
 
-    final Size imageSize = Size(
-      image.width.toDouble(),
-      image.height.toDouble(),
-    );
+    final format = InputImageFormatValue.fromRawValue(image.format.raw);
+    final isSupportedFormat =
+        (Platform.isAndroid && format == InputImageFormat.nv21) ||
+        (Platform.isIOS && format == InputImageFormat.bgra8888);
 
-    final camera = _controller!.description;
+    if (format == null || !isSupportedFormat || image.planes.length != 1) {
+      debugPrint(
+        'Unsupported image format: ${image.format.raw}, '
+        'planes: ${image.planes.length}',
+      );
+      return null;
+    }
 
-    // Use actual sensor orientation for both front and back cameras
-    final imageRotation =
-        InputImageRotationValue.fromRawValue(camera.sensorOrientation) ??
-        InputImageRotation.rotation0deg;
-
-    final inputImageFormat =
-        InputImageFormatValue.fromRawValue(image.format.raw) ??
-        InputImageFormat.yuv420;
-
-    debugPrint(
-      'Image: ${image.width}x${image.height}, Format: ${image.format}, Rotation: $imageRotation, SensorOrientation: ${camera.sensorOrientation}',
-    );
+    final plane = image.planes.first;
 
     return InputImage.fromBytes(
-      bytes: bytes,
+      bytes: plane.bytes,
       metadata: InputImageMetadata(
-        size: imageSize,
-        rotation: imageRotation,
-        format: inputImageFormat,
-        bytesPerRow: image.planes.first.bytesPerRow,
+        size: Size(image.width.toDouble(), image.height.toDouble()),
+        rotation: rotation,
+        format: format,
+        bytesPerRow: plane.bytesPerRow,
       ),
     );
   }
 
-  Future<void> _capture() async {
-    if (_controller == null || !_controller!.value.isInitialized) {
-      debugPrint('Camera not ready for capture');
-      return;
-    }
+  void _setStatus(String message) {
+    if (!mounted) return;
+    if (_statusMessage == message) return;
+    setState(() {
+      _statusMessage = message;
+    });
+  }
+
+  Future<void> _captureImage() async {
+    debugPrint("CAPTURE BUTTON CLICKED");
 
     try {
-      debugPrint('Starting capture process...');
+      final controller = _cameraController;
+      if (controller == null || !controller.value.isInitialized) {
+        _setStatus('Camera is not ready');
+        return;
+      }
 
-      // Stop image stream before capture
-      await _controller!.stopImageStream();
-      debugPrint('Image stream stopped');
+      debugPrint("Stopping stream");
 
-      // Add a small delay to ensure stream is fully stopped
-      await Future.delayed(const Duration(milliseconds: 100));
+      if (controller.value.isStreamingImages) {
+        await controller.stopImageStream();
+      }
 
-      debugPrint('Taking picture...');
-      final xfile = await _controller!.takePicture();
-      debugPrint('Image captured successfully: ${xfile.path}');
-      final file = File(xfile.path);
+      debugPrint("Taking picture");
+
+      final XFile file = await controller.takePicture();
+
+      debugPrint("IMAGE PATH = ${file.path}");
+
+      await controller.dispose();
+      _cameraController = null;
+      _isInitialized = false;
 
       if (mounted) {
-        Navigator.pop(context, file);
+        Navigator.pop(context, File(file.path));
       }
-    } catch (e) {
-      debugPrint('Capture error type: ${e.runtimeType}');
-      debugPrint('Capture error message: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Capture failed: ${e.toString().substring(0, 50)}'),
-          ),
-        );
-      }
-      // Resume stream on error
-      _startFaceDetection();
+    } catch (e, s) {
+      debugPrint("CAPTURE ERROR = $e");
+      debugPrintStack(stackTrace: s);
     }
   }
 
   @override
   void dispose() {
-    _controller?.dispose();
+    _cameraController?.dispose();
     _faceDetector.close();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!isReady || _controller == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    final canCapture = _faceDetected && _eyesOpen;
+
+    if (!_isInitialized || _cameraController == null) {
+      return Scaffold(
+        backgroundColor: Colors.black,
+        body: Center(
+          child: _statusMessage == null
+              ? const CircularProgressIndicator()
+              : Text(
+                  _statusMessage!,
+                  style: const TextStyle(color: Colors.white),
+                  textAlign: TextAlign.center,
+                ),
+        ),
+      );
     }
 
-    final canCapture = isFaceDetected && areEyesOpen;
-
     return Scaffold(
+      backgroundColor: Colors.black,
       body: Stack(
         children: [
-          CameraPreview(_controller!),
+          CameraPreview(_cameraController!),
 
-          Container(color: Colors.black.withOpacity(0.2)),
+          Container(color: Colors.black.withValues(alpha: 0.25)),
 
           Center(
-            child: Container(
-              width: 260,
-              height: 340,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              width: 280,
+              height: 360,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(200),
                 border: Border.all(
-                  color: canCapture ? Colors.green : Colors.red,
-                  width: 4,
+                  color: canCapture ? Colors.greenAccent : Colors.redAccent,
+                  width: 5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: canCapture
+                        ? Colors.greenAccent.withValues(alpha: 0.5)
+                        : Colors.redAccent.withValues(alpha: 0.5),
+                    blurRadius: 20,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          Positioned(
+            top: 70,
+            left: 20,
+            right: 20,
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        _faceDetected ? Icons.check_circle : Icons.cancel,
+                        color: _faceDetected ? Colors.green : Colors.red,
+                      ),
+                      const SizedBox(width: 10),
+                      const Text(
+                        "Face Detected",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Icon(
+                        _eyesOpen ? Icons.visibility : Icons.visibility_off,
+                        color: _eyesOpen ? Colors.green : Colors.red,
+                      ),
+                      const SizedBox(width: 10),
+                      const Text(
+                        "Eyes Open",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          Positioned(
+            bottom: 140,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Text(
+                _statusMessage ??
+                    (canCapture
+                        ? "Perfect! Ready to Capture"
+                        : "Align your face and keep eyes open"),
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
           ),
 
           Positioned(
-            bottom: 120,
-            left: 0,
-            right: 0,
-            child: Column(
-              children: [
-                Icon(
-                  canCapture ? Icons.check_circle : Icons.error,
-                  color: canCapture ? Colors.green : Colors.red,
-                  size: 30,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  canCapture
-                      ? "Perfect! Ready to capture"
-                      : "Keep your face inside frame & open eyes",
-                  style: const TextStyle(color: Colors.white),
-                ),
-              ],
-            ),
-          ),
-
-          Positioned(
-            bottom: 40,
+            bottom: 50,
             left: 0,
             right: 0,
             child: Center(
-              child: ElevatedButton(
-                onPressed: canCapture ? _capture : null,
-                child: const Text("Capture"),
+              child: GestureDetector(
+                onTap: canCapture ? _captureImage : null,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  width: 85,
+                  height: 85,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: canCapture ? Colors.green : Colors.grey,
+                    boxShadow: [
+                      BoxShadow(
+                        color: (canCapture ? Colors.green : Colors.grey)
+                            .withValues(alpha: 0.5),
+                        blurRadius: 20,
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.camera_alt,
+                    color: Colors.white,
+                    size: 35,
+                  ),
+                ),
               ),
             ),
           ),

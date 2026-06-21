@@ -36,6 +36,7 @@ class EmpFullRegModel {
   String endYear;
 
   // ================= EXPERIENCE =================
+  bool isexperienced;
   String companyName;
   String role;
   String experienceStartDate;
@@ -122,7 +123,8 @@ class EmpFullRegModel {
     this.percentage = "",
     this.startYear = "",
     this.endYear = "",
-
+     
+    this.isexperienced=false,
     this.companyName = "",
     this.role = "",
     this.experienceStartDate = "",
@@ -207,6 +209,7 @@ class EmpFullRegModel {
     String? startYear,
     String? endYear,
 
+    bool?isexperienced,
     String? companyName,
     String? role,
     String? experienceStartDate,
@@ -288,7 +291,8 @@ class EmpFullRegModel {
       percentage: percentage ?? this.percentage,
       startYear: startYear ?? this.startYear,
       endYear: endYear ?? this.endYear,
-
+       
+       isexperienced:isexperienced??this.isexperienced,
       companyName: companyName ?? this.companyName,
       role: role ?? this.role,
       experienceStartDate: experienceStartDate ?? this.experienceStartDate,
@@ -370,7 +374,7 @@ class EmpFullRegModel {
           "contactPersonName": emergencyContactName,
           "relationship": emergencyRelation,
           "contactNumber": emergencyNumber,
-        }
+        },
       ],
       "education": [
         {
@@ -381,7 +385,7 @@ class EmpFullRegModel {
           "percentage": percentage,
           "startYear": startYear,
           "endYear": endYear,
-        }
+        },
       ],
       "experience": [
         {
@@ -391,7 +395,7 @@ class EmpFullRegModel {
           "endDate": experienceEndDate,
           "technologies": technologies,
           "responsibilities": responsibilities,
-        }
+        },
       ],
       "skills": {
         "primarySkills": primarySkills,
@@ -437,7 +441,7 @@ class EmpFullRegModel {
         "passport": passport?.path,
         "certificates": certificates?.path,
         "other": other?.path,
-      }
+      },
     };
   }
 }

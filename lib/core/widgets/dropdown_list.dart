@@ -3,15 +3,17 @@ import 'package:flutter/material.dart';
 class AppDropdown extends StatelessWidget {
   final String label;
   final String? value;
+  final double? width;
   final List<String> items;
   final void Function(String value)? onChanged;
-   final Widget? prefixIcon;
+  final Widget? prefixIcon;
   final Widget? suffixIcon;
-    final String? Function(String?)? validator;
+  final String? Function(String?)? validator;
 
   final IconData? icon;
 
   const AppDropdown({
+    this.width,
     super.key,
     required this.label,
     required this.value,
@@ -27,6 +29,7 @@ class AppDropdown extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
+      width: width??double.infinity,
       child: DropdownButtonFormField<String>(
         value: (value != null && value!.isNotEmpty) ? value : null,
         isExpanded: true,
@@ -34,7 +37,6 @@ class AppDropdown extends StatelessWidget {
         validator: validator,
 
         decoration: InputDecoration(
-          
           labelText: label,
           prefixIcon: icon != null ? Icon(icon) : null,
 
@@ -58,28 +60,30 @@ class AppDropdown extends StatelessWidget {
 
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(
-              color: Colors.blue,
-              width: 1.5,
-            ),
+            borderSide: const BorderSide(color: Colors.blue, width: 1.5),
           ),
         ),
 
         dropdownColor: Colors.white,
         elevation: 3,
+        items: [
+          DropdownMenuItem(value: '', child: Text('Any $label')),
+          ...items.map(
+            (item) => DropdownMenuItem(value: item, child: Text(item)),
+          ),
+        ],
 
-        items: items
-            .map(
-              (e) => DropdownMenuItem(
-                value: e,
-                child: Text(
-                  e,
-                  style: const TextStyle(fontSize: 14),
-                ),
-              ),
-            )
-            .toList(),
-
+        // items: items
+        //     .map(
+        //       (e) => DropdownMenuItem(
+        //         value: e,
+        //         child: Text(
+        //           e,
+        //           style: const TextStyle(fontSize: 14),
+        //         ),
+        //       ),
+        //     )
+        //     .toList(),
         onChanged: (newValue) {
           if (newValue != null) {
             onChanged?.call(newValue);

@@ -1,8 +1,9 @@
+import 'dart:convert';
+
 import 'package:dio/dio.dart';
 import 'package:goexperts/core/services/api_client.dart';
 
 import 'models/emp_fullreg.dart';
-
 
 class EmpFullRegRepository {
   final Dio _dio = ApiClient.dio;
@@ -11,9 +12,22 @@ class EmpFullRegRepository {
   Future<Response> submitOnboarding(EmpFullRegModel model) async {
     try {
       final formData = FormData();
+      final jsonMap = model.toJson();
 
       // ================= JSON DATA PART =================
-      formData.fields.add(MapEntry("data", model.toJson().toString()));
+      // Send each section as a separate stringified JSON field at the root level
+      formData.fields.addAll([
+        MapEntry("personal", jsonEncode(jsonMap["personal"])),
+        MapEntry("contact", jsonEncode(jsonMap["contact"])),
+        MapEntry("emergency", jsonEncode(jsonMap["emergency"])),
+        MapEntry("education", jsonEncode(jsonMap["education"])),
+        MapEntry("experience", jsonEncode(jsonMap["experience"])),
+        MapEntry("skills", jsonEncode(jsonMap["skills"])),
+        MapEntry("bank", jsonEncode(jsonMap["bank"])),
+        MapEntry("nominee", jsonEncode(jsonMap["nominee"])),
+        MapEntry("compliance", jsonEncode(jsonMap["compliance"])),
+        MapEntry("isDeclaredTrue", jsonMap["isDeclaredTrue"].toString()),
+      ]);
 
       // ================= FILE UPLOADS =================
       if (model.aadhaar != null) {
@@ -43,7 +57,7 @@ class EmpFullRegRepository {
       if (model.educationProof != null) {
         formData.files.add(
           MapEntry(
-            "educationProof",
+            "education_proof", // Changed to snake_case to match backend
             await MultipartFile.fromFile(model.educationProof!.path),
           ),
         );
@@ -52,7 +66,7 @@ class EmpFullRegRepository {
       if (model.relievingLetter != null) {
         formData.files.add(
           MapEntry(
-            "relievingLetter",
+            "relieving_letter", // Changed to snake_case to match backend
             await MultipartFile.fromFile(model.relievingLetter!.path),
           ),
         );
@@ -111,7 +125,6 @@ class EmpFullRegRepository {
 
       // ================= API CALL =================
       final response = await _dio.put("/api/onboarding/finish", data: formData);
-
       return response;
     } catch (e) {
       rethrow;

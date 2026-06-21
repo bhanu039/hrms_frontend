@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:goexperts/company/Screens/employee_screen.dart';
+import 'package:goexperts/company/Screens/employees_list_screen.dart';
 
 import '../../core/state/auth/auth_bloc.dart';
 import '../../core/state/auth/auth_event.dart';
@@ -41,7 +41,37 @@ class CompanyDrawer extends StatelessWidget {
                     context.push('/company/profile');
                   },
                 ),
+               
+                DrawerWidgets.sectionTitle('Operations'),
                 DrawerWidgets.menuTile(
+                  context,
+                  icon: Icons.people,
+                  title: 'HRs',
+                  subtitle: 'Teams and staff records',
+                   onTap: () => context.push('/company/employees' ,extra: {'role': 'Hr', 'department': ''},)
+                ),
+                DrawerWidgets.menuTile(
+                  context,
+                  icon: Icons.people,
+                  title: 'Employees',
+                  subtitle: 'Teams and staff records',
+                  onTap: () => context.push('/company/employees' ,extra:{'role': 'EMPLOYEE', 'department': ''},),
+                ),
+                 DrawerWidgets.menuTile(
+                  context,
+                  icon: Icons.people,
+                  title: 'deleted Employees',
+                  subtitle: 'Teams and staff records',
+                  onTap: () => context.push('/company/employees' ,extra: {'role': '', 'department': 'saftDelete'},),
+                ),
+                DrawerWidgets.menuTile(
+                  context,
+                  icon: Icons.work,
+                  title: 'Projects',
+                  subtitle: 'Active and completed work',
+                  onTap: () => TopMessage.show(context, "Coming Soon" "Projects feature is under development.",color: Colors.orange),
+                ),
+                 DrawerWidgets.menuTile(
                   context,
                   icon: Icons.workspace_premium,
                   title: 'Documents',
@@ -57,28 +87,6 @@ class CompanyDrawer extends StatelessWidget {
                   icon: Icons.workspace_premium,
                   title: 'Services & Expertise',
                   subtitle: 'Core strengths and offerings',
-                ),
-                DrawerWidgets.sectionTitle('Operations'),
-                DrawerWidgets.menuTile(
-                  context,
-                  icon: Icons.people,
-                  title: 'HRs',
-                  subtitle: 'Teams and staff records',
-                   onTap: () => context.push('/company/employees' ,extra: 'Hr',),
-                ),
-                DrawerWidgets.menuTile(
-                  context,
-                  icon: Icons.people,
-                  title: 'Employees',
-                  subtitle: 'Teams and staff records',
-                  onTap: () => context.push('/company/employees' ,extra: 'EMPLOYEE',),
-                ),
-                DrawerWidgets.menuTile(
-                  context,
-                  icon: Icons.work,
-                  title: 'Projects',
-                  subtitle: 'Active and completed work',
-                  onTap: () => TopMessage.show(context, "Coming Soon" "Projects feature is under development.",color: Colors.orange),
                 ),
 
                 DrawerWidgets.sectionTitle('Growth'),
