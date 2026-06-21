@@ -27,7 +27,11 @@ class EmpDashboardBloc extends Bloc<EmpDashboardEvent, EmpDashboardState> {
       final data = EmpDashboardModel.fromJson(res);
       emit(EmpDashboardLoaded(data));
     } on DioException catch (e) {
-      final message = e.response?.data?['message'] ?? e.message ?? "Failed to load dashboard data";
+      final message =
+          e.response?.data?['message'] ??
+          e.message ??
+          "Failed to load dashboard data";
+      print(message);
       emit(EmpDashboardError(message));
     }
   }
@@ -56,13 +60,18 @@ class EmpDashboardBloc extends Bloc<EmpDashboardEvent, EmpDashboardState> {
         final data = EmpDashboardModel.fromJson(res);
         emit(EmpDashboardLoaded(data, loading: false));
       } on DioException catch (e) {
-        final message = e.response?.data?["message"] ?? e.message ?? "Check-in failed";
+        final message =
+            e.response?.data?["message"] ?? e.message ?? "Check-in failed";
         // FIX: Re-emits your cached dashboard data along with the error banner text instantly
         emit(currentState.copyWith(loading: false, errorMessage: message));
       }
     } else {
       // Fallback if state isn't loaded yet
-      emit(EmpDashboardError("Cannot perform check-in; employee dashboard uninitialized."));
+      emit(
+        EmpDashboardError(
+          "Cannot perform check-in; employee dashboard uninitialized.",
+        ),
+      );
     }
   }
 
@@ -89,13 +98,18 @@ class EmpDashboardBloc extends Bloc<EmpDashboardEvent, EmpDashboardState> {
         final data = EmpDashboardModel.fromJson(res);
         emit(EmpDashboardLoaded(data, loading: false));
       } on DioException catch (e) {
-        final message = e.response?.data?["message"] ?? e.message ?? "Check-out failed";
+        final message =
+            e.response?.data?["message"] ?? e.message ?? "Check-out failed";
         // FIX: Error details append directly onto local context memory variables securely
         emit(currentState.copyWith(loading: false, errorMessage: message));
       }
     } else {
       // Fallback if state isn't loaded yet
-      emit(EmpDashboardError("Cannot perform check-out; employee dashboard uninitialized."));
+      emit(
+        EmpDashboardError(
+          "Cannot perform check-out; employee dashboard uninitialized.",
+        ),
+      );
     }
   }
 }

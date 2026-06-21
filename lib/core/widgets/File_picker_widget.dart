@@ -62,49 +62,80 @@ class _FileUploadWidgetState extends State<FileUploadWidget> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.upload_file),
-
-          const SizedBox(width: 12),
-          Column(
-            children: [
-              Text(
-                widget.label,
-                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey.shade800,
-                ),
-              ),
-               Expanded(
-            child: Text(
-              file != null ? file!.path.split('/').last : "Upload File",
-              style: const TextStyle(fontSize: 14),
+  Widget build(BuildContext context) {return Container(
+  padding: const EdgeInsets.all(14),
+  decoration: BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(14),
+    border: Border.all(color: Colors.grey.shade300),
+  ),
+  child: Row(
+    children: [
+      Icon(Icons.upload_file, color: Colors.grey.shade700),
+      const SizedBox(width: 12),
+      
+      // Expanded gives the text elements boundaries so text overflow works correctly
+      Expanded(
+        child: Column(
+          mainAxisSize: MainAxisSize.min, // Shrink wraps height to avoid layout crashes
+          crossAxisAlignment: CrossAxisAlignment.start, // Left-aligns text elements
+          children: [
+            Text(
+              widget.label,
               overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade800,
+              ),
             ),
-          ),
-
-          if (file != null) ...[
-            TextButton(onPressed: openFile, child: const Text("Open")),
+            const SizedBox(height: 2),
+            Text(
+              file != null ? file!.path.split('/').last : "No file chosen",
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              style: TextStyle(
+                fontSize: 13, 
+                color: file != null ? Colors.blueGrey.shade700 : Colors.grey.shade500,
+                fontWeight: file != null ? FontWeight.w500 : FontWeight.normal,
+              ),
+            ),
           ],
-
-          TextButton(onPressed: pickFile, child: const Text("Pick")),
-            ],
+        ),
+      ),
+      const SizedBox(width: 8),
+      
+      // Action controls packed cleanly to the right side
+      Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (file != null)
+            TextButton(
+              onPressed: openFile,
+              style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
+              child: const Text("Open"),
+            ),
+          ElevatedButton(
+            onPressed: pickFile,
+            style: ElevatedButton.styleFrom(
+              elevation: 0,
+              backgroundColor: const Color(0xFFF3F4F6),
+              foregroundColor: Colors.black87,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              visualDensity: VisualDensity.compact,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            child: const Text("Pick", style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
           ),
-         
         ],
       ),
-    );
-  }
+    ],
+  ),
+);
+}
 }
 
 

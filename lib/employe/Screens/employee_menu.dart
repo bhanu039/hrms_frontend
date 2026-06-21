@@ -63,15 +63,15 @@ class EmployeeDrawer extends StatelessWidget {
                       
                 ),
                 DrawerWidgets.sectionTitle('Work'),
-                DrawerWidgets.menuTile(
-                  context,
-                  icon: Icons.how_to_reg_rounded,
-                  title: 'Onboarding',
-                  subtitle: 'Complete your profile and documents',
-                  onTap: () {
-                    context.go('/emp/onboarding');
-                  },
-                ),
+                // DrawerWidgets.menuTile(
+                //   context,
+                //   icon: Icons.how_to_reg_rounded,
+                //   title: 'Onboarding',
+                //   subtitle: 'Complete your profile and documents',
+                //   onTap: () {
+                //     context.go('/emp/onbording');
+                //   },
+                // ),
                 DrawerWidgets.menuTile(
                   context,
                   icon: Icons.bar_chart,

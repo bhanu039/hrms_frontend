@@ -22,6 +22,7 @@ import '../../company/company_dashbord/data/company_dashbord_screen.dart';
 import '../../company/company_fullReg/bloc/full_Reg_bloc.dart';
 import '../../company/company_fullReg/data/repository/repository_empFullreg.dart';
 import '../../employe/emp_dashbord/bloc/emp_dashboard_bloc.dart';
+import '../../employe/emp_dashbord/data/emp_dashboard_screen.dart';
 import '../../employe/emp_dashbord/data/repository_emp_dashboard.dart';
 import '../../employe/emp_dashbord/empShell_tabs.dart';
 import '../../employe/emp_Profile/bloc/emp_profile_bloc.dart';
@@ -55,13 +56,10 @@ import '../../admin/Screens/subscription_plans.dart';
 
 //company
 import '../../company/Screens/company_profile_screen.dart';
-import '../../company/Screens/employees_list_screen.dart';
 
 // HR
 
 //employee
-
-import '../../employe/Screens/employee_dashbord.dart';
 import '../../employe/Screens/project_screen.dart';
 import '../../employe/emp_full_reg/screen/emp_full_reg_ui.dart';
 import '../invite_emp.dart/modal/invite_emp_screen.dart';
@@ -198,7 +196,7 @@ GoRouter createRouter(AuthBloc authBloc) {
         },
       ),
       GoRoute(
-        path: '/emp/attendance',
+        path: '/hr/attendance/self',
         builder: (context, state) {
           return BlocProvider(
             create: (_) => SelfAttendanceBloc(),
@@ -416,6 +414,15 @@ GoRouter createRouter(AuthBloc authBloc) {
               );
             },
           ),
+           GoRoute(
+        path: '/emp/attendance/self',
+        builder: (context, state) {
+          return BlocProvider(
+            create: (_) => SelfAttendanceBloc(),
+            child: const SelfAttendanceScreen(),
+          );
+        },
+      ),
 
           GoRoute(
             path: '/emp/profile',

@@ -64,7 +64,7 @@ class _EmployeeAttendanceScreenState extends State<EmployeeAttendanceScreen> {
           ),
           floatingActionButton: FloatingActionButton.extended(
             onPressed:(){
-              context.push("/emp/attendance");
+              context.push("/hr/attendance/self");
             },
                  // Pass your function here to navigate or open a modal
             elevation: 3,
