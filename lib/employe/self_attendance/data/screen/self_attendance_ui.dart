@@ -16,6 +16,7 @@ class SelfAttendanceScreen extends StatefulWidget {
 }
 
 class _SelfAttendanceScreenState extends State<SelfAttendanceScreen> {
+  bool _isFilterOpen = false;
   final dateController = TextEditingController();
   final fromController = TextEditingController();
   final toController = TextEditingController();
@@ -53,7 +54,7 @@ class _SelfAttendanceScreenState extends State<SelfAttendanceScreen> {
           ),
           body: Column(
             children: [
-              _buildHeader(state),
+              _buildHeader(context,state),
               Expanded(child: _buildContent(state)),
             ],
           ),
@@ -61,180 +62,306 @@ class _SelfAttendanceScreenState extends State<SelfAttendanceScreen> {
       },
     );
   }
-
-  Widget _buildHeader(SelfAttendanceState state) {
+  Widget _buildHeader(BuildContext context, SelfAttendanceState state) {
     return Container(
-  width: double.infinity,
-  // 1. Sleek, clean background with standard shadow layer definition
-  decoration: BoxDecoration(
-    color: Colors.white,
-    borderRadius: BorderRadius.circular(16),
-    boxShadow: [
-      BoxShadow(
-        color: Colors.black.withOpacity(0.04),
-        blurRadius: 12,
-        offset: const Offset(0, 4),
-      ),
-    ],
-  ),
-  padding: const EdgeInsets.all(20),
-  child: Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      // 2. Clear visual header section hierarchy
-      const Text(
-        'Attendance Filters',
-        style: TextStyle(
-          fontSize: 16, 
-          color: Color(0xFF111827),
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-      const SizedBox(height: 4),
-      const Text(
-        'Summary for the selected period configuration parameters',
-        style: TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
-      ),
-      
-      const SizedBox(height: 20),
-      
-      // 3. Dynamic layout spacing framework mapping elements explicitly
-      Wrap(
-        spacing: 12,
-        runSpacing: 14,
-        alignment: WrapAlignment.start,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        children: [
-          _buildFilterChip(
-            width: 120,
-            label: 'Date',
-            value: state.date.isEmpty ? 'Any' : state.date,
-            onTap: () => _pickDate(context, state.date, (value) {
-              context.read<SelfAttendanceBloc>().add(AttendanceDateChanged(value));
-            }),
-          ),
-          _buildFilterChip(
-            width: 120,
-            label: 'From',
-            value: state.fromDate.isEmpty ? 'Start' : state.fromDate,
-            onTap: () => _pickDate(context, state.fromDate, (value) {
-              context.read<SelfAttendanceBloc>().add(AttendanceFromDateChanged(value));
-            }),
-          ),
-          _buildFilterChip(
-            label: 'To',
-            width: 120,
-            value: state.toDate.isEmpty ? 'End' : state.toDate,
-            onTap: () => _pickDate(context, state.toDate, (value) {
-              context.read<SelfAttendanceBloc>().add(AttendanceToDateChanged(value));
-            }),
-          ),
-          AppDropdown(
-            width: 120,
-            label: 'Month',
-            value: state.month,
-            items: List.generate(12, (index) => (index + 1).toString()),
-            
-            onChanged: (value) {
-              if (value != null) {
-                context.read<SelfAttendanceBloc>().add(AttendanceMonthChanged(value));
-              }
-            },
-          ),
-          AppDropdown(
-            label: 'Year',
-            value: state.year,
-            width: 120,
-            items: List.generate(5, (index) => (DateTime.now().year - index).toString()),
-           
-            onChanged: (value) {
-              if (value != null) {
-                context.read<SelfAttendanceBloc>().add(AttendanceYearChanged(value));
-              }
-            },
-          ),
-          AppDropdown(
-            width: 120,
-            label: 'Status',
-            value: state.status,
-            items: const [
-              'PRESENT', 'ABSENT', 'LEAVE', 'HALF_DAY', 
-              'EARLY_EXIT', 'WEEK_OFF', 'PENDING_VERIFICATION', 'FUTURE'
-            ],
-            onChanged: (value) {
-              if (value != null) {
-                context.read<SelfAttendanceBloc>().add(AttendanceStatusChanged(value));
-              }
-            },
-          ),
-          AppDropdown(
-            width: 150,
-            label: 'Sort',
-            value: state.sort,
-            items: const ['asc', 'desc'],
-           
-            onChanged: (value) {
-              if (value != null) {
-                context.read<SelfAttendanceBloc>().add(AttendanceSortChanged(value));
-              }
-            },
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
-  
-      const SizedBox(height: 24),
-      
-      // 4. Clean bottom control deck (Moved out of Wrap layout completely to prevent shifting)
-      Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(
-            flex: 3,
-            child: ElevatedButton(
-              onPressed: () {
-                context.read<SelfAttendanceBloc>().add(ApplyFilters());
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2563EB), // Premium Cobalt Blue
-                foregroundColor: Colors.white,
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text(
-                'Apply Filters',
-                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+          // --- 1. CLICKABLE TOGGLE HEADER HEAD DECK ---
+          InkWell(
+            onTap: () {
+              setState(() {
+                _isFilterOpen = !_isFilterOpen;
+              });
+            },
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.tune_rounded,
+                              size: 20,
+                              color: _isFilterOpen
+                                  ? const Color(0xFF2563EB)
+                                  : const Color(0xFF111827),
+                            ),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'Attendance Filters',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Color(0xFF111827),
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          'Configure parameter selections to query records',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF6B7280),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Rotates or switches icon smoothly based on expand status
+                  Icon(
+                    _isFilterOpen
+                        ? Icons.keyboard_arrow_up_rounded
+                        : Icons.keyboard_arrow_down_rounded,
+                    color: const Color(0xFF6B7280),
+                    size: 24,
+                  ),
+                ],
               ),
             ),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            flex: 1,
-            child: OutlinedButton(
-              onPressed: () {
-                context.read<SelfAttendanceBloc>().add(ResetFilters());
-              },
-              style: OutlinedButton.styleFrom(
-                foregroundColor: const Color(0xFF4B5563),
-                side: const BorderSide(color: Color(0xFFE5E7EB), width: 1.5),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text(
-                'Reset',
-                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
-              ),
-            ),
-          ),
-        ],
-      ),
-    ],
-  ),
 
-);
+          // --- 2. ANIMATED EXPANDABLE PANEL SECTION FRAME ---
+          AnimatedCrossFade(
+            firstChild: const SizedBox.shrink(),
+            secondChild: Padding(
+              padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Divider(height: 1, color: Color(0xFFF3F4F6)),
+                  const SizedBox(height: 16),
+
+                  // --- WRAP FIELD MATRIX ---
+                  Wrap(
+                    spacing: 12,
+                    runSpacing: 14,
+                    alignment: WrapAlignment.start,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      _buildFilterChip(
+                        width: 120,
+                        label: 'Date',
+                        value: state.date.isEmpty ? 'Any' : state.date,
+                        onTap: () => _pickDate(context, state.date, (value) {
+                          context.read<SelfAttendanceBloc>().add(
+                            AttendanceDateChanged(value),
+                          );
+                        }),
+                      ),
+                      _buildFilterChip(
+                        width: 120,
+                        label: 'From',
+                        value: state.fromDate.isEmpty
+                            ? 'Start'
+                            : state.fromDate,
+                        onTap: () =>
+                            _pickDate(context, state.fromDate, (value) {
+                              context.read<SelfAttendanceBloc>().add(
+                                AttendanceFromDateChanged(value),
+                              );
+                            }),
+                      ),
+                      _buildFilterChip(
+                        label: 'To',
+                        width: 120,
+                        value: state.toDate.isEmpty ? 'End' : state.toDate,
+                        onTap: () => _pickDate(context, state.toDate, (value) {
+                          context.read<SelfAttendanceBloc>().add(
+                            AttendanceToDateChanged(value),
+                          );
+                        }),
+                      ),
+                      AppDropdown(
+                        width: 120,
+                        label: 'Month',
+                        value: state.month,
+                        items: List.generate(
+                          12,
+                          (index) => (index + 1).toString(),
+                        ),
+                        onChanged: (value) {
+                          if (value != null) {
+                            context.read<SelfAttendanceBloc>().add(
+                              AttendanceMonthChanged(value),
+                            );
+                          }
+                        },
+                      ),
+                      AppDropdown(
+                        label: 'Year',
+                        value: state.year,
+                        width: 120,
+                        items: List.generate(
+                          5,
+                          (index) => (DateTime.now().year - index).toString(),
+                        ),
+                        onChanged: (value) {
+                          if (value != null) {
+                            context.read<SelfAttendanceBloc>().add(
+                              AttendanceYearChanged(value),
+                            );
+                          }
+                        },
+                      ),
+                      AppDropdown(
+                        width: 120,
+                        label: 'Status',
+                        value: state.status,
+                        items: const [
+                          'PRESENT',
+                          'ABSENT',
+                          'LEAVE',
+                          'HALF_DAY',
+                          'EARLY_EXIT',
+                          'WEEK_OFF',
+                          'PENDING_VERIFICATION',
+                          'FUTURE',
+                        ],
+                        onChanged: (value) {
+                          if (value != null) {
+                            context.read<SelfAttendanceBloc>().add(
+                              AttendanceStatusChanged(value),
+                            );
+                          }
+                        },
+                      ),
+                      AppDropdown(
+                        width: 150,
+                        label: 'Sort',
+                        value: state.sort,
+                        items: const ['asc', 'desc'],
+                        onChanged: (value) {
+                          if (value != null) {
+                            context.read<SelfAttendanceBloc>().add(
+                              AttendanceSortChanged(value),
+                            );
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  // --- 3. UPDATED BUTTON CONTROL BAR (APPLY / CANCEL / RESET) ---
+                  Row(
+                    children: [
+                      // Apply Actions Button
+                      Expanded(
+                        flex: 4,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            context.read<SelfAttendanceBloc>().add(
+                              ApplyFilters(),
+                            );
+                            setState(
+                              () => _isFilterOpen = false,
+                            ); // CLoses panel on apply execution
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2563EB),
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            'Apply Filters',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+
+                      // Cancel Action Button
+                      Expanded(
+                        flex: 3,
+                        child: OutlinedButton(
+                          onPressed: () {
+                            setState(
+                              () => _isFilterOpen = false,
+                            ); // Closes container explicitly without saving parameters
+                          },
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF4B5563),
+                            side: const BorderSide(
+                              color: Color(0xFFD1D5DB),
+                              width: 1.2,
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            'Cancel',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+
+                      // Reset Control Action Button
+                      IconButton(
+                        onPressed: () {
+                          context.read<SelfAttendanceBloc>().add(
+                            ResetFilters(),
+                          );
+                        },
+                        icon: const Icon(
+                          Icons.refresh_rounded,
+                          color: Color(0xFFEF4444),
+                        ),
+                        style: IconButton.styleFrom(
+                          padding: const EdgeInsets.all(12),
+                          backgroundColor: const Color(0xFFFEF2F2),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: const BorderSide(color: Color(0xFFFEE2E2)),
+                          ),
+                        ),
+                        tooltip: "Reset Parameters",
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            crossFadeState: _isFilterOpen
+                ? CrossFadeState.showSecond
+                : CrossFadeState.showFirst,
+            duration: const Duration(milliseconds: 250),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildContent(SelfAttendanceState state) {
@@ -445,14 +572,13 @@ class _SelfAttendanceScreenState extends State<SelfAttendanceScreen> {
   Widget _buildFilterChip({
     required String label,
     required String value,
-    double?width,
+    double? width,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
-      
       onTap: onTap,
       child: Container(
-        width: width??double.infinity,
+        width: width ?? double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           color: Colors.white,

@@ -19,7 +19,7 @@ class FullRegModel {
   final String landmark;
   final double? latitude;
   final double? longitude;
-  final int? geofencRadius;
+  final String geofenceRadius;
 
   // HR
   final String companyPolicy;
@@ -75,7 +75,7 @@ class FullRegModel {
     this.landmark = "",
     this.latitude,
     this.longitude,
-    this.geofencRadius,
+    this.geofenceRadius='',
 
     this.companyPolicy = "",
     this.employeeTerms = "",
@@ -127,7 +127,7 @@ class FullRegModel {
     String? landmark,
     double? latitude,
     double? longitude,
-    int?geofencRadius,
+    String? geofenceRadius,
 
     String? companyPolicy,
     String? employeeTerms,
@@ -178,7 +178,7 @@ class FullRegModel {
       landmark: landmark ?? this.landmark,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
-      geofencRadius:geofencRadius??this.geofencRadius,
+      geofenceRadius:geofenceRadius??this.geofenceRadius,
 
       companyPolicy: companyPolicy ?? this.companyPolicy,
       employeeTerms: employeeTerms ?? this.employeeTerms,

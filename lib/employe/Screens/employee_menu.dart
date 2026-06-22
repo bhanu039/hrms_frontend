@@ -78,7 +78,8 @@ class EmployeeDrawer extends StatelessWidget {
                   title: 'Performance',
                   subtitle: 'Review your work summary',
                   onTap: () =>
-                      DrawerWidgets.showComingSoon(context, 'Performance'),
+                  context.go('/')
+                      // DrawerWidgets.showComingSoon(context, 'Performance'),
                 ),
                 DrawerWidgets.menuTile(
                   context,

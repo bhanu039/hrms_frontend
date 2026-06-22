@@ -60,9 +60,23 @@ class EmpDashboardBloc extends Bloc<EmpDashboardEvent, EmpDashboardState> {
         final data = EmpDashboardModel.fromJson(res);
         emit(EmpDashboardLoaded(data, loading: false));
       } on DioException catch (e) {
-        final message =
-            e.response?.data?["message"] ?? e.message ?? "Check-in failed";
-        // FIX: Re-emits your cached dashboard data along with the error banner text instantly
+        print("this is the catch?????????????");
+
+        String message = "Check-in failed";
+
+        // SAFETY CHECK: Ensure data is an actual JSON Map before pulling the message key
+        if (e.response?.data != null && e.response?.data is Map) {
+          message = e.response?.data?["message"] ?? "Check-in failed";
+        } else if (e.response?.data != null && e.response?.data is String) {
+          // If backend returns a raw error string instead of a structured JSON object
+          message = e.response?.data;
+        } else {
+          // Fallback to general network message or status code
+          message =
+              e.message ?? "Server error status: ${e.response?.statusCode}";
+        }
+
+        // Re-emits your cached dashboard data safely along with the handled error banner text
         emit(currentState.copyWith(loading: false, errorMessage: message));
       }
     } else {

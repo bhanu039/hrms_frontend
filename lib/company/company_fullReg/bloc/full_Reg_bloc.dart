@@ -83,7 +83,7 @@ class FullRegBloc extends Bloc<FullRegEvent, FullRegState> {
     case "longitude":
       updated = m.copyWith(longitude: event.value);
       break;
-      case "geofencRadius":
+      case "geofenceRadius":
       updated = m.copyWith(longitude: event.value);
       break;
 

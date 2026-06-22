@@ -272,6 +272,12 @@ class ApiService {
     return response.data["success"];
   }
 
+   Future<bool> restoreCompany(String? id) async {
+    final response = await ApiClient.dio.post("api/company/restore/$id");
+    print("CREATE EMPLOYEE RESPONSE => ${response.data}");
+    return response.data["success"];
+  }
+
   static Future<EmployeeDataModel> getFullDetailsEmployee(
     String employee,
   ) async {

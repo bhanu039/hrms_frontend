@@ -329,172 +329,168 @@ class _CompanyListScreenState extends State<CompanyListScreen> {
                                   },
                                   child: Padding(
                                     padding: const EdgeInsets.all(14),
-                                    child: Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                    child: Column(
                                       children: [
-                                        CircleAvatar(
-                                          radius: 26,
-                                          backgroundColor: primaryColor
-                                              .withOpacity(0.16),
-                                          backgroundImage:
-                                              logo != null
-                                              ? NetworkImage(logo)
-                                              : null,
-                                          child: logo == null
-                                              ? Text(
-                                                  _companyInitials(companyName),
-                                                  style: TextStyle(
-                                                    color: primaryColor,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 18,
-                                                  ),
-                                                )
-                                              : null,
-                                        ),
-                                        const SizedBox(width: 14),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  Expanded(
-                                                    child: Text(
-                                                      companyName,
-                                                      style: const TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.w700,
+                                        Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            CircleAvatar(
+                                              radius: 26,
+                                              backgroundColor: primaryColor
+                                                  .withOpacity(0.16),
+                                              backgroundImage: logo != null
+                                                  ? NetworkImage(logo)
+                                                  : null,
+                                              child: logo == null
+                                                  ? Text(
+                                                      _companyInitials(
+                                                        companyName,
                                                       ),
-                                                    ),
+                                                      style: TextStyle(
+                                                        color: primaryColor,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        fontSize: 18,
+                                                      ),
+                                                    )
+                                                  : null,
+                                            ),
+                                            const SizedBox(width: 14),
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Row(
+                                                    children: [
+                                                      Expanded(
+                                                        child: Text(
+                                                          companyName,
+                                                          style:
+                                                              const TextStyle(
+                                                                fontSize: 16,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w700,
+                                                              ),
+                                                        ),
+                                                      ),
+                                                      _statusChip(c),
+                                                    ],
                                                   ),
-                                                  _statusChip(c),
+                                                  const SizedBox(height: 6),
+                                                  Row(
+                                                    children: [
+                                                      const Icon(
+                                                        Icons.email,
+                                                        size: 14,
+                                                        color: Colors.grey,
+                                                      ),
+                                                      const SizedBox(width: 6),
+                                                      Expanded(
+                                                        child: Text(
+                                                          companyEmail,
+                                                          style: TextStyle(
+                                                            color: Colors
+                                                                .grey[700],
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ],
                                               ),
-                                              const SizedBox(height: 6),
-                                              Row(
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Column(
+                                              children: [
+                                                const SizedBox(height: 4),
+                                                IconButton(
+                                                  icon: const Icon(
+                                                    Icons.delete_outline,
+                                                    size: 22,
+                                                  ),
+                                                  color: Colors.red[600],
+                                                  onPressed: () =>
+                                                      deleteCompany(
+                                                        c['id'].toString(),
+                                                      ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 10),
+                                        Wrap(
+                                          crossAxisAlignment:
+                                              WrapCrossAlignment.center,
+                                          spacing: 8,
+                                          runSpacing: 6,
+                                          children: [
+                                            _subscriptionChip(c),
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 10,
+                                                    vertical: 6,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color: Colors.blue.withValues(
+                                                  alpha: 0.1,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
                                                 children: [
                                                   const Icon(
-                                                    Icons.email,
-                                                    size: 14,
-                                                    color: Colors.grey,
+                                                    Icons.language,
+                                                    size: 16,
+                                                    color: Colors.blue,
                                                   ),
-                                                  const SizedBox(width: 6),
-                                                  Expanded(
-                                                    child: Text(
-                                                      companyEmail,
-                                                      style: TextStyle(
-                                                        color: Colors.grey[700],
-                                                      ),
+                                                  const SizedBox(width: 4),
+                                                  Text(
+                                                    website,
+                                                    style: TextStyle(
+                                                      color: Colors.blue[800],
+                                                      fontSize: 12,
                                                     ),
                                                   ),
                                                 ],
                                               ),
-                                              const SizedBox(height: 10),
-                                              Wrap(
-                                                crossAxisAlignment:
-                                                    WrapCrossAlignment.center,
-                                                spacing: 8,
-                                                runSpacing: 6,
+                                            ),
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 10,
+                                                    vertical: 6,
+                                                  ),
+                                              decoration: BoxDecoration(
+                                                color: Colors.green.withValues(
+                                                  alpha: 0.12,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(10),
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
                                                 children: [
-                                                  _subscriptionChip(c),
-                                                  Container(
-                                                    padding:
-                                                        const EdgeInsets.symmetric(
-                                                          horizontal: 10,
-                                                          vertical: 6,
-                                                        ),
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.blue
-                                                          .withValues(
-                                                            alpha: 0.1,
-                                                          ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            10,
-                                                          ),
-                                                    ),
-                                                    child: Row(
-                                                      mainAxisSize:
-                                                          MainAxisSize.min,
-                                                      children: [
-                                                        const Icon(
-                                                          Icons.language,
-                                                          size: 16,
-                                                          color: Colors.blue,
-                                                        ),
-                                                        const SizedBox(
-                                                          width: 4,
-                                                        ),
-                                                        Text(
-                                                          website,
-                                                          style: TextStyle(
-                                                            color: Colors
-                                                                .blue[800],
-                                                            fontSize: 12,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
+                                                  const Icon(
+                                                    Icons.location_on,
+                                                    size: 16,
+                                                    color: Colors.green,
                                                   ),
-                                                  Container(
-                                                    padding:
-                                                        const EdgeInsets.symmetric(
-                                                          horizontal: 10,
-                                                          vertical: 6,
-                                                        ),
-                                                    decoration: BoxDecoration(
-                                                      color: Colors.green
-                                                          .withValues(
-                                                            alpha: 0.12,
-                                                          ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            10,
-                                                          ),
-                                                    ),
-                                                    child: Row(
-                                                      mainAxisSize:
-                                                          MainAxisSize.min,
-                                                      children: [
-                                                        const Icon(
-                                                          Icons.location_on,
-                                                          size: 16,
-                                                          color: Colors.green,
-                                                        ),
-                                                        const SizedBox(
-                                                          width: 4,
-                                                        ),
-                                                        Text(
-                                                          location,
-                                                          style: TextStyle(
-                                                            color: Colors
-                                                                .green[800],
-                                                            fontSize: 12,
-                                                          ),
-                                                        ),
-                                                      ],
+                                                  const SizedBox(width: 4),
+                                                  Text(
+                                                    location,
+                                                    style: TextStyle(
+                                                      color: Colors.green[800],
+                                                      fontSize: 12,
                                                     ),
                                                   ),
                                                 ],
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Column(
-                                          children: [
-                                            const SizedBox(height: 4),
-                                            IconButton(
-                                              icon: const Icon(
-                                                Icons.delete_outline,
-                                                size: 22,
-                                              ),
-                                              color: Colors.red[600],
-                                              onPressed: () => deleteCompany(
-                                                c['id'].toString(),
                                               ),
                                             ),
                                           ],

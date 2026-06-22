@@ -58,17 +58,27 @@ class _CompanyRegistrationPageState extends State<CompanyRegistrationPage> {
   Widget build(BuildContext context) {
     return BlocConsumer<FullRegBloc, FullRegState>(
       listener: (context, state) {
-        if (state.success) {
-          TopMessage.show(
-            context,
-            "Company onboarding completed successfully!",
-            color: Colors.green,
-          );
-          context.go('/');
-        }else if (state.error != null) {
+        if (!state.success) {
+          if (context.mounted) {
+            // 2. Fire the global notification immediately before changing routes
+            TopMessage.show(
+              context,
+              "Company onboarding completed successfully!",
+              color: Colors.green,
+            );
+
+            // 3. Send the user to the root path so GoRouter runs its centralized redirect checks
+            Future.delayed(const Duration(milliseconds: 100), () {
+              if (context.mounted) {
+                context.go(
+                  '/login',
+                ); // GoRouter handles redirect checking seamlessly now
+              }
+            });
+          }
+        } else if (state.error != null) {
           TopMessage.show(context, state.error!, color: Colors.red);
         }
-        
 
         if (state.error != null) {
           TopMessage.show(context, state.error!, color: Colors.red);
@@ -375,7 +385,7 @@ class _CompanyRegistrationPageState extends State<CompanyRegistrationPage> {
       CustomTextField(
         label: "Working Hours",
         initialValue: state.model.workingHours,
-        maxLength: 5,
+        maxLength: 2,
         keyboardType: TextInputType.number,
         hintText: "Enter the working hours per day",
         onChanged: (value) {
@@ -391,7 +401,7 @@ class _CompanyRegistrationPageState extends State<CompanyRegistrationPage> {
       CustomTextField(
         label: "Working days per week",
         initialValue: state.model.workingDays,
-        maxLength: 5,
+        maxLength: 1,
         keyboardType: TextInputType.number,
         hintText: "Enter the number of working days per week",
         onChanged: (value) {
@@ -727,16 +737,18 @@ class _CompanyRegistrationPageState extends State<CompanyRegistrationPage> {
 
       CustomTextField(
         label: "GeofencRadius",
-        initialValue: state.model.pincode,
+        initialValue: state.model.geofenceRadius!,
         hintText: "Enter GeofencRadius  in meters of your comapany",
         keyboardType: TextInputType.number,
-        maxLength: 3,
+        maxLength: 5,
         onChanged: (value) {
-          context.read<FullRegBloc>().add(UpdateField("geofencRadius", value));
+          context.read<FullRegBloc>().add(UpdateField("geofenceRadius", value));
         },
         validator: (value) {
-          if (value == null || value.isEmpty) return "GeofencRadius is required";
-          if (value.length < 5) return "GeofencRadius must be at least 5 digits";
+          if (value == null || value.isEmpty)
+            return "GeofencRadius is required";
+          if (value.length > 5)
+            return "GeofencRadius must be at least 5 digits";
           return null;
         },
       ),

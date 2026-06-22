@@ -336,53 +336,46 @@ class _CompanyDashboardScreenState extends State<CompanyDashboardScreen> {
     );
   }
 
-Widget _baseCard({required Widget child}) {
-  return Container(
-    width: double.infinity,
-    margin: const EdgeInsets.only(bottom: 12),
-    padding: const EdgeInsets.all(16),
+  Widget _baseCard({required Widget child}) {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
 
-    decoration: BoxDecoration(
-      color: Colors.white,
+      decoration: BoxDecoration(
+        color: Colors.white,
 
-      borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(18),
 
-      // ⭐ modern subtle border
-      border: Border.all(
-        color: const Color(0xFFEDEDED),
-        width: 1,
+        // ⭐ modern subtle border
+        border: Border.all(color: const Color(0xFFEDEDED), width: 1),
+
+        // ⭐ premium soft shadow (modern UI standard)
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.06),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
 
-      // ⭐ premium soft shadow (modern UI standard)
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withOpacity(0.06),
-          blurRadius: 24,
-          offset: const Offset(0, 10),
-        ),
-      ],
-    ),
-
-    child: child,
-  );
-}
+      child: child,
+    );
+  }
 
   /// ---------------- KPI CARD ----------------
 
   Widget _modernKpiCard(String title, String value, String trend, Color color) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
-
-        // ⭐ modern gradient background
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [color.withOpacity(0.15), Colors.white],
         ),
-
-        // ⭐ soft shadow (modern floating look)
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -390,27 +383,23 @@ Widget _baseCard({required Widget child}) {
             offset: const Offset(0, 6),
           ),
         ],
-
         border: Border.all(color: color.withOpacity(0.2)),
       ),
-
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // ================= LEFT ICON =================
-          Expanded(
-            child: Container(
-              height: 42,
-              width: 42,
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.15),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(Icons.bar_chart_rounded, color: color, size: 22),
+          Container(
+            height: 42,
+            width: 42,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(12),
             ),
+            child: Icon(Icons.bar_chart_rounded, color: color, size: 22),
           ),
 
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
 
           // ================= TEXT AREA =================
           Expanded(
@@ -418,23 +407,23 @@ Widget _baseCard({required Widget child}) {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // TITLE
                 Text(
                   title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 12,
+                    fontSize: 11,
                     color: Colors.grey,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-
-                const SizedBox(height: 6),
-
-                // VALUE
+                const SizedBox(height: 4),
                 Text(
                   value,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: Colors.black87,
                   ),
@@ -444,25 +433,39 @@ Widget _baseCard({required Widget child}) {
           ),
 
           // ================= TREND =================
-          if (trend.isNotEmpty)
-           
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
+          if (trend.isNotEmpty) ...[
+            const SizedBox(width: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                // ⭐ Dynamically colors background based on up/down state
+                color: trend == "up"
+                    ? Colors.green.withOpacity(0.12)
+                    : trend == "down"
+                    ? Colors.red.withOpacity(0.12)
+                    : Colors.grey.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                // ⭐ Dynamically chooses arrow direction
+                trend == "up"
+                    ? "↑"
+                    : trend == "down"
+                    ? "↓"
+                    : "•",
+                style: TextStyle(
+                  // ⭐ Dynamically colors text icon based on up/down state
                   color: trend == "up"
-                      ? Colors.green.withOpacity(0.12)
-                      : Colors.red.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  trend == "up" ? "↑" : "↓",
-                  style: TextStyle(
-                    color: trend == "up" ? Colors.green : Colors.red,
-                    fontWeight: FontWeight.bold,
-                  ),
+                      ? Colors.green
+                      : trend == "down"
+                      ? Colors.red
+                      : Colors.grey,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
                 ),
               ),
-         
+            ),
+          ],
         ],
       ),
     );
@@ -545,7 +548,10 @@ Widget _baseCard({required Widget child}) {
             fontWeight: FontWeight.bold,
           ),
         ),
-        Text(label, style: const TextStyle(color: Color.fromARGB(153, 7, 7, 7))),
+        Text(
+          label,
+          style: const TextStyle(color: Color.fromARGB(153, 7, 7, 7)),
+        ),
       ],
     );
   }
@@ -606,7 +612,10 @@ Widget _baseCard({required Widget child}) {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: const TextStyle(color: Color.fromARGB(179, 107, 0, 0))),
+            Text(
+              label,
+              style: const TextStyle(color: Color.fromARGB(179, 107, 0, 0)),
+            ),
             Text(
               "${value.toString()}%",
               style: const TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
@@ -658,7 +667,9 @@ Widget _baseCard({required Widget child}) {
                   ),
                   Text(
                     "${e.count ?? 0}",
-                    style: const TextStyle(color: Color.fromARGB(255, 45, 0, 0)),
+                    style: const TextStyle(
+                      color: Color.fromARGB(255, 45, 0, 0),
+                    ),
                   ),
                 ],
               ),
@@ -694,7 +705,9 @@ Widget _baseCard({required Widget child}) {
                 children: [
                   Text(
                     e.title ?? "",
-                    style: const TextStyle(color: Color.fromARGB(179, 14, 7, 7)),
+                    style: const TextStyle(
+                      color: Color.fromARGB(179, 14, 7, 7),
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(

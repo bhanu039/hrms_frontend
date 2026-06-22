@@ -11,14 +11,16 @@ class FaceCaptureView extends StatefulWidget {
   State<FaceCaptureView> createState() => _FaceCaptureViewState();
 }
 
-class _FaceCaptureViewState extends State<FaceCaptureView> {
+class _FaceCaptureViewState extends State<FaceCaptureView>
+    with SingleTickerProviderStateMixin {
   CameraController? _cameraController;
   CameraDescription? _camera;
   late FaceDetector _faceDetector;
+  late AnimationController _pulseController;
+  OverlayEntry? _overlayEntry;
 
   bool _isInitialized = false;
   bool _isProcessing = false;
-
   bool _faceDetected = false;
   bool _eyesOpen = false;
   String? _statusMessage;
@@ -33,8 +35,16 @@ class _FaceCaptureViewState extends State<FaceCaptureView> {
   @override
   void initState() {
     super.initState();
+    _pulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 1),
+    )..repeat(reverse: true);
+
     _initializeFaceDetector();
     _initializeCamera();
+
+    // Inject the camera UI directly onto the global overlay layer after frame renders
+    WidgetsBinding.instance.addPostFrameCallback((_) => _showGlobalOverlay());
   }
 
   void _initializeFaceDetector() {
@@ -50,7 +60,6 @@ class _FaceCaptureViewState extends State<FaceCaptureView> {
   Future<void> _initializeCamera() async {
     try {
       final cameras = await availableCameras();
-
       if (cameras.isEmpty) {
         _setStatus('No camera found on this device');
         return;
@@ -80,8 +89,8 @@ class _FaceCaptureViewState extends State<FaceCaptureView> {
       });
 
       _startDetection();
+      _overlayEntry?.markNeedsBuild(); // Refresh global overlay once ready
     } catch (e) {
-      debugPrint('Camera initialization error: $e');
       _setStatus('Unable to start camera');
     }
   }
@@ -89,33 +98,26 @@ class _FaceCaptureViewState extends State<FaceCaptureView> {
   void _startDetection() {
     _cameraController?.startImageStream((CameraImage image) async {
       if (_isProcessing || !mounted) return;
-
       _isProcessing = true;
 
       try {
         final inputImage = _inputImageFromCameraImage(image);
-        if (inputImage == null) {
-          _setStatus('Unsupported camera image format');
-          return;
-        }
+        if (inputImage == null) return;
 
         final faces = await _faceDetector.processImage(inputImage);
 
         if (faces.isNotEmpty) {
           final face = faces.first;
-
           final left = face.leftEyeOpenProbability ?? 0.0;
-
           final right = face.rightEyeOpenProbability ?? 0.0;
-
           final eyesOpen = left > 0.7 && right > 0.7;
 
           if (mounted) {
             setState(() {
               _faceDetected = true;
               _eyesOpen = eyesOpen;
-              _statusMessage = null;
             });
+            _overlayEntry?.markNeedsBuild();
           }
         } else {
           if (mounted) {
@@ -123,11 +125,10 @@ class _FaceCaptureViewState extends State<FaceCaptureView> {
               _faceDetected = false;
               _eyesOpen = false;
             });
+            _overlayEntry?.markNeedsBuild();
           }
         }
-      } catch (e) {
-        debugPrint('Face detection error: $e');
-        _setStatus('Face detection is not available right now');
+      } catch (_) {
       } finally {
         _isProcessing = false;
       }
@@ -149,33 +150,18 @@ class _FaceCaptureViewState extends State<FaceCaptureView> {
           _orientations[controller.value.deviceOrientation];
       if (rotationCompensation == null) return null;
 
-      if (camera.lensDirection == CameraLensDirection.front) {
-        rotationCompensation = (sensorOrientation + rotationCompensation) % 360;
-      } else {
-        rotationCompensation =
-            (sensorOrientation - rotationCompensation + 360) % 360;
-      }
+      rotationCompensation = camera.lensDirection == CameraLensDirection.front
+          ? (sensorOrientation + rotationCompensation) % 360
+          : (sensorOrientation - rotationCompensation + 360) % 360;
 
       rotation = InputImageRotationValue.fromRawValue(rotationCompensation);
     }
 
     if (rotation == null) return null;
-
     final format = InputImageFormatValue.fromRawValue(image.format.raw);
-    final isSupportedFormat =
-        (Platform.isAndroid && format == InputImageFormat.nv21) ||
-        (Platform.isIOS && format == InputImageFormat.bgra8888);
-
-    if (format == null || !isSupportedFormat || image.planes.length != 1) {
-      debugPrint(
-        'Unsupported image format: ${image.format.raw}, '
-        'planes: ${image.planes.length}',
-      );
-      return null;
-    }
+    if (format == null || image.planes.length != 1) return null;
 
     final plane = image.planes.first;
-
     return InputImage.fromBytes(
       bytes: plane.bytes,
       metadata: InputImageMetadata(
@@ -189,200 +175,254 @@ class _FaceCaptureViewState extends State<FaceCaptureView> {
 
   void _setStatus(String message) {
     if (!mounted) return;
-    if (_statusMessage == message) return;
-    setState(() {
-      _statusMessage = message;
-    });
+    setState(() => _statusMessage = message);
+    _overlayEntry?.markNeedsBuild();
   }
 
-  Future<void> _captureImage() async {
-    debugPrint("CAPTURE BUTTON CLICKED");
+  void _showGlobalOverlay() {
+    _overlayEntry = OverlayEntry(
+      builder: (context) => Material(
+        color: Colors.black,
+        child: StatefulBuilder(
+          builder: (context, setOverlayState) {
+            final bool canCapture = _faceDetected && _eyesOpen;
 
+            if (!_isInitialized ||
+                _cameraController == null ||
+                !_cameraController!.value.isInitialized) {
+              return Center(
+                child: _statusMessage == null
+                    ? const CircularProgressIndicator(color: Color(0xFF0D9488))
+                    : Text(
+                        _statusMessage!,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                      ),
+              );
+            }
+
+            return Stack(
+              children: [
+                Positioned.fill(child: CameraPreview(_cameraController!)),
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black.withOpacity(0.5),
+                          Colors.transparent,
+                          Colors.black.withOpacity(0.7),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: MediaQuery.of(context).padding.top + 12,
+                  left: 16,
+                  right: 16,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        icon: const Icon(
+                          Icons.arrow_back_ios_new,
+                          color: Colors.white,
+                        ),
+                        onPressed: _closeAndExit,
+                      ),
+                      const Text(
+                        "Face Verification",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(width: 48),
+                    ],
+                  ),
+                ),
+                Center(
+                  child: AnimatedBuilder(
+                    animation: _pulseController,
+                    builder: (context, child) {
+                      final statusColor = canCapture
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFFEF4444);
+                      return Container(
+                        width: 270,
+                        height: 350,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(180),
+                          border: Border.all(color: statusColor, width: 3.5),
+                          boxShadow: [
+                            BoxShadow(
+                              color: statusColor.withOpacity(0.3),
+                              blurRadius: 12 + (_pulseController.value * 8),
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                Positioned(
+                  bottom: MediaQuery.of(context).padding.bottom + 140,
+                  left: 24,
+                  right: 24,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 14,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.8),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          _statusMessage ??
+                              (canCapture
+                                  ? "Verification Ready"
+                                  : !_faceDetected
+                                  ? "Position Face Inside Oval"
+                                  : "Please Open Your Eyes"),
+                          style: TextStyle(
+                            color: canCapture
+                                ? const Color(0xFF34D399)
+                                : Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _buildStatusIndicator("Face Found", _faceDetected),
+                            const SizedBox(width: 24),
+                            _buildStatusIndicator("Eyes Open", _eyesOpen),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: MediaQuery.of(context).padding.bottom + 30,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: GestureDetector(
+                      onTap: canCapture ? _captureImage : null,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: canCapture ? Colors.white : Colors.white24,
+                            width: 4,
+                          ),
+                        ),
+                        child: CircleAvatar(
+                          radius: 32,
+                          backgroundColor: canCapture
+                              ? const Color(0xFF10B981)
+                              : Colors.grey.shade900,
+                          child: Icon(
+                            Icons.fingerprint,
+                            color: canCapture ? Colors.white : Colors.white30,
+                            size: 36,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+    Overlay.of(context).insert(_overlayEntry!);
+  }
+
+  Future _captureImage() async {
     try {
-      final controller = _cameraController;
-      if (controller == null || !controller.value.isInitialized) {
-        _setStatus('Camera is not ready');
+      if (_cameraController == null || !_cameraController!.value.isInitialized)
         return;
+      if (_cameraController!.value.isStreamingImages) {
+        await _cameraController!.stopImageStream();
       }
-
-      debugPrint("Stopping stream");
-
-      if (controller.value.isStreamingImages) {
-        await controller.stopImageStream();
-      }
-
-      debugPrint("Taking picture");
-
-      final XFile file = await controller.takePicture();
-
-      debugPrint("IMAGE PATH = ${file.path}");
-
-      await controller.dispose();
-      _cameraController = null;
-      _isInitialized = false;
-
+      final XFile file = await _cameraController!.takePicture();
+      final File imageFile = File(file.path);
+      _removeOverlay();
       if (mounted) {
-        Navigator.pop(context, File(file.path));
+        Navigator.pop(context, imageFile);
       }
-    } catch (e, s) {
-      debugPrint("CAPTURE ERROR = $e");
-      debugPrintStack(stackTrace: s);
-    }
+    } catch (_) {}
+  }
+void _closeAndExit() {
+  // Added the missing underscore to match your class variable name
+  _cameraController?.stopImageStream().catchError((_) {});
+  _removeOverlay();
+  Navigator.pop(context);
+}
+
+  void _removeOverlay() {
+    _overlayEntry?.remove();
+    _overlayEntry = null;
+  }
+
+  Widget _buildStatusIndicator(String label, bool isSuccess) {
+    final color = isSuccess ? const Color(0xFF34D399) : Colors.white38;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(
+          isSuccess
+              ? Icons.check_circle_rounded
+              : Icons.radio_button_unchecked_rounded,
+          color: color,
+          size: 16,
+        ),
+        const SizedBox(width: 6),
+        Text(
+          label,
+          style: TextStyle(
+            color: color,
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
   }
 
   @override
   void dispose() {
+    _removeOverlay();
     _cameraController?.dispose();
     _faceDetector.close();
+    _pulseController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final canCapture = _faceDetected && _eyesOpen;
-
-    if (!_isInitialized || _cameraController == null) {
-      return Scaffold(
-        backgroundColor: Colors.black,
-        body: Center(
-          child: _statusMessage == null
-              ? const CircularProgressIndicator()
-              : Text(
-                  _statusMessage!,
-                  style: const TextStyle(color: Colors.white),
-                  textAlign: TextAlign.center,
-                ),
-        ),
-      );
-    }
-
-    return Scaffold(
+    // Return an empty canvas widget while the root global window handles layout painting
+    return const Scaffold(
       backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          CameraPreview(_cameraController!),
-
-          Container(color: Colors.black.withValues(alpha: 0.25)),
-
-          Center(
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              width: 280,
-              height: 360,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(200),
-                border: Border.all(
-                  color: canCapture ? Colors.greenAccent : Colors.redAccent,
-                  width: 5,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: canCapture
-                        ? Colors.greenAccent.withValues(alpha: 0.5)
-                        : Colors.redAccent.withValues(alpha: 0.5),
-                    blurRadius: 20,
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          Positioned(
-            top: 70,
-            left: 20,
-            right: 20,
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        _faceDetected ? Icons.check_circle : Icons.cancel,
-                        color: _faceDetected ? Colors.green : Colors.red,
-                      ),
-                      const SizedBox(width: 10),
-                      const Text(
-                        "Face Detected",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Icon(
-                        _eyesOpen ? Icons.visibility : Icons.visibility_off,
-                        color: _eyesOpen ? Colors.green : Colors.red,
-                      ),
-                      const SizedBox(width: 10),
-                      const Text(
-                        "Eyes Open",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          Positioned(
-            bottom: 140,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Text(
-                _statusMessage ??
-                    (canCapture
-                        ? "Perfect! Ready to Capture"
-                        : "Align your face and keep eyes open"),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ),
-
-          Positioned(
-            bottom: 50,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: GestureDetector(
-                onTap: canCapture ? _captureImage : null,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  width: 85,
-                  height: 85,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: canCapture ? Colors.green : Colors.grey,
-                    boxShadow: [
-                      BoxShadow(
-                        color: (canCapture ? Colors.green : Colors.grey)
-                            .withValues(alpha: 0.5),
-                        blurRadius: 20,
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.camera_alt,
-                    color: Colors.white,
-                    size: 35,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+      body: SizedBox.shrink(),
     );
   }
 }

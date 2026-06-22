@@ -3,11 +3,13 @@ import 'package:goexperts/core/services/api_client.dart';
 import '../modal/full_Reg_modal.dart';
 
 class FullRegRepository {
-
   Future<Response> submit(FullRegModel m) async {
-
+    print(m);
+    print("this is geofenceRadius${m.geofenceRadius}");
+   print("this is companyPolicy${m.companyPolicy}");
+print("this is employeeTerms${m.employeeTerms}");print("this is termsAndConditions${m.termsAndConditions}");
+print("this is signature${m.signature}");
     final formData = FormData.fromMap({
-
       // BASIC
       "legalName": m.legalName,
       "phone": m.phone,
@@ -26,7 +28,7 @@ class FullRegRepository {
       "landmark": m.landmark,
       "latitude": m.latitude,
       "longitude": m.longitude,
-      "geofencRadius":m.geofencRadius,
+      "geofenceRadius": m.geofenceRadius,
 
       // HR
       "companyPolicy": m.companyPolicy,
@@ -61,10 +63,7 @@ class FullRegRepository {
     Future<void> addFile(String key, file) async {
       if (file != null) {
         formData.files.add(
-          MapEntry(
-            key,
-            await MultipartFile.fromFile(file.path),
-          ),
+          MapEntry(key, await MultipartFile.fromFile(file.path)),
         );
       }
     }
@@ -77,9 +76,6 @@ class FullRegRepository {
     await addFile("panProof", m.panProof);
     await addFile("tanProof", m.tanProof);
 
-    return await ApiClient.dio.put(
-      "/api/company/profile",
-      data: formData,
-    );
+    return await ApiClient.dio.put("/api/company/profile", data: formData);
   }
 }

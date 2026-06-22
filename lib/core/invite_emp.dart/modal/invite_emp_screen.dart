@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:goexperts/core/widgets/top_message.dart';
 
 import '../../state/auth/auth_bloc.dart';
 import '../../widgets/app_primary_button.dart';
@@ -48,6 +50,7 @@ class _InviteEmpScreenState extends State<InviteEmpScreen> {
     return BlocConsumer<InviteEmpBloc, InviteEmpState>(
       listener: (context, state) {
         if (state.success) {
+          context.go('/');
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(const SnackBar(content: Text("Employee Added")));
@@ -120,6 +123,16 @@ class _InviteEmpScreenState extends State<InviteEmpScreen> {
                           title: "Organization Details",
                           children: [
                             DropdownButtonFormField(
+                              onTap: () {
+                                // 🛡️ ALWAYS use .isEmpty to verify an array has 0 items
+                                if (state.departments.isEmpty) {
+                                  TopMessage.show(
+                                    context,
+                                    "No Departments available. Please add configurations first.",
+                                    color: Colors.deepOrange,
+                                  );
+                                }
+                              },
                               value: state.selectedDepartmentId,
                               decoration: _dropdownDecoration("Department"),
                               items: state.departments

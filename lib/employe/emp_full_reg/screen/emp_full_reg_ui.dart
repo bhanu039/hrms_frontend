@@ -38,12 +38,21 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
     return BlocConsumer<EmpFullRegBloc, EmpFullRegState>(
       listener: (context, state) {
         if (state.success == true) {
-          TopMessage.show(
-            context,
-            "Company onboarding completed successfully!",
-            color: Colors.green,
-          );
-          context.go('/');
+          if (context.mounted) {
+            
+            TopMessage.show(
+              context,
+              "Company onboarding completed successfully!",
+              color: Colors.green,
+            );
+            Future.delayed(const Duration(milliseconds: 100), () {
+              if (context.mounted) {
+                context.go(
+                  '/',
+                ); // GoRouter handles redirect checking seamlessly now
+              }
+            });
+          }
         }
 
         if (state.error != null) {
@@ -351,7 +360,7 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
 
   /// ================= STEP 2 =================
   Widget _step2(BuildContext context, EmpFullRegState state) {
-     bool loading =false;
+    bool loading = false;
     return _card("Contact Details", [
       /// 📧 Personal Email
       CustomTextField(
@@ -395,27 +404,26 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
       /// 📍 LOCATION PICKER (FIXED + CLEAN)
       GestureDetector(
         onTap: () async {
-          loading=true;
+          loading = true;
           final location = await LocationHelper.getCurrentLocation();
           if (location == null) return;
-          if (location != null){
-
-          context.read<EmpFullRegBloc>().add(
-            UpdateField("address", location["address1"]),
-          );
-          context.read<EmpFullRegBloc>().add(
-            UpdateField("city", location["city"]),
-          );
-          context.read<EmpFullRegBloc>().add(
-            UpdateField("state", location["state"]),
-          );
-          context.read<EmpFullRegBloc>().add(
-            UpdateField("country", location["country"]),
-          );
-          context.read<EmpFullRegBloc>().add(
-            UpdateField("pincode", location["pincode"]),
-          );
-          loading=false;
+          if (location != null) {
+            context.read<EmpFullRegBloc>().add(
+              UpdateField("address", location["address1"]),
+            );
+            context.read<EmpFullRegBloc>().add(
+              UpdateField("city", location["city"]),
+            );
+            context.read<EmpFullRegBloc>().add(
+              UpdateField("state", location["state"]),
+            );
+            context.read<EmpFullRegBloc>().add(
+              UpdateField("country", location["country"]),
+            );
+            context.read<EmpFullRegBloc>().add(
+              UpdateField("pincode", location["pincode"]),
+            );
+            loading = false;
           }
         },
         child: Container(
@@ -431,7 +439,7 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
               const SizedBox(width: 10),
 
               Expanded(
-                child:loading! 
+                child: loading!
                     ? const Row(
                         children: [
                           SizedBox(
@@ -705,9 +713,8 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
       SwitchListTile(
         title: const Text("Do you have prior work experience?"),
         value: state.model.isexperienced,
-        onChanged: (v) =>context.read<EmpFullRegBloc>().add(
-            UpdateField("isexperienced", v),
-          )
+        onChanged: (v) =>
+            context.read<EmpFullRegBloc>().add(UpdateField("isexperienced", v)),
       ),
 
       state.model.isexperienced
@@ -1350,55 +1357,53 @@ class _EmployeeOnboardingScreenState extends State<EmployeeOnboardingScreen> {
           if (state.currentStep > 0) const SizedBox(width: 10),
 
           /// NEXT / SUBMIT
-          Expanded( child: state.isLoading
-              ? const Row(
-                  children: [
-                    SizedBox(
-                      width: 18,
-                      height: 18,
-                      child:
-                          CircularProgressIndicator(
-                        strokeWidth: 2,
+          Expanded(
+            child: state.isLoading
+                ? const Row(
+                    children: [
+                      SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
                       ),
+                      SizedBox(width: 10),
+                      Text("Fetching location..."),
+                    ],
+                  )
+                : ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.indigo,
+                      padding: const EdgeInsets.all(14),
                     ),
-                    SizedBox(width: 10),
-                    Text("Fetching location..."),
-                  ],
-                )
-              :  ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.indigo,
-                padding: const EdgeInsets.all(14),
-              ),
-              onPressed: () {
-
-                if (isLastStep) {
-                  if (state.model.isDeclaredTrue) {
-                    bloc.add(SubmitForm());
-                  } else {
-                    TopMessage.show(
-                      context,
-                      "Please confirm your details before submitting",
-                      color: Colors.red,
-                    );
-                  }
-                } else {
-                  if (formKeys[state.currentStep].currentState!.validate()) {
-                    bloc.add(NextStep());
-                  } else {
-                    TopMessage.show(
-                      context,
-                      "Please fill all required fields correctly",
-                      color: Colors.orange,
-                    );
-                  }
-                }
-              },
-              child: Text(
-                isLastStep ? "Submit" : "Next",
-                style: const TextStyle(color: Colors.white),
-              ),
-            ),
+                    onPressed: () {
+                      if (isLastStep) {
+                        if (state.model.isDeclaredTrue) {
+                          bloc.add(SubmitForm());
+                        } else {
+                          TopMessage.show(
+                            context,
+                            "Please confirm your details before submitting",
+                            color: Colors.red,
+                          );
+                        }
+                      } else {
+                        if (formKeys[state.currentStep].currentState!
+                            .validate()) {
+                          bloc.add(NextStep());
+                        } else {
+                          TopMessage.show(
+                            context,
+                            "Please fill all required fields correctly",
+                            color: Colors.orange,
+                          );
+                        }
+                      }
+                    },
+                    child: Text(
+                      isLastStep ? "Submit" : "Next",
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  ),
           ),
         ],
       ),

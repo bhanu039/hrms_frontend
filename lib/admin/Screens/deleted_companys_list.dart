@@ -72,6 +72,19 @@ class _DeletedCompaniesScreenState extends State<DeletedCompaniesScreen> {
     if (success) fetchCompanies();
   }
 
+  Future<void> restoreCompany(String id) async {
+    final apiService = ApiService(); 
+    
+    bool success = await apiService.restoreCompany(id);
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(success ? "Company deleted" : "Delete failed")),
+    );
+
+    if (success) fetchCompanies();
+  }
+
   // ✅ SUCCESS DIALOG
   void showSuccessDialog(String message) {
     showDialog(
@@ -144,14 +157,11 @@ class _DeletedCompaniesScreenState extends State<DeletedCompaniesScreen> {
     );
   }
 
- 
-
   Widget _subscriptionChip(Map company) {
-    final status =company['isSubscriptionActive'] == true
+    final status = company['isSubscriptionActive'] == true
         ? 'Subscribed'
         : 'Not Subscribed';
-    final active =
-        company['isSubscriptionActive'] == true;
+    final active = company['isSubscriptionActive'] == true;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -306,9 +316,10 @@ class _DeletedCompaniesScreenState extends State<DeletedCompaniesScreen> {
                               const SizedBox(height: 12),
                           itemBuilder: (context, index) {
                             final c = filteredCompanies[index];
-                            final name = c['name'] ?? '';
+                            final companyName = c['name'] ?? '';
                             final email = c['email'] ?? '';
-                            final domain = c['domain'] ?? 'No domain';
+                            final companyLogo = c['companyLogo'] ?? '';
+
                             final location =
                                 c['location'] ?? 'Location not set';
 
@@ -330,160 +341,171 @@ class _DeletedCompaniesScreenState extends State<DeletedCompaniesScreen> {
                                 },
                                 child: Padding(
                                   padding: const EdgeInsets.all(14),
-                                  child: Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
+                                  child: Column(
                                     children: [
-                                      CircleAvatar(
-                                        radius: 26,
-                                        backgroundColor: primaryColor
-                                            .withValues(alpha: 0.16),
-                                        child: Text(
-                                          _companyInitials(name),
-                                          style: TextStyle(
-                                            color: primaryColor,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 18,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 14),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Row(
-                                              children: [
-                                                Expanded(
-                                                  child: Text(
-                                                    name,
-                                                    style: const TextStyle(
-                                                      fontSize: 16,
-                                                      fontWeight:
-                                                          FontWeight.w700,
-                                                    ),
+                                      Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                           CircleAvatar(
+                                          radius: 26,
+                                          backgroundColor: primaryColor
+                                              .withOpacity(0.16),
+                                          backgroundImage:
+                                              companyLogo != null
+                                              ? NetworkImage(companyLogo)
+                                              : null,
+                                          child: companyLogo == null
+                                              ? Text(
+                                                  _companyInitials(companyName),
+                                                  style: TextStyle(
+                                                    color: primaryColor,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 18,
                                                   ),
+                                                )
+                                              : null,
+                                        ),
+                                          const SizedBox(width: 14),
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    Expanded(
+                                                      child: Text(
+                                                        companyName,
+                                                        style: const TextStyle(
+                                                          fontSize: 16,
+                                                          fontWeight:
+                                                              FontWeight.w700,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    _statusChip(c),
+                                                  ],
                                                 ),
-                                                _statusChip(c),
+                                                const SizedBox(height: 6),
+                                                Row(
+                                                  children: [
+                                                    const Icon(
+                                                      Icons.email,
+                                                      size: 14,
+                                                      color: Colors.grey,
+                                                    ),
+                                                    const SizedBox(width: 6),
+                                                    Expanded(
+                                                      child: Text(
+                                                        email,
+                                                        style: TextStyle(
+                                                          color:
+                                                              Colors.grey[700],
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                const SizedBox(height: 10),
                                               ],
                                             ),
-                                            const SizedBox(height: 6),
-                                            Row(
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Column(
+                                            children: [
+                                              
+                                              IconButton(
+                                                icon: const Icon(
+                                                  Icons.delete_outline,
+                                                  size: 22,
+                                                ),
+                                                color: Colors.red[600],
+                                                onPressed: () => deleteCompany(
+                                                  c['id'].toString(),
+                                                ),
+                                              ),
+                                              IconButton(
+                                                icon: const Icon(
+                                                  Icons.restore,
+                                                  size: 22,
+                                                ),
+                                                color: const Color.fromARGB(255, 13, 255, 0),
+                                                onPressed: () => restoreCompany(
+                                                  c['id'].toString(),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                      Wrap(
+                                        crossAxisAlignment:
+                                            WrapCrossAlignment.center,
+                                        spacing: 8,
+                                        runSpacing: 6,
+                                        children: [
+                                          _subscriptionChip(c),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                              vertical: 6,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Colors.blue.withValues(
+                                                alpha: 0.1,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 const Icon(
-                                                  Icons.email,
-                                                  size: 14,
-                                                  color: Colors.grey,
+                                                  Icons.language,
+                                                  size: 16,
+                                                  color: Colors.blue,
                                                 ),
-                                                const SizedBox(width: 6),
-                                                Expanded(
-                                                  child: Text(
-                                                    email,
-                                                    style: TextStyle(
-                                                      color: Colors.grey[700],
-                                                    ),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  c['domain'] ?? 'No domain',
+                                                  style: TextStyle(
+                                                    color: Colors.blue[800],
+                                                    fontSize: 12,
                                                   ),
                                                 ),
                                               ],
                                             ),
-                                            const SizedBox(height: 10),
-                                            Wrap(
-                                              crossAxisAlignment:
-                                                  WrapCrossAlignment.center,
-                                              spacing: 8,
-                                              runSpacing: 6,
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                              vertical: 6,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Colors.green.withValues(
+                                                alpha: 0.12,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
                                               children: [
-                                                _subscriptionChip(c),
-                                                Container(
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                        horizontal: 10,
-                                                        vertical: 6,
-                                                      ),
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.blue
-                                                        .withValues(alpha: 0.1),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          10,
-                                                        ),
-                                                  ),
-                                                  child: Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.min,
-                                                    children: [
-                                                      const Icon(
-                                                        Icons.language,
-                                                        size: 16,
-                                                        color: Colors.blue,
-                                                      ),
-                                                      const SizedBox(width: 4),
-                                                      Text(
-                                                        c['domain'] ?? 'No domain',
-                                                        style: TextStyle(
-                                                          color:
-                                                              Colors.blue[800],
-                                                          fontSize: 12,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
+                                                const Icon(
+                                                  Icons.location_on,
+                                                  size: 16,
+                                                  color: Colors.green,
                                                 ),
-                                                Container(
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                        horizontal: 10,
-                                                        vertical: 6,
-                                                      ),
-                                                  decoration: BoxDecoration(
-                                                    color: Colors.green
-                                                        .withValues(
-                                                          alpha: 0.12,
-                                                        ),
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          10,
-                                                        ),
-                                                  ),
-                                                  child: Row(
-                                                    mainAxisSize:
-                                                        MainAxisSize.min,
-                                                    children: [
-                                                      const Icon(
-                                                        Icons.location_on,
-                                                        size: 16,
-                                                        color: Colors.green,
-                                                      ),
-                                                      const SizedBox(width: 4),
-                                                      Text(
-                                                        c['location'] ?? 'No location',
-                                                        style: TextStyle(
-                                                          color:
-                                                              Colors.green[800],
-                                                          fontSize: 12,
-                                                        ),
-                                                      ),
-                                                    ],
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  location,
+                                                  style: TextStyle(
+                                                    color: Colors.green[800],
+                                                    fontSize: 12,
                                                   ),
                                                 ),
                                               ],
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Column(
-                                        children: [
-                                          const SizedBox(height: 4),
-                                          IconButton(
-                                            icon: const Icon(
-                                              Icons.delete_outline,
-                                              size: 22,
-                                            ),
-                                            color: Colors.red[600],
-                                            onPressed: () => deleteCompany(
-                                              c['id'].toString(),
                                             ),
                                           ),
                                         ],

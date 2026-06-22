@@ -26,7 +26,6 @@ class _EmployeeDashboardScreenState extends State<EmpDashboardScreen> {
   late String name;
   File? imagefile;
   String? workType;
-  bool condition = false;
   String? errorMessage;
   double? longitude;
   double? latitude;
@@ -225,11 +224,13 @@ class _EmployeeDashboardScreenState extends State<EmpDashboardScreen> {
             if (state is EmpDashboardLoading) {
               isDashboardLoading = true;
             } else if (state is EmpDashboardError) {
-              errorBannerMessage = state.message;
+             
               isCheckedIn = false;
+
+              errorMessage = state.message;
             } else if (state is EmpDashboardLoaded) {
               d = state.dashboardData;
-              isDashboardLoading = state.loading ?? false;
+              isLoading = state.loading ?? false;
               errorBannerMessage = state.errorMessage;
               isCheckedIn = d.selfAttendance?.status ?? false;
             }
@@ -500,7 +501,7 @@ Widget _buildInfoChip(IconData icon, String label) {
 
 
   Widget _checkInCard(EmpDashboardModel d) {
-    return Container(
+    return isLoading?const Center(child: CircularProgressIndicator()): Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -693,12 +694,12 @@ Widget _buildInfoChip(IconData icon, String label) {
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: const Text("Select Reason"),
+              title: const Text("Select Work Mode"),
               content: DropdownButtonFormField(
                 value: selectedValue,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
-                  hintText: "Choose Reason",
+                  hintText: "Select Work Mode",
                 ),
                 items: const [
                   DropdownMenuItem(value: "WFH", child: Text("Work From Home")),
