@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import '../login_screen.dart';
+import 'app_constants/app_constants.dart';
 import 'services/set_pass_token.dart';
 import 'state/auth/auth_bloc.dart';
 import 'state/auth/auth_event.dart';
 import 'widgets/app_primary_button.dart';
 import 'widgets/top_message.dart';
+import 'package:goexperts/core/app_constants/app_color.dart';
 
 class SetPasswordScreen extends StatefulWidget {
   final String token;
@@ -27,7 +28,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
 
   final Dio dio = Dio(
     BaseOptions(
-      baseUrl: "http://13.232.42.123/api/", // 🔁 change
+      baseUrl: AppConstants.apiBaseUrl2,
       headers: {"Content-Type": "application/json"},
     ),
   );
@@ -37,12 +38,12 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
     final confirm = confirmController.text.trim();
 
     if (password.isEmpty || confirm.isEmpty) {
-      TopMessage.show(context, "Fill all fields", color: Colors.red);
+      TopMessage.show(context, "Fill all fields", color: AppColors.red);
       return;
     }
 
     if (password != confirm) {
-      TopMessage.show(context, "Passwords do not match", color: Colors.red);
+      TopMessage.show(context, "Passwords do not match", color: AppColors.red);
       return;
     }
 
@@ -52,7 +53,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
       print("Submitting new password with token: ${widget.token}");
       print(" Password: $password");
       final response = await dio.post(
-        "https://goexperts-hrms-coun.onrender.com/api/invite/setup-password", // 🔁 your API
+        "${AppConstants.apiBaseUrl2}invite/setup-password", // 🔁 your API
         data: {"token": widget.token, "password": password},
         options: Options(validateStatus: (status) => true),
       );
@@ -66,7 +67,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
         TopMessage.show(
           context,
           "Password set successfully",
-          color: Colors.green,
+          color: AppColors.green,
         );
         Future.microtask(() async {
           context.read<AuthBloc>().add(AuthLogoutRequested());
@@ -78,12 +79,12 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
         TopMessage.show(
           context,
           response.data["message"] ?? "Failed to set password",
-          color: Colors.red,
+          color: AppColors.red,
         );
       }
     } catch (e) {
       print("Error: $e");
-      TopMessage.show(context, "Something went wrong: $e", color: Colors.red);
+      TopMessage.show(context, "Something went wrong: $e", color: AppColors.red);
     }
 
     setState(() => isLoading = false);
@@ -99,7 +100,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xff1e3a8a), Color(0xff9333ea)],
+            colors: [AppColors.accentPurple, AppColors.warningColor],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -110,11 +111,11 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
             child: Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppColors.white,
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
+                    color: AppColors.black.withOpacity(0.2),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
@@ -123,7 +124,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.lock_reset, size: 60, color: Colors.blue),
+                  const Icon(Icons.lock_reset, size: 60, color: AppColors.secondaryColor),
                   const SizedBox(height: 10),
 
                   const Text(
@@ -133,9 +134,9 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
 
                   const SizedBox(height: 8),
 
-                  const Text(
+                   Text(
                     "Enter your new password below",
-                    style: TextStyle(color: Colors.grey),
+                    style: TextStyle(color: AppColors.grey),
                   ),
 
                   const SizedBox(height: 25),
@@ -194,7 +195,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                           ? () => TopMessage.show(
                               context,
                               "Please wait...",
-                              color: Colors.blue,
+                              color: AppColors.blue,
                             )
                           : submit,
                     ),
@@ -215,3 +216,6 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
     super.dispose();
   }
 }
+
+
+

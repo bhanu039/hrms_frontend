@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:goexperts/core/app_constants/app_color.dart';
 
 class DashboardCard extends StatelessWidget {
   const DashboardCard({
@@ -9,25 +10,22 @@ class DashboardCard extends StatelessWidget {
     required this.icon,
     required this.color,
   });
-
   final String title;
   final String value;
   final String change;
   final IconData icon;
   final Color color;
-
   @override
   Widget build(BuildContext context) {
     final hasChange = change.trim().isNotEmpty;
-
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: AppColors.black.withValues(alpha: 0.05),
             blurRadius: 14,
             offset: const Offset(0, 6),
           ),
@@ -43,7 +41,7 @@ class DashboardCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
               fontSize: 14,
-              color: Color(0xff111827),
+              color: AppColors.textSecondaryColor,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -67,7 +65,7 @@ class DashboardCard extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xff111827),
+                    color: AppColors.textColor,
                   ),
                 ),
               ),
@@ -78,7 +76,7 @@ class DashboardCard extends StatelessWidget {
               '$change from last month',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: Colors.green, fontSize: 12),
+              style: const TextStyle(color: AppColors.successColor, fontSize: 12),
             )
           else
             const SizedBox(height: 12),

@@ -1,7 +1,13 @@
-  import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+
+import 'package:goexperts/core/app_constants/app_color.dart';
 
 class TopMessage {
-  static void show(BuildContext context, String message, {required MaterialColor color}) {
+  static void show(
+    BuildContext context,
+    String message, {
+    required Color color,
+  }) {
     final overlay = Overlay.of(context);
 
     late OverlayEntry overlayEntry;
@@ -12,7 +18,7 @@ class TopMessage {
         left: 16,
         right: 16,
         child: Material(
-          color: Colors.transparent,
+          color: AppColors.transparent,
           child: _TopMessageWidget(message: message, color: color),
         ),
       ),
@@ -20,7 +26,7 @@ class TopMessage {
 
     overlay.insert(overlayEntry);
 
-    Future.delayed(Duration(seconds: 3), () {
+    Future.delayed(const Duration(seconds: 3), () {
       overlayEntry.remove();
     });
   }
@@ -35,14 +41,14 @@ class _TopMessageWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: color,
         borderRadius: BorderRadius.circular(10),
       ),
       child: Text(
         message,
-        style: TextStyle(color: Colors.white, fontSize: 16),
+        style: const TextStyle(color: AppColors.white, fontSize: 16),
       ),
     );
   }

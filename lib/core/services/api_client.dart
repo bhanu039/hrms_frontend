@@ -2,7 +2,9 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:goexperts/core/widgets/top_message.dart';
 import 'package:goexperts/splash_screen.dart';
+import '../app_constants/app_constants.dart';
 import 'sessionservice.dart';
+import 'package:goexperts/core/app_constants/app_color.dart';
 
 class ApiClient {
   static final GlobalKey<NavigatorState> navigatorKey =
@@ -10,9 +12,9 @@ class ApiClient {
   static final Dio dio =
       Dio(
           BaseOptions(
-            baseUrl: "https://goexperts-hrms-coun.onrender.com/",
-            connectTimeout: const Duration(seconds: 30), // ⬅ increased
-            receiveTimeout: const Duration(seconds: 30),
+            baseUrl: AppConstants.apiBaseUrl,
+            connectTimeout: const Duration(seconds: 100), // ⬅ increased
+            receiveTimeout: const Duration(seconds: 100),
             headers: {"Content-Type": "application/json"},
           ),
         )
@@ -84,7 +86,7 @@ class ApiClient {
               // Show message using navigatorKey context
               final context = ApiClient.navigatorKey.currentContext;
               if (context != null) {
-                TopMessage.show(context, message, color: Colors.red);
+                TopMessage.show(context, message, color: AppColors.errorColor);
               }
 
               return handler.reject(

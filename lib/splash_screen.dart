@@ -1,5 +1,7 @@
 ﻿import 'package:flutter/material.dart';
 
+import 'core/app_constants/app_color.dart';
+import 'core/app_constants/app_constants.dart';
 import 'core/services/api_service.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -48,7 +50,7 @@ class _SplashScreenState extends State<SplashScreen>
           return Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.blue.shade200, Colors.purple.shade300],
+                colors: [AppColors.primaryColor, AppColors.secondaryColor],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -64,7 +66,7 @@ class _SplashScreenState extends State<SplashScreen>
                       width: 200,
                       decoration: const BoxDecoration(
                         image: DecorationImage(
-                          image: AssetImage('assets/images/logo.png'),
+                          image: AssetImage(AppConstants.logo),
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -72,20 +74,20 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                   ShaderMask(
                     shaderCallback: (bounds) => const LinearGradient(
-                      colors: [Colors.blue, Colors.purple],
+                      colors: [AppColors.primaryColor, AppColors.darkSecondaryColor],
                     ).createShader(bounds),
                     child: const Text(
                       'GoExperts',
                       style: TextStyle(
                         fontSize: 40,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: AppColors.textColor,
                       ),
                     ),
                   ),
                   const Text(
                     'working with you for you',
-                    style: TextStyle(fontSize: 5, color: Colors.white70),
+                    style: TextStyle(fontSize: 16, color: AppColors.textSecondaryColor),
                   ),
                 ],
               ),

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:open_file/open_file.dart';
+import 'package:goexperts/core/app_constants/app_color.dart';
 
 class FileUploadWidget extends StatefulWidget {
   final Function(File file) onFilePicked;
@@ -32,9 +33,10 @@ class _FileUploadWidgetState extends State<FileUploadWidget> {
   @override
   void didUpdateWidget(covariant FileUploadWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Update file if it changes from the model
-    if (oldWidget.initialFile != widget.initialFile &&
-        widget.initialFile != null) {
+    // Update file if it changes from the model (compare by path, not reference)
+    final oldPath = oldWidget.initialFile?.path;
+    final newPath = widget.initialFile?.path;
+    if (oldPath != newPath && widget.initialFile != null) {
       setState(() {
         file = widget.initialFile;
       });
@@ -65,13 +67,13 @@ class _FileUploadWidgetState extends State<FileUploadWidget> {
   Widget build(BuildContext context) {return Container(
   padding: const EdgeInsets.all(14),
   decoration: BoxDecoration(
-    color: Colors.white,
+    color: AppColors.white,
     borderRadius: BorderRadius.circular(14),
-    border: Border.all(color: Colors.grey.shade300),
+    border: Border.all(color: AppColors.grey.shade300),
   ),
   child: Row(
     children: [
-      Icon(Icons.upload_file, color: Colors.grey.shade700),
+      Icon(Icons.upload_file, color: AppColors.grey.shade700),
       const SizedBox(width: 12),
       
       // Expanded gives the text elements boundaries so text overflow works correctly
@@ -87,7 +89,7 @@ class _FileUploadWidgetState extends State<FileUploadWidget> {
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey.shade800,
+                color: AppColors.grey.shade800,
               ),
             ),
             const SizedBox(height: 2),
@@ -97,7 +99,7 @@ class _FileUploadWidgetState extends State<FileUploadWidget> {
               maxLines: 1,
               style: TextStyle(
                 fontSize: 13, 
-                color: file != null ? Colors.blueGrey.shade700 : Colors.grey.shade500,
+                color: file != null ? AppColors.grey.shade700 : AppColors.grey.shade500,
                 fontWeight: file != null ? FontWeight.w500 : FontWeight.normal,
               ),
             ),
@@ -120,8 +122,8 @@ class _FileUploadWidgetState extends State<FileUploadWidget> {
             onPressed: pickFile,
             style: ElevatedButton.styleFrom(
               elevation: 0,
-              backgroundColor: const Color(0xFFF3F4F6),
-              foregroundColor: Colors.black87,
+              backgroundColor: AppColors.backgroundColor,
+              foregroundColor: AppColors.black87,
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               visualDensity: VisualDensity.compact,
               shape: RoundedRectangleBorder(
@@ -150,3 +152,5 @@ class _FileUploadWidgetState extends State<FileUploadWidget> {
 //     );
 //   },
 // ),
+
+

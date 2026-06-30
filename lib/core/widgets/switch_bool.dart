@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:goexperts/core/app_constants/app_color.dart';
 
 class AppSwitchTile extends StatelessWidget {
   final String title;
@@ -23,17 +24,17 @@ class AppSwitchTile extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
+              color: AppColors.black.withValues(alpha: 0.04),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
           ],
           border: Border.all(
-            color: value ? Colors.green.shade200 : Colors.grey.shade200,
+            color: value ? AppColors.green.shade200 : AppColors.grey.shade200,
           ),
         ),
         child: Row(
@@ -48,7 +49,9 @@ class AppSwitchTile extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: value ? Colors.green.shade700 : Colors.black87,
+                      color: value
+                          ? AppColors.green.shade700
+                          : AppColors.black87,
                     ),
                   ),
                   if (subtitle != null) ...[
@@ -57,7 +60,7 @@ class AppSwitchTile extends StatelessWidget {
                       subtitle!,
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.grey.shade600,
+                        color: AppColors.grey.shade600,
                       ),
                     ),
                   ],
@@ -71,10 +74,10 @@ class AppSwitchTile extends StatelessWidget {
             Switch(
               value: value,
               onChanged: onChanged,
-              activeColor: Colors.white,
-              activeTrackColor: Colors.green,
-              inactiveThumbColor: Colors.white,
-              inactiveTrackColor: Colors.grey.shade400,
+              activeColor: AppColors.white,
+              activeTrackColor: AppColors.green,
+              inactiveThumbColor: AppColors.white,
+              inactiveTrackColor: AppColors.grey.shade400,
             ),
           ],
         ),

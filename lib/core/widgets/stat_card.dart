@@ -1,33 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:goexperts/core/app_constants/app_color.dart';
 
 class StatCard extends StatelessWidget {
   final String title;
   final String value;
-
-  const StatCard({
-    super.key,
-    required this.title,
-    required this.value,
-  });
-
+  const StatCard({super.key, required this.title, required this.value});
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white,
         borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 5,
-          ),
-        ],
+        boxShadow: [BoxShadow(color: AppColors.black12, blurRadius: 5)],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: const TextStyle(color: Colors.grey)),
+          Text(title, style: const TextStyle(color: AppColors.textSecondaryColor)),
           const Spacer(),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -39,7 +29,7 @@ class StatCard extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const Icon(Icons.bar_chart, color: Colors.blue),
+              const Icon(Icons.bar_chart, color: AppColors.secondaryColor, size: 30),
             ],
           ),
         ],

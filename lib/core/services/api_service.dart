@@ -2,15 +2,14 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import '../../company/models/company_model.dart';
-import '../../hr/emp_list/employee_model.dart';
-import '../../company/models/plan_model.dart';
+import '../../emp_list/employee_model.dart';
+import '../../users/company/models/plan_model.dart';
+import '../../users/company/company_profile/data/company_profile_modal.dart';
 import '../state/models/Employee_data_Model.dart';
 import 'api_client.dart';
 import 'dart:io';
 
 class ApiService {
-  @override
   // 🔥 OPTIONAL: Wake up server (Render fix)
   static Future<void> wakeUpServer() async {
     try {
@@ -207,38 +206,129 @@ class ApiService {
   }
 
   /// GET COMPANY PROFILE
-  static Future<CompanyModel?> getCompanyProfile() async {
+  static Future<CompanyProfileData?> getCompanyProfile() async {
     try {
       final response = await ApiClient.dio.get("api/company/profile");
+      print("Company Profile Response: ${response.data}");
 
-      print(response.data);
-
-      if (response.statusCode == 200) {
-        return CompanyModel.fromJson(response.data["data"]);
+      if (response.statusCode == 200 && response.data["success"] == true) {
+        return CompanyProfileData.fromJson(response.data["data"]);
       }
+      throw Exception("Failed to load company profile");
     } catch (e) {
-      debugPrint("GET ERROR => $e");
+      debugPrint("Error fetching company profile: $e");
+      return null;
     }
+  }
 
-    return null;
+  /// UPDATE COMPANY PROFILE
+  static Future<CompanyProfileData?> updateCompanyProfile({
+    required Map<String, dynamic> data,
+    String? companyLogoPath,
+    String? signaturePath,
+  }) async {
+    try {
+      FormData formData = FormData.fromMap({
+        ...data,
+        if (companyLogoPath != null)
+          "companyLogo": await MultipartFile.fromFile(
+            companyLogoPath,
+            filename: companyLogoPath.split('/').last,
+          ),
+        if (signaturePath != null)
+          "signature": await MultipartFile.fromFile(
+            signaturePath,
+            filename: signaturePath.split('/').last,
+          ),
+      });
+
+      final response = await ApiClient.dio.put(
+        "api/company/profile",
+        data: formData,
+      );
+
+      if (response.statusCode == 200 && response.data["success"] == true) {
+        return CompanyProfileData.fromJson(response.data["data"]);
+      }
+      throw Exception("Failed to update company profile");
+    } catch (e) {
+      debugPrint("Error updating profile: $e");
+      return null;
+    }
+  }
+
+  /// GET INDUSTRY TYPES
+  static Future<List<IndustryType>> getIndustryTypes() async {
+    try {
+      final response = await ApiClient.dio.get("api/industry-types");
+
+      if (response.statusCode == 200 && response.data["success"] == true) {
+        final List data = response.data["data"] ?? [];
+        return data.map((e) => IndustryType.fromJson(e)).toList();
+      }
+      throw Exception("Failed to load industry types");
+    } catch (e) {
+      debugPrint("Error fetching industry types: $e");
+      return [];
+    }
+  }
+
+  /// GET COMPANY DOCUMENTS
+  static Future<List<CompanyDocument>> getCompanyDocuments(
+    String companyId,
+  ) async {
+    try {
+      final response = await ApiClient.dio.get(
+        "api/company/$companyId/documents",
+      );
+
+      if (response.statusCode == 200 && response.data["success"] == true) {
+        final List data = response.data["data"] ?? [];
+        return data.map((e) => CompanyDocument.fromJson(e)).toList();
+      }
+      throw Exception("Failed to load documents");
+    } catch (e) {
+      debugPrint("Error fetching documents: $e");
+      return [];
+    }
+  }
+
+  /// UPLOAD/UPDATE DOCUMENT
+  static Future<CompanyDocument?> uploadCompanyDocument({
+    required String companyId,
+    required String filePath,
+    required String documentType,
+  }) async {
+    try {
+      FormData formData = FormData.fromMap({
+        "document": await MultipartFile.fromFile(filePath),
+        "type": documentType,
+      });
+
+      final response = await ApiClient.dio.post(
+        "api/company/$companyId/documents",
+        data: formData,
+      );
+
+      if (response.statusCode == 201 && response.data["success"] == true) {
+        return CompanyDocument.fromJson(response.data["data"]);
+      }
+      throw Exception("Failed to upload document");
+    } catch (e) {
+      debugPrint("Error uploading document: $e");
+      return null;
+    }
   }
 
   static Future<List<EmployeeModel>> getEmployees(
     String? employeeTypes,
-   String? dataType,
+    String? dataType,
   ) async {
-    final  response;
-    if (dataType != "saftDelete") {
-      if (employeeTypes == 'EMPLOYEE') {
-        response = await ApiClient.dio.get("api/employee?role=$employeeTypes");
-      } else if (employeeTypes == 'HR') {
-        response = await ApiClient.dio.get("api/employee?role=$employeeTypes");
-      } else {
-        response = await ApiClient.dio.get("api/employee");
-      }
-    }else{
-        response = await ApiClient.dio.get("api/employee/deleted-list");
-      
+    final response;
+    if (dataType != "DELETED") {
+      response = await ApiClient.dio.get("api/employee?role=$employeeTypes");
+    } else {
+      response = await ApiClient.dio.get("api/employee/deleted-list");
     }
 
     print("EMPLOYEE RESPONSE => ${response.data}");
@@ -251,28 +341,28 @@ class ApiService {
 
     throw Exception("Failed to load employees");
   }
- Future<Response> createEmployee(Map<String, dynamic> data) async {
+
+  Future<Response> createEmployee(Map<String, dynamic> data) async {
     final response = await ApiClient.dio.post("api/invite/invite", data: data);
     print("CREATE EMPLOYEE RESPONSE => ${response.data}");
     return response;
   }
-
-
-
 
   Future<bool> softDeleteEmp(id) async {
     final response = await ApiClient.dio.delete("api/employee/$id");
     print("CREATE EMPLOYEE RESPONSE => ${response.data}");
     return response.data["success"];
   }
-  
+
   Future<bool> activateEmp(String? id) async {
-    final response = await ApiClient.dio.post("api/onboarding/finalize-joining/$id");
+    final response = await ApiClient.dio.post(
+      "api/onboarding/finalize-joining/$id",
+    );
     print("CREATE EMPLOYEE RESPONSE => ${response.data}");
     return response.data["success"];
   }
 
-   Future<bool> restoreCompany(String? id) async {
+  Future<bool> restoreCompany(String? id) async {
     final response = await ApiClient.dio.post("api/company/restore/$id");
     print("CREATE EMPLOYEE RESPONSE => ${response.data}");
     return response.data["success"];

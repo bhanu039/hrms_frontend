@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:goexperts/core/app_constants/app_color.dart';
 
 class AppDropdown extends StatelessWidget {
   final String label;
@@ -6,102 +7,141 @@ class AppDropdown extends StatelessWidget {
   final double? width;
   final List<String> items;
   final void Function(String value)? onChanged;
-  final Widget? prefixIcon;
-  final Widget? suffixIcon;
   final String? Function(String?)? validator;
 
   final IconData? icon;
+  final Widget? prefixIcon;
+  final Widget? suffixIcon;
 
   const AppDropdown({
-    this.width,
     super.key,
     required this.label,
     required this.value,
     required this.items,
+    this.width,
+    this.onChanged,
     this.validator,
+    this.icon,
     this.prefixIcon,
     this.suffixIcon,
-    this.onChanged,
-    this.icon,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      width: width??double.infinity,
+    return SizedBox(
+      width: width ?? double.infinity,
       child: DropdownButtonFormField<String>(
-        value: (value != null && value!.isNotEmpty) ? value : null,
+        value: (value == null || value!.isEmpty) ? null : value,
         isExpanded: true,
-        icon: const Icon(Icons.keyboard_arrow_down_rounded),
         validator: validator,
+
+        icon: Icon(
+          Icons.keyboard_arrow_down_rounded,
+          color: AppColors.textSecondaryColor,
+        ),
+
+        style: const TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w500,
+          color: AppColors.textColor,
+        ),
 
         decoration: InputDecoration(
           labelText: label,
-          prefixIcon: icon != null ? Icon(icon) : null,
 
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 14,
+          labelStyle: const TextStyle(
+            color: AppColors.textSecondaryColor,
+            fontWeight: FontWeight.w500,
           ),
 
-          filled: true,
-          fillColor: Colors.grey.shade50,
+          hintStyle: const TextStyle(
+            color: AppColors.textSecondaryColor,
+          ),
 
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: Colors.grey.shade300),
+          prefixIcon: prefixIcon ??
+              (icon != null
+                  ? Icon(
+                      icon,
+                      color: AppColors.primary,
+                    )
+                  : null),
+
+          suffixIcon: suffixIcon,
+
+          filled: true,
+          fillColor: AppColors.backgroundColor,
+
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 18,
+            vertical: 18,
           ),
 
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide(color: Colors.grey.shade300),
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(
+              color: AppColors.red,
+            ),
           ),
 
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: Colors.blue, width: 1.5),
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(
+              color: AppColors.primary,
+              width: 2,
+            ),
+          ),
+
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(
+              color: AppColors.danger,
+            ),
+          ),
+
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide(
+              color: AppColors.danger,
+              width: 2,
+            ),
           ),
         ),
 
-        dropdownColor: Colors.white,
-        elevation: 3,
+        dropdownColor: AppColors.backgroundColor,
+        borderRadius: BorderRadius.circular(16),
+        elevation: 6,
+
         items: [
-          DropdownMenuItem(value: '', child: Text('Any $label')),
+          DropdownMenuItem(
+            value: "",
+            child: Text(
+              "Any $label",
+              style: const TextStyle(
+                color: AppColors. textSecondaryColor,
+              ),
+            ),
+          ),
           ...items.map(
-            (item) => DropdownMenuItem(value: item, child: Text(item)),
+            (e) => DropdownMenuItem(
+              value: e,
+              child: Text(
+                e,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  color: AppColors.textColor,
+                ),
+              ),
+            ),
           ),
         ],
 
-        // items: items
-        //     .map(
-        //       (e) => DropdownMenuItem(
-        //         value: e,
-        //         child: Text(
-        //           e,
-        //           style: const TextStyle(fontSize: 14),
-        //         ),
-        //       ),
-        //     )
-        //     .toList(),
-        onChanged: (newValue) {
-          if (newValue != null) {
-            onChanged?.call(newValue);
+        onChanged: (value) {
+          if (value != null) {
+            onChanged?.call(value);
           }
         },
       ),
     );
   }
 }
-
-
-//call ike this 
-
-  // AppDropdown(
-  //       label: "Country",
-  //       value: state.model.country,
-  //       items: const ["India", "USA", "UK"],
-  //       onChanged: (val) {
-  //         context.read<FullRegBloc>().add(UpdateField("Country", val));
-  //       },
-  //     ),

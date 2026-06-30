@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../app_constants/app_color.dart';
+import '../app_constants/app_thems.dart';
+import '../theme/theme_controller.dart';
+
 class DrawerWidgets {
-  /// ================= HEADER =================
   static Widget buildHeader({
     required String name,
     required String email,
@@ -16,10 +19,7 @@ class DrawerWidgets {
       ),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            Color(0xff0f766e),
-            Color(0xff2563eb),
-          ],
+          colors: [AppColors.backgroundColor, AppColors.primaryColor],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -28,33 +28,29 @@ class DrawerWidgets {
         children: [
           const CircleAvatar(
             radius: 36,
-            backgroundColor: Colors.white,
+            backgroundColor: AppColors.white,
             child: Icon(
               Icons.business,
               size: 40,
-              color: Color(0xff0f766e),
+              color: AppColors.primaryColor,
             ),
           ),
-
           const SizedBox(height: 12),
-
           Text(
             name.isEmpty ? 'Company' : name,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              color: Colors.white,
+              color: AppColors.white,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
-
           const SizedBox(height: 4),
-
           Text(
             email.isEmpty ? 'company@email.com' : email,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              color: Colors.white70,
+              color: AppColors.secondaryColor,
               fontSize: 13,
             ),
           ),
@@ -63,83 +59,59 @@ class DrawerWidgets {
     );
   }
 
-  /// ================= MENU TILE =================
   static Widget menuTile(
     BuildContext context, {
     required IconData icon,
     required String title,
     required String subtitle,
-    Color color = Colors.black87,
+    Color color = AppColors.primaryColor,
     VoidCallback? onTap,
     List<MenuSubItem> subItems = const [],
   }) {
+    final theme = Theme.of(context);
 
-    /// ===== EXPANSION TILE =====
     if (subItems.isNotEmpty) {
       return Container(
         margin: const EdgeInsets.only(bottom: 10),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: theme.cardColor,
           borderRadius: BorderRadius.circular(12),
           boxShadow: const [
             BoxShadow(
-              color: Colors.black12,
+              color: AppColors.primaryColor,
               blurRadius: 6,
               offset: Offset(0, 3),
             ),
           ],
         ),
         child: Theme(
-          data: Theme.of(context).copyWith(
-            dividerColor: Colors.transparent,
-          ),
+          data: theme.copyWith(dividerColor: AppColors.transparent),
           child: ExpansionTile(
             leading: Icon(icon, color: color),
-
             title: Text(
               title,
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: color,
-              ),
+              style: TextStyle(fontWeight: FontWeight.w600, color: color),
             ),
-
             subtitle: Text(
               subtitle,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-
-            tilePadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-            ),
-
+            tilePadding: const EdgeInsets.symmetric(horizontal: 16),
             childrenPadding: const EdgeInsets.only(
               left: 16,
               right: 8,
               bottom: 8,
             ),
-
             children: subItems.map((item) {
               return ListTile(
                 dense: true,
-
-                leading: Icon(
-                  item.icon,
-                  size: 20,
-                  color: Colors.grey,
-                ),
-
+                leading: Icon(item.icon, size: 20, color: AppColors.grey),
                 title: Text(
                   item.title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: const TextStyle(fontWeight: FontWeight.w500),
                 ),
-
-                onTap: item.onTap ?? () {
-                  showComingSoon(context, item.title);
-                },
+                onTap: item.onTap ?? () => showComingSoon(context, item.title),
               );
             }).toList(),
           ),
@@ -147,15 +119,14 @@ class DrawerWidgets {
       );
     }
 
-    /// ===== NORMAL TILE =====
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(12),
         boxShadow: const [
           BoxShadow(
-            color: Colors.black12,
+            color: AppColors.primaryColor,
             blurRadius: 6,
             offset: Offset(0, 3),
           ),
@@ -163,35 +134,63 @@ class DrawerWidgets {
       ),
       child: ListTile(
         leading: Icon(icon, color: color),
-
         title: Text(
           title,
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            color: color,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w600, color: color),
         ),
-
         subtitle: Text(
           subtitle,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-
         trailing: const Icon(
           Icons.arrow_forward_ios,
           size: 14,
-          color: Colors.grey,
+          color: AppColors.secondaryColor,
         ),
-
-        onTap: onTap ?? () {
-          showComingSoon(context, title);
-        },
+        onTap: onTap ?? () => showComingSoon(context, title),
       ),
     );
   }
 
-  /// ================= SECTION TITLE =================
+  static Widget themeModeTile(BuildContext context) {
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: ThemeController.mode,
+      builder: (context, themeMode, _) {
+        final isDark = themeMode == ThemeMode.dark;
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 10),
+          decoration: BoxDecoration(
+            color: Theme.of(context).cardColor,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: const [
+              BoxShadow(
+                color: AppColors.primaryColor,
+                blurRadius: 6,
+                offset: Offset(0, 3),
+              ),
+            ],
+          ),
+          child: SwitchListTile(
+            secondary: Icon(
+              isDark ? Icons.dark_mode_rounded : Icons.light_mode_rounded,
+              color: AppColors.primary,
+            ),
+            title: const Text(
+              'Dark mode',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+            subtitle: Text(isDark ? 'Using dark theme' : 'Using light theme'),
+            value: isDark,
+            activeColor: AppColors.primary,
+            onChanged: (_) => ThemeController.toggle(),
+          ),
+        );
+      },
+    );
+  }
+
   static Widget sectionTitle(String text) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -200,14 +199,13 @@ class DrawerWidgets {
         style: const TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.bold,
-          color: Colors.grey,
+          color: AppColors.textSecondaryColor,
           letterSpacing: 1,
         ),
       ),
     );
   }
 
-  /// ================= SNACKBAR =================
   static void showComingSoon(
     BuildContext context,
     String title,
@@ -224,7 +222,6 @@ class DrawerWidgets {
   }
 }
 
-/// ================= SUB MENU MODEL =================
 class MenuSubItem {
   const MenuSubItem({
     required this.icon,

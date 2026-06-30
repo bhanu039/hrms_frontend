@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../login_screen.dart';
+import 'package:goexperts/core/app_constants/app_color.dart';
 
 class SessionExpiryHandler {
   static bool isRedirecting = false;
@@ -17,8 +18,9 @@ class SessionExpiryHandler {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text("Session expired. Please login again."),
-        backgroundColor: Colors.red,
+        backgroundColor: AppColors.errorColor,
       ),
     );
   }
 }
+

@@ -4,12 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:goexperts/core/widgets/top_message.dart';
 
 import '../../state/auth/auth_bloc.dart';
-import '../../widgets/app_primary_button.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/dropdown_list.dart';
 import '../bloc/invite_emp_bloc.dart';
 import '../bloc/invite_emp_event.dart';
 import '../bloc/invite_emp_start.dart';
+import 'package:goexperts/core/app_constants/app_color.dart';
 
 class InviteEmpScreen extends StatefulWidget {
   const InviteEmpScreen({super.key});
@@ -30,6 +30,7 @@ class _InviteEmpScreenState extends State<InviteEmpScreen> {
   final officeDaysController = TextEditingController();
   String? role;
   String? roleController;
+  String? workMode;
 
   bool isNew = false;
 
@@ -51,21 +52,18 @@ class _InviteEmpScreenState extends State<InviteEmpScreen> {
       listener: (context, state) {
         if (state.success) {
           context.go('/');
-          ScaffoldMessenger.of(
+          TopMessage.show(
             context,
-          ).showSnackBar(const SnackBar(content: Text("Employee Added")));
-          Navigator.pop(context);
-        }
-
-        if (state.error != null) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(state.error!)));
+            "Employee invited successfully!",
+            color: AppColors.green,
+          );
+        } else if (state.error != null) {
+          TopMessage.show(context, state.error!, color: AppColors.red);
         }
       },
       builder: (context, state) {
         return Scaffold(
-          backgroundColor: const Color(0xFFF6F7FB),
+          backgroundColor: AppColors.screenBg,
 
           appBar: AppBar(
             title: const Text("Add Employee"),
@@ -129,7 +127,7 @@ class _InviteEmpScreenState extends State<InviteEmpScreen> {
                                   TopMessage.show(
                                     context,
                                     "No Departments available. Please add configurations first.",
-                                    color: Colors.deepOrange,
+                                    color: AppColors.accentOrange,
                                   );
                                 }
                               },
@@ -192,11 +190,10 @@ class _InviteEmpScreenState extends State<InviteEmpScreen> {
                               ],
                               onChanged: (value) {
                                 if (value != null) {
-                                  context.read<InviteEmpBloc>().add(
-                                    SelectDesignation(
-                                      value,
-                                    ), // Sends WFH, WFO, or HYBRID directly to your Bloc
-                                  );
+                                  setState(() {
+                                    workMode = value;
+                                  });
+                                  // Sends WFH, WFO, or HYBRID directly to your Bloc
                                 }
                               },
                             ),
@@ -218,13 +215,15 @@ class _InviteEmpScreenState extends State<InviteEmpScreen> {
                           children: [
                             Container(
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: AppColors.white,
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: Colors.grey.shade200),
+                                border: Border.all(
+                                  color: AppColors.grey.shade200,
+                                ),
                               ),
                               child: SwitchListTile(
                                 value: isNew,
-                                activeColor: Colors.green,
+                                activeColor: AppColors.green,
                                 title: Text(
                                   isNew ? "New Hire" : "Existing Employee",
                                   style: const TextStyle(
@@ -269,9 +268,11 @@ class _InviteEmpScreenState extends State<InviteEmpScreen> {
                                 onTap: () async {
                                   DateTime? pickedDate = await showDatePicker(
                                     context: context,
-                                    initialDate: DateTime(2000),
-                                    firstDate: DateTime(1900),
-                                    lastDate: DateTime.now(),
+                                    initialDate: DateTime.now(),
+                                    firstDate: DateTime.now(),
+                                    lastDate: DateTime.now().add(
+                                      const Duration(days: 365 * 50),
+                                    ),
                                   );
 
                                   if (pickedDate != null) {
@@ -296,12 +297,8 @@ class _InviteEmpScreenState extends State<InviteEmpScreen> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              backgroundColor: const Color.fromARGB(
-                                255,
-                                241,
-                                180,
-                                105,
-                              ),
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: AppColors.white,
                             ),
                             onPressed: state.submitting
                                 ? null
@@ -316,8 +313,8 @@ class _InviteEmpScreenState extends State<InviteEmpScreen> {
                                           state.selectedDepartmentId,
                                       "designationId":
                                           state.selectedDesignationId,
-                                      "workModel": state.workModel,
-                                      if (state.workModel == "HYBRID")
+                                      "workModel": workMode,
+                                      if (workMode == "HYBRID")
                                         "expectedOfficeDays":
                                             officeDaysController.text.trim(),
 
@@ -374,17 +371,14 @@ class _SectionCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [
-            Color.fromARGB(255, 222, 211, 211), // white
-            Color(0xFFE3F2FD), // light blue (change as needed)
-          ],
+          colors: [AppColors.primaryColor, AppColors.secondaryColor],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: AppColors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -409,19 +403,19 @@ InputDecoration _dropdownDecoration(String label) {
   return InputDecoration(
     labelText: label,
     filled: true,
-    fillColor: Colors.white,
+    fillColor: AppColors.white,
     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide(color: Colors.grey.shade300),
+      borderSide: BorderSide(color: AppColors.grey.shade300),
     ),
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide(color: Colors.grey.shade300),
+      borderSide: BorderSide(color: AppColors.grey.shade300),
     ),
     focusedBorder: const OutlineInputBorder(
       borderRadius: BorderRadius.all(Radius.circular(12)),
-      borderSide: BorderSide(color: Colors.black),
+      borderSide: BorderSide(color: AppColors.black),
     ),
   );
 }

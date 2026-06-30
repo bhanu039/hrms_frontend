@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:goexperts/core/widgets/top_message.dart';
 import '../services/api_service.dart';
 import '../services/sessionservice.dart';
+import 'package:goexperts/core/app_constants/app_color.dart';
 
 void showChangePasswordDialog(BuildContext context) {
   final oldPass = TextEditingController();
@@ -36,7 +37,7 @@ void showChangePasswordDialog(BuildContext context) {
                     // 🔐 TITLE
                     Row(
                       children: const [
-                        Icon(Icons.lock, color: Colors.blue),
+                        Icon(Icons.lock, color: AppColors.errorColor),
                         SizedBox(width: 8),
                         Text(
                           "Change Password",
@@ -69,7 +70,7 @@ void showChangePasswordDialog(BuildContext context) {
                               setState(() => obscureOld = !obscureOld),
                         ),
                         filled: true,
-                        fillColor: Colors.grey.shade100,
+                        fillColor: AppColors.grey.shade100,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -99,7 +100,7 @@ void showChangePasswordDialog(BuildContext context) {
                               setState(() => obscureNew = !obscureNew),
                         ),
                         filled: true,
-                        fillColor: Colors.grey.shade100,
+                        fillColor: AppColors.grey.shade100,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -131,7 +132,7 @@ void showChangePasswordDialog(BuildContext context) {
                               setState(() => obscureConfirm = !obscureConfirm),
                         ),
                         filled: true,
-                        fillColor: Colors.grey.shade100,
+                        fillColor: AppColors.grey.shade100,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -168,7 +169,7 @@ void showChangePasswordDialog(BuildContext context) {
                                       TopMessage.show(
                                         context,
                                         "User ID not found. Please log in again.",
-                                        color: Colors.red,
+                                        color: AppColors.red,
                                       );
                                       return;
                                     }
@@ -188,13 +189,13 @@ void showChangePasswordDialog(BuildContext context) {
                                         context,
                                         res["message"] ??
                                             "Password changed successfully",
-                                        color: Colors.green,
+                                        color: AppColors.green,
                                       );
                                     } catch (e) {
                                       TopMessage.show(
                                         context,
                                         "Error: $e",
-                                        color: Colors.red,
+                                        color: AppColors.red,
                                       );
                                     }
 
@@ -205,7 +206,7 @@ void showChangePasswordDialog(BuildContext context) {
                                     height: 18,
                                     width: 18,
                                     child: CircularProgressIndicator(
-                                      color: Colors.white,
+                                      color: AppColors.white,
                                       strokeWidth: 2,
                                     ),
                                   )
@@ -224,3 +225,5 @@ void showChangePasswordDialog(BuildContext context) {
     },
   );
 }
+
+

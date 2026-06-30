@@ -1,86 +1,93 @@
 import 'package:flutter/material.dart';
+import 'package:goexperts/core/app_constants/app_color.dart';
 
 class CustomDialog {
-  static void show({
+  static Future<void> show({
     required BuildContext context,
     required String title,
     required String message,
     required IconData icon,
-    Color color = Colors.blue,
+    Color color = AppColors.primaryColor,
+    String buttonText = "OK",
   }) {
-    showDialog(
+    return showDialog(
       context: context,
       barrierDismissible: true,
-      builder: (context) {
+      builder: (_) {
         return Dialog(
+          backgroundColor: AppColors.backgroundColor,
+          elevation: 0,
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 28,
+            vertical: 24,
+          ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(24),
           ),
           child: Padding(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 // ICON
                 Container(
-                  padding: const EdgeInsets.all(14),
+                  width: 78,
+                  height: 78,
                   decoration: BoxDecoration(
-                    color: color.withOpacity(0.12),
+                    color: color.withValues(alpha: .12),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    icon,
-                    color: color,
-                    size: 34,
-                  ),
+                  child: Icon(icon, color: color, size: 40),
                 ),
 
-                const SizedBox(height: 16),
+                const SizedBox(height: 22),
 
                 // TITLE
                 Text(
                   title,
                   textAlign: TextAlign.center,
                   style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textColor,
                   ),
                 ),
 
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
 
                 // MESSAGE
                 Text(
                   message,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey.shade600,
-                    height: 1.4,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    height: 1.6,
+                    color: AppColors.textSecondaryColor,
                   ),
                 ),
 
-                const SizedBox(height: 20),
+                const SizedBox(height: 28),
 
                 // BUTTON
                 SizedBox(
                   width: double.infinity,
+                  height: 52,
                   child: ElevatedButton(
                     onPressed: () => Navigator.pop(context),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: color,
+                      foregroundColor: AppColors.white,
                       elevation: 0,
-                      padding: const EdgeInsets.symmetric(vertical: 12),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    child: const Text(
-                      "OK",
-                      style: TextStyle(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                    child: Text(
+                      buttonText,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: .3,
                       ),
                     ),
                   ),
@@ -93,11 +100,3 @@ class CustomDialog {
     );
   }
 }
-
-//  CustomDialog.show(
-//         context: context,
-//         title: "Location Not Detected",
-//         message: "Please enable GPS to continue.",
-//         icon: Icons.error,
-//         color: Colors.red,
-//       );

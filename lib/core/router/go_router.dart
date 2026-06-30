@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:goexperts/company/company_dashbord/companyShell_tabs.dart';
-import 'package:goexperts/company/company_fullReg/screens/full_com_Reg_screen.dart';
+import 'package:goexperts/users/company/company_dashbord/companyShell_tabs.dart';
+import 'package:goexperts/users/company/company_fullReg/screens/full_com_Reg_screen.dart';
 import 'package:goexperts/core/invite_emp.dart/bloc/invite_emp_bloc.dart';
 import 'package:goexperts/core/invite_emp.dart/modal/invite_emp_repo.dart';
 import 'package:goexperts/core/state/auth/auth_bloc.dart';
@@ -9,60 +9,63 @@ import 'package:goexperts/core/state/auth/auth_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:goexperts/core/widgets/face_detact.dart';
 import 'package:goexperts/core/set_password_screen.dart';
-
-import '../../admin/Screens/company_view_screen.dart';
-import '../../admin/company_reg/bloc/company_reg_bloc.dart';
-import '../../admin/company_reg/bloc/company_reg_event.dart';
-import '../../admin/company_reg/data/company_reg_repository.dart';
-import '../../admin/company_reg/screens/company_reg_ui.dart';
-import '../../company/Screens/subscription_plans.dart';
-import '../../company/company_dashbord/bloc/company_dashbord_bloc.dart';
-import '../../company/company_dashbord/data/company_dashbord_repo.dart';
-import '../../company/company_dashbord/data/company_dashbord_screen.dart';
-import '../../company/company_fullReg/bloc/full_Reg_bloc.dart';
-import '../../company/company_fullReg/data/repository/repository_empFullreg.dart';
-import '../../employe/emp_dashbord/bloc/emp_dashboard_bloc.dart';
-import '../../employe/emp_dashbord/data/emp_dashboard_screen.dart';
-import '../../employe/emp_dashbord/data/repository_emp_dashboard.dart';
-import '../../employe/emp_dashbord/empShell_tabs.dart';
-import '../../employe/emp_Profile/bloc/emp_profile_bloc.dart';
-import '../../employe/emp_Profile/screen/emp_profile_screen.dart';
-import '../../employe/emp_full_reg/bloc/emp_full_bloc.dart';
-import '../../employe/self_attendance/bloc/self_attendance_bloc.dart';
-import '../../employe/self_attendance/data/screen/self_attendance_ui.dart';
-import '../../hr/attendance/bloc/attendance_bloc.dart';
-import '../../hr/attendance/bloc/attendance_event.dart';
-import '../../hr/attendance/screen/emps_attendence.dart';
-import '../../hr/emp_acceptence/bloc/emp_acceptence_bloc.dart';
-import '../../hr/emp_acceptence/bloc/emp_acceptence_event.dart';
-import '../../hr/emp_acceptence/data/emp_acceptence_repo.dart';
-import '../../hr/emp_acceptence/data/emp_acceptence_screen.dart';
-import '../../hr/emp_list/employee_list_bloc.dart';
-import '../../hr/emp_list/employee_list_screen.dart';
-import '../../hr/hr_dashbord/bloc/hr_dashbord_bloc.dart';
-import '../../hr/hr_dashbord/data/hr_dashbord_repo.dart';
-import '../../hr/hr_dashbord/data/hr_dashbord_screenui.dart';
-import '../../hr/hr_dashbord/hrshell_tabs.dart';
+import '../../emp_full_reg/bloc/emp_full_bloc.dart';
+import '../../emp_full_reg/screen/emp_full_reg_ui.dart';
+import '../../leaves/leave_types/bloc/leave_type_bloc.dart';
+import '../../leaves/leave_types/data/leave_type_repo.dart';
+import '../../leaves/leave_types/data/leave_type_screen.dart';
+import '../../users/admin/Screens/adminSell_tabs.dart';
+import '../../users/admin/Screens/admin_prifile.dart';
+import '../../users/admin/Screens/company_view_screen.dart';
+import '../../users/admin/Screens/dashboard_screen.dart';
+import '../../users/admin/Screens/subscription_plans.dart';
+import '../../users/admin/admin_profile/profile_cubit.dart';
+import '../../company_list/bloc/company_list_bloc.dart';
+import '../../company_list/bloc/company_list_event.dart';
+import '../../company_list/data/company_list_screen.dart';
+import '../../users/admin/company_reg/bloc/company_reg_bloc.dart';
+import '../../users/admin/company_reg/bloc/company_reg_event.dart';
+import '../../users/admin/company_reg/data/company_reg_repository.dart';
+import '../../users/admin/company_reg/screens/company_reg_ui.dart';
+import '../../users/company/Screens/subscription_plans.dart';
+import '../../users/company/company_dashbord/bloc/company_dashbord_bloc.dart';
+import '../../users/company/company_dashbord/data/company_dashbord_repo.dart';
+import '../../users/company/company_dashbord/data/company_dashbord_screen.dart';
+import '../../users/company/company_fullReg/bloc/full_Reg_bloc.dart';
+import '../../users/company/company_fullReg/data/repository/repository_empFullreg.dart';
+import '../../users/company/company_profile/bloc/company_profile_bloc.dart';
+import '../../users/company/company_profile/presentation/company_profile_screen.dart';
+import '../../users/employe/emp_dashbord/bloc/emp_dashboard_bloc.dart';
+import '../../users/employe/emp_dashbord/data/emp_dashboard_screen.dart';
+import '../../users/employe/emp_dashbord/data/repository_emp_dashboard.dart';
+import '../../users/employe/emp_dashbord/empShell_tabs.dart';
+import '../../users/employe/emp_Profile/bloc/emp_profile_bloc.dart';
+import '../../users/employe/emp_Profile/screen/emp_profile_screen.dart';
+import '../../self_attendance/bloc/self_attendance_bloc.dart';
+import '../../self_attendance/data/screen/self_attendance_ui.dart';
+import '../../users/hr/attendance/bloc/attendance_bloc.dart';
+import '../../users/hr/attendance/bloc/attendance_event.dart';
+import '../../users/hr/attendance/screen/emps_attendence.dart';
+import '../../emp_acceptence/bloc/emp_acceptence_bloc.dart';
+import '../../emp_acceptence/bloc/emp_acceptence_event.dart';
+import '../../emp_acceptence/data/emp_acceptence_repo.dart';
+import '../../emp_acceptence/data/emp_acceptence_screen.dart';
+import '../../emp_list/employee_list_screen.dart';
+import '../../users/hr/hr_dashbord/bloc/hr_dashbord_bloc.dart';
+import '../../users/hr/hr_dashbord/data/hr_dashbord_repo.dart';
+import '../../users/hr/hr_dashbord/data/hr_dashbord_screenui.dart';
+import '../../users/hr/hr_dashbord/hrshell_tabs.dart';
 import '../../login_screen.dart';
 import '../../splash_screen.dart';
 
-// Admin
-import '../../admin/Screens/admin_prifile.dart';
-import '../../admin/Screens/companys_list.dart';
-import '../../admin/Screens/dashboard_screen.dart';
-import '../../admin/Screens/adminSell_tabs.dart';
-import '../../admin/Screens/deleted_companys_list.dart';
-import '../../admin/Screens/subscription_plans.dart';
-
 //company
-import '../../company/Screens/company_profile_screen.dart';
 
 // HR
 
 //employee
-import '../../employe/Screens/project_screen.dart';
-import '../../employe/emp_full_reg/screen/emp_full_reg_ui.dart';
+import '../../users/employe/Screens/project_screen.dart';
 import '../invite_emp.dart/modal/invite_emp_screen.dart';
+import '../services/api_service.dart';
 import '../state/auth/auth_state.dart';
 
 class GoRouterRefreshStream extends ChangeNotifier {
@@ -237,15 +240,33 @@ GoRouter createRouter(AuthBloc authBloc) {
           ),
           GoRoute(
             path: '/admin/companies',
-            builder: (_, _) => const CompanyListScreen(),
+            builder: (context, state) => BlocProvider(
+              create: (_) => CompaniesBloc(),
+              child: const CompaniesScreen(),
+            ),
+          ),
+          GoRoute(
+            path: '/admin/leaveTypes',
+            builder: (context, state) => BlocProvider(
+              create: (_) => LeaveTypeBloc(repository: LeaveTypeRepository()),
+              child: const LeaveTypesScreen(),
+            ),
           ),
           GoRoute(
             path: '/admin/profile',
-            builder: (_, _) => const AdminProfileScreen(),
+            builder: (context, state) => BlocProvider<ProfileCubit>(
+              create: (context) => ProfileCubit(context.read<AuthBloc>()),
+              child: const AdminProfileScreen(),
+            ),
           ),
+
           GoRoute(
             path: '/admin/deletedcompanies',
-            builder: (_, _) => const DeletedCompaniesScreen(),
+            builder: (context, state) => BlocProvider(
+              // Injecting the BLoC and immediately triggering the first data fetch
+              create: (context) => CompaniesBloc()..add(FetchCompanies()),
+              child: const CompaniesScreen(),
+            ),
           ),
 
           GoRoute(
@@ -290,30 +311,17 @@ GoRouter createRouter(AuthBloc authBloc) {
               );
             },
           ),
-          GoRoute(
-            path: '/company/employees',
-            builder: (context, state) {
-              final Map<String, dynamic>? data =
-                  state.extra as Map<String, dynamic>?;
-
-              // Provide default fallback values to ensure strict linter satisfaction
-              final String role = data?['role'] ?? 'EMPLOYEE';
-              final String? dataType = data?['department'];
-
-              return BlocProvider(
-                // Immediately trigger the fetch call the exact moment this route mounts
-                create: (context) => EmployeeListBloc()
-                  ..add(
-                    FetchEmployeesEvent(role: role, dataType: dataType ?? ''),
-                  ),
-                child: EmployeeListScreen(role: role, dataType: dataType),
-              );
-            },
-          ),
 
           GoRoute(
             path: '/company/profile',
-            builder: (_, _) => const CompanyProfileScreen(),
+            builder: (context, state) {
+              return BlocProvider(
+                create: (_) =>
+                    CompanyProfileBloc(apiService: ApiService())
+                      ..add(const FetchCompanyProfileEvent()),
+                child: const CompanyProfileScreen(),
+              );
+            },
           ),
           GoRoute(
             path: '/company/subscription',
@@ -323,6 +331,18 @@ GoRouter createRouter(AuthBloc authBloc) {
           GoRoute(
             path: '/company/Projects',
             builder: (_, _) => const EmployeeProjectScreen(),
+          ),
+          GoRoute(
+            path: '/company/employees',
+            builder: (context, state) {
+              final Map<String, dynamic>? data =
+                  state.extra as Map<String, dynamic>?;
+
+              // Provide null or default values if they are not passed
+              final String? role = data?['role'];
+
+              return EmployeeListScreen(role: role!);
+            },
           ),
           GoRoute(
             path: '/company/empcreate',
@@ -363,9 +383,8 @@ GoRouter createRouter(AuthBloc authBloc) {
 
               // Provide null or default values if they are not passed
               final String? role = data?['role'];
-              final String? dataType = data?['department'];
 
-              return EmployeeListScreen(role: role!, dataType: dataType!);
+              return EmployeeListScreen(role: role!);
             },
           ),
           GoRoute(
@@ -414,15 +433,15 @@ GoRouter createRouter(AuthBloc authBloc) {
               );
             },
           ),
-           GoRoute(
-        path: '/emp/attendance/self',
-        builder: (context, state) {
-          return BlocProvider(
-            create: (_) => SelfAttendanceBloc(),
-            child: const SelfAttendanceScreen(),
-          );
-        },
-      ),
+          GoRoute(
+            path: '/emp/attendance/self',
+            builder: (context, state) {
+              return BlocProvider(
+                create: (_) => SelfAttendanceBloc(),
+                child: const SelfAttendanceScreen(),
+              );
+            },
+          ),
 
           GoRoute(
             path: '/emp/profile',

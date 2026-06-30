@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:goexperts/core/app_constants/app_color.dart';
 import 'package:goexperts/core/widgets/top_message.dart';
 
+import 'core/app_constants/app_constants.dart';
 import 'core/state/auth/auth_bloc.dart';
 import 'core/state/auth/auth_event.dart';
 import 'core/state/auth/auth_state.dart';
 
-import 'forgot_password_screen.dart';
 import 'core/services/api_service.dart';
 import 'core/widgets/app_primary_button.dart';
 
@@ -38,7 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void showError(String msg) {
-    TopMessage.show(context, msg, color: Colors.red);
+    TopMessage.show(context, msg, color: AppColors.error);
   }
 
   @override
@@ -60,26 +61,16 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
-        final session = state.session;
-
-        print(
-          "Auth State Changed: ${state.status}, "
-          "Session: ${session?.email}, "
-          "Role: ${session?.role}",
-        );
-
         if (state.status == AuthStatus.error) {
           showError(state.message ?? 'Invalid credentials');
           return;
         }
         if (state.status == AuthStatus.authenticated) {
           print("login page Navigating to routs");
-
-         
-        } 
+        }
       },
       child: Scaffold(
-        backgroundColor: const Color(0xff07111f),
+        backgroundColor: AppColors.backgroundColor,
         body: LayoutBuilder(
           builder: (context, constraints) {
             final isWide = constraints.maxWidth >= 820;
@@ -127,13 +118,13 @@ class _LoginBackground extends StatelessWidget {
         DecoratedBox(
           decoration: const BoxDecoration(
             image: DecorationImage(
-              image: AssetImage('assets/images/bgimage.png'),
+              image: AssetImage(AppConstants.bannerLogo),
               fit: BoxFit.cover,
             ),
           ),
           child: Container(
             decoration: BoxDecoration(
-              color: const Color(0xff07111f).withValues(alpha: 0.82),
+              color: AppColors.lightBg.withValues(alpha: 0.82),
             ),
           ),
         ),
@@ -143,7 +134,7 @@ class _LoginBackground extends StatelessWidget {
           child: _DepthPlate(
             width: 260,
             height: 160,
-            color: const Color(0xff22d3ee).withValues(alpha: 0.16),
+            color: AppColors.accentBlue.withValues(alpha: 0.16),
             rotation: -0.22,
           ),
         ),
@@ -153,7 +144,7 @@ class _LoginBackground extends StatelessWidget {
           child: _DepthPlate(
             width: 310,
             height: 180,
-            color: const Color(0xfff59e0b).withValues(alpha: 0.14),
+            color: AppColors.accentPurple.withValues(alpha: 0.14),
             rotation: 0.18,
           ),
         ),
@@ -185,18 +176,18 @@ class _ThreeDBrandPanel extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(28),
           gradient: const LinearGradient(
-            colors: [Color(0xff38bdf8), Color(0xff0f172a)],
+            colors: [AppColors.accentBlue, AppColors.darkBackgroundColor],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.38),
+              color: AppColors.accentBlue.withValues(alpha: 0.38),
               blurRadius: 42,
               offset: const Offset(24, 30),
             ),
             BoxShadow(
-              color: const Color(0xff67e8f9).withValues(alpha: 0.18),
+              color: AppColors.accentPurple.withValues(alpha: 0.18),
               blurRadius: 34,
               offset: const Offset(-12, -10),
             ),
@@ -206,7 +197,7 @@ class _ThreeDBrandPanel extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(22),
             image: const DecorationImage(
-              image: AssetImage('assets/images/goex.jpg'),
+              image: AssetImage(AppConstants.fulllogo),
               fit: BoxFit.cover,
             ),
           ),
@@ -216,8 +207,8 @@ class _ThreeDBrandPanel extends StatelessWidget {
               borderRadius: BorderRadius.circular(22),
               gradient: LinearGradient(
                 colors: [
-                  Colors.black.withValues(alpha: 0.08),
-                  Colors.black.withValues(alpha: 0.72),
+                  AppColors.accentPurple.withValues(alpha: 0.22),
+                  AppColors.accentBlue.withValues(alpha: 0.22),
                 ],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
@@ -239,16 +230,13 @@ class _ThreeDBrandPanel extends StatelessWidget {
                   children: [
                     Transform.translate(
                       offset: const Offset(0, -12),
-                      child: Image.asset(
-                        'assets/images/trance.png',
-                        height: 110,
-                      ),
+                      child: Image.asset(AppConstants.fulllogo, height: 110),
                     ),
                     const SizedBox(height: 24),
                     const Text(
                       'Manage people, companies, and growth in one place.',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: AppColors.textColor,
                         fontSize: 32,
                         fontWeight: FontWeight.bold,
                         height: 1.12,
@@ -257,7 +245,10 @@ class _ThreeDBrandPanel extends StatelessWidget {
                     const SizedBox(height: 14),
                     const Text(
                       'A focused workspace for administrators and company teams.',
-                      style: TextStyle(color: Colors.white70, fontSize: 15),
+                      style: TextStyle(
+                        color: AppColors.textColor,
+                        fontSize: 15,
+                      ),
                     ),
                   ],
                 ),
@@ -291,18 +282,22 @@ class _ThreeDLoginPanel extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(30),
           gradient: const LinearGradient(
-            colors: [Color(0xffffffff), Color(0xff60a5fa), Color(0xff111827)],
+            colors: [
+              AppColors.white,
+              AppColors.accentBlue,
+              AppColors.textPrimary,
+            ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.42),
+              color: AppColors.black.withValues(alpha: 0.42),
               blurRadius: 46,
               offset: const Offset(26, 34),
             ),
             BoxShadow(
-              color: const Color(0xff93c5fd).withValues(alpha: 0.22),
+              color: AppColors.accentBlue.withValues(alpha: 0.22),
               blurRadius: 28,
               offset: const Offset(-14, -14),
             ),
@@ -311,7 +306,7 @@ class _ThreeDLoginPanel extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: const Color(0xfff8fafc).withValues(alpha: 0.96),
+            color: AppColors.background.withValues(alpha: 0.96),
             borderRadius: BorderRadius.circular(24),
           ),
           child: Form(
@@ -324,8 +319,9 @@ class _ThreeDLoginPanel extends StatelessWidget {
                   child: Transform.translate(
                     offset: const Offset(0, -8),
                     child: Image.asset(
-                      'assets/images/trance.png',
-                      height: 98,
+                      AppConstants.bannerLogo,
+                      height: 100,
+                      
                       fit: BoxFit.contain,
                     ),
                   ),
@@ -336,13 +332,13 @@ class _ThreeDLoginPanel extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xff111827),
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const SizedBox(height: 6),
                 const Text(
                   'Sign in to continue to your dashboard',
-                  style: TextStyle(color: Color(0xff6b7280)),
+                  style: TextStyle(color: AppColors.textSecondary),
                 ),
                 const SizedBox(height: 24),
                 _LoginTextField(
@@ -400,9 +396,7 @@ class _ThreeDLoginPanel extends StatelessWidget {
                       borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(
-                            0xff111827,
-                          ).withValues(alpha: 0.32),
+                          color: AppColors.textPrimary.withValues(alpha: 0.32),
                           blurRadius: 18,
                           offset: const Offset(0, 12),
                         ),
@@ -449,10 +443,10 @@ class _DepthPlate extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(26),
           color: color,
-          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+          border: Border.all(color: AppColors.white.withValues(alpha: 0.08)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.18),
+              color: AppColors.black.withValues(alpha: 0.18),
               blurRadius: 34,
               offset: const Offset(18, 24),
             ),
@@ -485,9 +479,9 @@ class _FloatingCube extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
             colors: [
-              Colors.white.withValues(alpha: 0.34),
-              const Color(0xff38bdf8).withValues(alpha: 0.22),
-              const Color(0xff0f172a).withValues(alpha: 0.42),
+              AppColors.white.withValues(alpha: 0.34),
+              AppColors.cyan.withValues(alpha: 0.22),
+              AppColors.darkBackground.withValues(alpha: 0.42),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -495,7 +489,7 @@ class _FloatingCube extends StatelessWidget {
           border: Border.all(color: Colors.white.withValues(alpha: 0.26)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.24),
+              color: AppColors.black.withValues(alpha: 0.24),
               blurRadius: 24,
               offset: const Offset(12, 18),
             ),
@@ -517,19 +511,19 @@ class _GlassBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.16),
+        color: AppColors.white.withValues(alpha: 0.16),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.26)),
+        border: Border.all(color: AppColors.white.withValues(alpha: 0.26)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: Colors.white, size: 17),
+          Icon(icon, color: AppColors.white, size: 17),
           const SizedBox(width: 7),
           Text(
             text,
             style: const TextStyle(
-              color: Colors.white,
+              color: AppColors.white,
               fontSize: 12,
               fontWeight: FontWeight.w700,
             ),
@@ -571,7 +565,7 @@ class _LoginTextField extends StatelessWidget {
         prefixIcon: Icon(icon),
         suffixIcon: suffixIcon,
         filled: true,
-        fillColor: const Color(0xfff8fafc),
+        fillColor: AppColors.background,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: Color(0xffe5e7eb)),
@@ -582,11 +576,11 @@ class _LoginTextField extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xff2563eb), width: 1.4),
+          borderSide: const BorderSide(color: AppColors.blue, width: 1.4),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xffdc2626)),
+          borderSide: const BorderSide(color: AppColors.error),
         ),
       ),
     );

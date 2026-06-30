@@ -1,8 +1,10 @@
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
+import 'package:goexperts/core/app_constants/app_color.dart';
 
 class FaceCaptureView extends StatefulWidget {
   const FaceCaptureView({super.key});
@@ -158,17 +160,27 @@ class _FaceCaptureViewState extends State<FaceCaptureView>
     }
 
     if (rotation == null) return null;
-    final format = InputImageFormatValue.fromRawValue(image.format.raw);
-    if (format == null || image.planes.length != 1) return null;
 
-    final plane = image.planes.first;
+    final format = InputImageFormatValue.fromRawValue(image.format.raw);
+    if (format == null) return null;
+
+    // Combine planes for multi-plane formats (common on Android YUV)
+    final allBytes = WriteBuffer();
+    for (final plane in image.planes) {
+      allBytes.putUint8List(plane.bytes);
+    }
+    final bytes = allBytes.done().buffer.asUint8List();
+    final bytesPerRow = image.planes.isNotEmpty
+        ? image.planes.first.bytesPerRow
+        : 0;
+
     return InputImage.fromBytes(
-      bytes: plane.bytes,
+      bytes: bytes,
       metadata: InputImageMetadata(
         size: Size(image.width.toDouble(), image.height.toDouble()),
         rotation: rotation,
         format: format,
-        bytesPerRow: plane.bytesPerRow,
+        bytesPerRow: bytesPerRow,
       ),
     );
   }
@@ -182,7 +194,7 @@ class _FaceCaptureViewState extends State<FaceCaptureView>
   void _showGlobalOverlay() {
     _overlayEntry = OverlayEntry(
       builder: (context) => Material(
-        color: Colors.black,
+        color: AppColors.black,
         child: StatefulBuilder(
           builder: (context, setOverlayState) {
             final bool canCapture = _faceDetected && _eyesOpen;
@@ -192,11 +204,13 @@ class _FaceCaptureViewState extends State<FaceCaptureView>
                 !_cameraController!.value.isInitialized) {
               return Center(
                 child: _statusMessage == null
-                    ? const CircularProgressIndicator(color: Color(0xFF0D9488))
+                    ?  CircularProgressIndicator(
+                        color: AppColors.red,
+                      )
                     : Text(
                         _statusMessage!,
                         style: const TextStyle(
-                          color: Colors.white,
+                          color: AppColors.white,
                           fontSize: 16,
                         ),
                       ),
@@ -213,9 +227,9 @@ class _FaceCaptureViewState extends State<FaceCaptureView>
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                         colors: [
-                          Colors.black.withOpacity(0.5),
-                          Colors.transparent,
-                          Colors.black.withOpacity(0.7),
+                          AppColors.black.withValues(alpha: 0.5),
+                          AppColors.transparent,
+                          AppColors.black.withValues(alpha: 0.7),
                         ],
                       ),
                     ),
@@ -231,14 +245,14 @@ class _FaceCaptureViewState extends State<FaceCaptureView>
                       IconButton(
                         icon: const Icon(
                           Icons.arrow_back_ios_new,
-                          color: Colors.white,
+                          color: AppColors.white,
                         ),
                         onPressed: _closeAndExit,
                       ),
                       const Text(
                         "Face Verification",
                         style: TextStyle(
-                          color: Colors.white,
+                          color: AppColors.white,
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
@@ -252,8 +266,8 @@ class _FaceCaptureViewState extends State<FaceCaptureView>
                     animation: _pulseController,
                     builder: (context, child) {
                       final statusColor = canCapture
-                          ? const Color(0xFF10B981)
-                          : const Color(0xFFEF4444);
+                          ? AppColors.  successColor
+                          : AppColors.danger;
                       return Container(
                         width: 270,
                         height: 350,
@@ -262,7 +276,7 @@ class _FaceCaptureViewState extends State<FaceCaptureView>
                           border: Border.all(color: statusColor, width: 3.5),
                           boxShadow: [
                             BoxShadow(
-                              color: statusColor.withOpacity(0.3),
+                              color: statusColor.withValues(alpha: 0.3),
                               blurRadius: 12 + (_pulseController.value * 8),
                               spreadRadius: 2,
                             ),
@@ -282,7 +296,7 @@ class _FaceCaptureViewState extends State<FaceCaptureView>
                       vertical: 14,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.8),
+                      color: AppColors.black.withValues(alpha: 0.8),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Column(
@@ -297,8 +311,8 @@ class _FaceCaptureViewState extends State<FaceCaptureView>
                                   : "Please Open Your Eyes"),
                           style: TextStyle(
                             color: canCapture
-                                ? const Color(0xFF34D399)
-                                : Colors.white,
+                                ? AppColors.emeraldLight
+                                : AppColors.white,
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
                           ),
@@ -328,18 +342,22 @@ class _FaceCaptureViewState extends State<FaceCaptureView>
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: canCapture ? Colors.white : Colors.white24,
+                            color: canCapture
+                                ? AppColors.white
+                                : AppColors.grey.shade600,
                             width: 4,
                           ),
                         ),
                         child: CircleAvatar(
                           radius: 32,
                           backgroundColor: canCapture
-                              ? const Color(0xFF10B981)
-                              : Colors.grey.shade900,
+                              ? AppColors.successColor
+                              : AppColors.grey.shade900,
                           child: Icon(
                             Icons.fingerprint,
-                            color: canCapture ? Colors.white : Colors.white30,
+                            color: canCapture
+                                ? AppColors.white
+                                : AppColors.grey.shade600,
                             size: 36,
                           ),
                         ),
@@ -356,10 +374,12 @@ class _FaceCaptureViewState extends State<FaceCaptureView>
     Overlay.of(context).insert(_overlayEntry!);
   }
 
-  Future _captureImage() async {
+  Future<void> _captureImage() async {
     try {
-      if (_cameraController == null || !_cameraController!.value.isInitialized)
+      if (_cameraController == null ||
+          !_cameraController!.value.isInitialized) {
         return;
+      }
       if (_cameraController!.value.isStreamingImages) {
         await _cameraController!.stopImageStream();
       }
@@ -369,14 +389,19 @@ class _FaceCaptureViewState extends State<FaceCaptureView>
       if (mounted) {
         Navigator.pop(context, imageFile);
       }
-    } catch (_) {}
+    } catch (e) {
+      // ignore: avoid_print
+      print('Face capture failed: $e');
+    }
   }
-void _closeAndExit() {
-  // Added the missing underscore to match your class variable name
-  _cameraController?.stopImageStream().catchError((_) {});
-  _removeOverlay();
-  Navigator.pop(context);
-}
+
+  void _closeAndExit() {
+    _cameraController?.stopImageStream().catchError((_) {});
+    _removeOverlay();
+    if (Navigator.canPop(context)) {
+      Navigator.pop(context);
+    }
+  }
 
   void _removeOverlay() {
     _overlayEntry?.remove();
@@ -384,7 +409,7 @@ void _closeAndExit() {
   }
 
   Widget _buildStatusIndicator(String label, bool isSuccess) {
-    final color = isSuccess ? const Color(0xFF34D399) : Colors.white38;
+    final color = isSuccess ? AppColors.emeraldLight : AppColors.white38;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -421,7 +446,7 @@ void _closeAndExit() {
   Widget build(BuildContext context) {
     // Return an empty canvas widget while the root global window handles layout painting
     return const Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppColors.black,
       body: SizedBox.shrink(),
     );
   }

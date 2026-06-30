@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:goexperts/core/app_constants/app_color.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -30,7 +31,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(response.data["message"] ?? "Reset link sent"),
-          backgroundColor: Colors.green,
+          backgroundColor: AppColors.success,
         ),
       );
 
@@ -41,7 +42,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Something went wrong"),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.warning,
         ),
       );
     }
@@ -53,16 +54,16 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   InputDecoration inputStyle() {
     return InputDecoration(
       labelText: "Email",
-      prefixIcon: const Icon(Icons.email, color: Colors.red),
+      prefixIcon: const Icon(Icons.email, color: AppColors.orange),
 
       filled: true,
-      fillColor: Colors.white,
+      fillColor: AppColors.grey50,
 
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(14)),
 
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Colors.red, width: 2),
+        borderSide: const BorderSide(color: AppColors.orange, width: 2),
       ),
     );
   }
@@ -72,7 +73,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Forgot Password"),
-        backgroundColor: Colors.red,
+        backgroundColor: AppColors.accentOrange,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -110,9 +111,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 height: 50,
                 child: ElevatedButton(
                   onPressed: isLoading ? null : sendResetLink,
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.orange,
+                  ),
                   child: isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
+                      ? const CircularProgressIndicator(
+                          color: AppColors.backgroundColor,
+                        )
                       : const Text("Send Reset Link"),
                 ),
               ),

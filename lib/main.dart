@@ -4,11 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:goexperts/core/router/go_router.dart';
 
+import 'core/app_constants/app_thems.dart';
+import 'core/theme/theme_controller.dart';
 import 'core/state/auth/auth_bloc.dart';
 import 'core/state/auth/auth_event.dart';
 import 'core/state/bloc/deep_link/deep_link_bloc.dart';
 import 'core/state/bloc/deep_link/deep_link_event.dart';
-import 'admin/admin_profile/profile_cubit.dart';
 
 void main() {
   runApp(const MyAppRoot());
@@ -23,17 +24,12 @@ class MyAppRoot extends StatelessWidget {
 
     return MultiBlocProvider(
       providers: [
-        /// ✅ AUTH BLOC
+        /// AUTH BLOC
         BlocProvider<AuthBloc>(
           create: (_) => AuthBloc()..add(AuthAppStarted()),
         ),
 
-        /// ✅ PROFILE CUBIT (SAFE DEPENDENCY)
-        BlocProvider<ProfileCubit>(
-          create: (context) => ProfileCubit(context.read<AuthBloc>()),
-        ),
-
-        /// ✅ DEEP LINK BLOC
+        /// DEEP LINK BLOC
         BlocProvider<DeepLinkBloc>(
           create: (_) => DeepLinkBloc(appLinks)..add(CheckDeepLink()),
         ),
@@ -49,9 +45,17 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final router = createRouter(context.read<AuthBloc>());
-    return MaterialApp.router(
-      debugShowCheckedModeBanner: false,
-      routerConfig: router,
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: ThemeController.mode,
+      builder: (context, themeMode, _) {
+        return MaterialApp.router(
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: themeMode,
+          routerConfig: router,
+        );
+      },
     );
   }
 }

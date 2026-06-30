@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
-
+import 'package:goexperts/core/app_constants/app_color.dart';
 
 class NavItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final bool active;
   final VoidCallback onTap;
-
   const NavItem({
     required this.icon,
     required this.label,
     required this.active,
     required this.onTap,
   });
-
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -23,7 +21,7 @@ class NavItem extends StatelessWidget {
         duration: const Duration(milliseconds: 250),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: active ? Colors.black : Colors.transparent,
+          color: active ? AppColors.black : AppColors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -32,7 +30,7 @@ class NavItem extends StatelessWidget {
             Icon(
               icon,
               size: 22,
-              color: active ? Colors.white : Colors.grey.shade600,
+              color: active ? AppColors.white : AppColors.grey.shade600,
             ),
             const SizedBox(height: 4),
             Text(
@@ -40,7 +38,7 @@ class NavItem extends StatelessWidget {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
-                color: active ? Colors.white : Colors.grey.shade600,
+                color: active ? AppColors.white : AppColors.grey.shade600,
               ),
             ),
           ],
