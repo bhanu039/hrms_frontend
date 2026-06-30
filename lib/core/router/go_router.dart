@@ -12,8 +12,9 @@ import 'package:goexperts/core/set_password_screen.dart';
 import '../../emp_full_reg/bloc/emp_full_bloc.dart';
 import '../../emp_full_reg/screen/emp_full_reg_ui.dart';
 import '../../leaves/leave_types/bloc/leave_type_bloc.dart';
-import '../../leaves/leave_types/data/leave_type_repo.dart';
+import '../../leaves/leave_repo.dart';
 import '../../leaves/leave_types/data/leave_type_screen.dart';
+import '../../leaves/leaves_request/data/leave_request_screen.dart';
 import '../../users/admin/Screens/adminSell_tabs.dart';
 import '../../users/admin/Screens/admin_prifile.dart';
 import '../../users/admin/Screens/company_view_screen.dart';
@@ -88,7 +89,6 @@ GoRouter createRouter(AuthBloc authBloc) {
       final isLoggedIn = session != null;
       final isFullRegistered = session?.isFullRegistered ?? false;
       final path = state.uri.path;
-      final isSplash = path == '/';
       final isLogin = path == '/login';
 
       // Allow password setup deep links without redirecting away
@@ -96,33 +96,13 @@ GoRouter createRouter(AuthBloc authBloc) {
 
       // While auth state is still loading, let splash/login stay.
       if (status == AuthStatus.initial || status == AuthStatus.loading) {
-        return isSplash || isLogin ? null : '/';
+
+        return  isLogin ? null : '/';
       }
 
       // If auth is resolved and we're on splash, redirect immediately.
 
-      if (isSplash) {
-        if (!isLoggedIn) {
-          return '/login';
-        }
-
-        if (role == "SUPER_ADMIN") {
-          return '/admin/dashboard';
-        }
-        if (role == "HR") {
-          return isFullRegistered! ? '/hr/dashboard' : '/hr/onbording';
-        }
-        if (role == "EMPLOYEE") {
-          return isFullRegistered! ? '/emp/dashboard' : '/emp/onbording';
-        }
-        if (role == "OWNER") {
-          return isFullRegistered!
-              ? '/company/dashboard'
-              : '/company/onboarding';
-        }
-
-        return '/login';
-      }
+      
 
       // 2️⃣ Not logged in → login
       if (!isLoggedIn) {
@@ -248,7 +228,7 @@ GoRouter createRouter(AuthBloc authBloc) {
           GoRoute(
             path: '/admin/leaveTypes',
             builder: (context, state) => BlocProvider(
-              create: (_) => LeaveTypeBloc(repository: LeaveTypeRepository()),
+              create: (_) => LeaveTypeBloc(repository: LeaveRepository()),
               child: const LeaveTypesScreen(),
             ),
           ),
@@ -441,6 +421,13 @@ GoRouter createRouter(AuthBloc authBloc) {
                 child: const SelfAttendanceScreen(),
               );
             },
+          ),
+           GoRoute(
+            path: '/emp/leave/request',
+            builder: (context, state) => BlocProvider(
+              create: (_) => LeaveTypeBloc(repository: LeaveRepository()),
+              child: const ApplyLeaveScreen(),
+            ),
           ),
 
           GoRoute(

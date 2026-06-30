@@ -6,16 +6,21 @@ import '../bloc/leave_type_bloc.dart';
 import '../bloc/leave_type_event.dart';
 import '../bloc/leave_type_state.dart';
 import 'leave_type_modal.dart';
-import 'leave_type_repo.dart';
+import '../../leave_repo.dart';
 
-class LeaveTypesScreen extends StatelessWidget {
+class LeaveTypesScreen extends StatefulWidget {
   const LeaveTypesScreen({super.key});
 
+  @override
+  State<LeaveTypesScreen> createState() => _LeaveTypesScreenState();
+}
+
+class _LeaveTypesScreenState extends State<LeaveTypesScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) =>
-          LeaveTypeBloc(repository: LeaveTypeRepository())
+          LeaveTypeBloc(repository: LeaveRepository())
             ..add(FetchLeaveTypesEvent()),
       child: Builder(
         builder: (innerContext) {

@@ -1,11 +1,11 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../data/leave_type_repo.dart';
+import '../../leave_repo.dart';
 import 'leave_type_event.dart';
 import 'leave_type_state.dart';
 
 class LeaveTypeBloc extends Bloc<LeaveTypeEvent, LeaveTypeState> {
-  final LeaveTypeRepository repository;
+  final LeaveRepository repository;
 
   LeaveTypeBloc({required this.repository}) : super(LeaveTypeState.initial()) {
     on<FetchLeaveTypesEvent>(_onFetchLeaveTypes);

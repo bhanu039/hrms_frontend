@@ -9,7 +9,7 @@ class AppConstants {
   static const String apiBaseUrl2 =
       "https://goexperts-hrms-coun.onrender.com/api/";
 
-  static const String logo = "assets/images/newlogo.png";
+  static const String logo = "assets/images/newLogo.png";
   static const String bannerLogo = "assets/images/bannerlogo.png";
   static const String fulllogo = "assets/images/FullLogo.png";
 
