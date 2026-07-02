@@ -78,7 +78,7 @@ class ApiService {
   // 🟢 CREATE PLAN
   static Future<Response> createSubscriptionPlan({
     required String title,
-    required int price,
+    required double price,
     required int duration,
     required List<String> features,
   }) async {
@@ -100,7 +100,7 @@ class ApiService {
   static Future<Response> updateSubscriptionPlan({
     required String id,
     required String title,
-    required int price,
+    required double price,
     required int duration,
     required List<String> features,
   }) async {

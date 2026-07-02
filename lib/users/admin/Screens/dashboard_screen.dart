@@ -74,10 +74,14 @@ class _DashboardScreenState extends State<AdminDashboardScreen> {
       drawer: const AdminDrawer(),
 
       appBar: AppBar(
+       
+        centerTitle: false,
+        titleSpacing: 0,
         elevation: 0,
         backgroundColor: AppColors.transparent,
         title: const Text(
           "Dashboard",
+          textAlign: TextAlign.left,
           style: TextStyle(
             color: AppColors.black,
             fontWeight: FontWeight.bold,

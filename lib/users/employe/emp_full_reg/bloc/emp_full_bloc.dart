@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../core/services/sessionservice.dart';
+import '../../../../../../core/services/sessionservice.dart';
 import '../data/models/emp_fullreg.dart';
 import '../data/repository_empFullreg.dart';
 import 'emp_full_event.dart';

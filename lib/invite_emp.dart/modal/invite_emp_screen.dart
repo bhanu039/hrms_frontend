@@ -3,9 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:goexperts/core/widgets/top_message.dart';
 
-import '../../state/auth/auth_bloc.dart';
-import '../../widgets/custom_text_field.dart';
-import '../../widgets/dropdown_list.dart';
+import '../../core/state/auth/auth_bloc.dart';
+import '../../core/widgets/custom_text_field.dart';
+import '../../core/widgets/dropdown_list.dart';
 import '../bloc/invite_emp_bloc.dart';
 import '../bloc/invite_emp_event.dart';
 import '../bloc/invite_emp_start.dart';
@@ -89,6 +89,12 @@ class _InviteEmpScreenState extends State<InviteEmpScreen> {
                               items: (role != "HR")
                                   ? ["HR", "EMPLOYEE"]
                                   : ["EMPLOYEE"],
+                              validator: (val) {
+                                if (val == null || val.isEmpty) {
+                                  return "Please select a role";
+                                }
+                                return null;
+                              },
                               onChanged: (val) {
                                 setState(() {
                                   roleController = val;
@@ -102,6 +108,12 @@ class _InviteEmpScreenState extends State<InviteEmpScreen> {
                               label: "Employee Name",
                               controller: nameController,
                               keyboardType: TextInputType.name,
+                              validator: (val) {
+                                if (val == null || val.isEmpty) {
+                                  return "Please enter employee name";
+                                }
+                                return null;
+                              },
                             ),
 
                             const SizedBox(height: 12),
@@ -110,6 +122,12 @@ class _InviteEmpScreenState extends State<InviteEmpScreen> {
                               label: "Employee Mail",
                               controller: emailController,
                               keyboardType: TextInputType.emailAddress,
+                               validator: (val) {
+                                if (val == null || val.isEmpty) {
+                                  return "Please enter employee mail";
+                                }
+                                return null;
+                              },
                             ),
                           ],
                         ),
@@ -169,6 +187,12 @@ class _InviteEmpScreenState extends State<InviteEmpScreen> {
                             ),
                             const SizedBox(height: 12),
                             DropdownButtonFormField<String>(
+                              validator: (val){
+                                if (val == null || val.isEmpty) {
+                                  return "Please select a work mode";
+                                }
+                                return null;
+                              },
                               value: state
                                   .workModel, // Ensure your state variable maps to the string values below
                               decoration: _dropdownDecoration("WorkMode"),
@@ -184,8 +208,10 @@ class _InviteEmpScreenState extends State<InviteEmpScreen> {
                                   child: Text('Work From Office (WFO)'),
                                 ),
                                 DropdownMenuItem(
+                                  
                                   value: 'HYBRID',
                                   child: Text('Hybrid Work Model'),
+                                  
                                 ),
                               ],
                               onChanged: (value) {
@@ -207,6 +233,7 @@ class _InviteEmpScreenState extends State<InviteEmpScreen> {
                             controller: officeDaysController,
                             maxLength: 2,
                             keyboardType: TextInputType.number,
+                             validator: (v) => v == null || v.isEmpty ? "Please enter expected office days" : null,
                           ),
 
                         /// ================= EMPLOYMENT TYPE =================
@@ -303,6 +330,9 @@ class _InviteEmpScreenState extends State<InviteEmpScreen> {
                             onPressed: state.submitting
                                 ? null
                                 : () {
+                                  if (!formKey.currentState!.validate()) {
+                                      return;
+                                    }
                                     final body = {
                                       "email": emailController.text.trim(),
                                       "name": nameController.text.trim(),
@@ -371,7 +401,7 @@ class _SectionCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [AppColors.primaryColor, AppColors.secondaryColor],
+          colors: [ AppColors.cardLightColor,AppColors.card,],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),

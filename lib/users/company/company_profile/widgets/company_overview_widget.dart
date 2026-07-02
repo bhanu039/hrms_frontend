@@ -12,92 +12,96 @@ class CompanyOverviewWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 80.0),
-      child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // Contact Information
-          _buildSectionTitle('Contact Information'),
-          _buildContactCard(
-            icon: Icons.email,
-            title: 'Email',
-            value: profile.email ?? 'Not provided',
-            subtitle: profile.ownerEmail != null
-                ? 'Owner: ${profile.ownerEmail}'
-                : null,
-          ),
-          _buildContactCard(
-            icon: Icons.phone,
-            title: 'Phone',
-            value: profile.phone ?? 'Not provided',
-          ),
-          _buildContactCard(
-            icon: Icons.language,
-            title: 'Website',
-            value: profile.website ?? 'Not provided',
-          ),
-          const SizedBox(height: 16),
-      
-          // Location Information
-          _buildSectionTitle('Location'),
-          if (profile.latitude != null && profile.longitude != null)
+      child: Container(
+        color: AppColors.backgroundColor,
+        child: ListView(
+          
+          padding: const EdgeInsets.all(16),
+          children: [
+            // Contact Information
+            _buildSectionTitle('Contact Information'),
             _buildContactCard(
-              icon: Icons.location_on,
-              title: 'Coordinates',
-              value: '${profile.latitude}, ${profile.longitude}',
-              subtitle: 'Geofence Radius: ${profile.geofenceRadius ?? 0} meters',
-            )
-          else
+              icon: Icons.email,
+              title: 'Email',
+              value: profile.email ?? 'Not provided',
+              subtitle: profile.ownerEmail != null
+                  ? 'Owner: ${profile.ownerEmail}'
+                  : null,
+            ),
             _buildContactCard(
-              icon: Icons.location_on,
-              title: 'Location',
-              value: 'Not set',
+              icon: Icons.phone,
+              title: 'Phone',
+              value: profile.phone ?? 'Not provided',
             ),
-          const SizedBox(height: 16),
-      
-          // Verification Status
-          _buildSectionTitle('Verification Status'),
-          Row(
-            children: [
-              Expanded(
-                child: _buildStatusChip(
-                  icon: Icons.mail,
-                  label: 'Email Verified',
-                  isVerified: profile.isEmailVerified ?? false,
-                ),
+            _buildContactCard(
+              icon: Icons.language,
+              title: 'Website',
+              value: profile.website ?? 'Not provided',
+            ),
+            const SizedBox(height: 16),
+        
+            // Location Information
+            _buildSectionTitle('Location'),
+            if (profile.latitude != null && profile.longitude != null)
+              _buildContactCard(
+                icon: Icons.location_on,
+                title: 'Coordinates',
+                value: '${profile.latitude}, ${profile.longitude}',
+                subtitle: 'Geofence Radius: ${profile.geofenceRadius ?? 0} meters',
+              )
+            else
+              _buildContactCard(
+                icon: Icons.location_on,
+                title: 'Location',
+                value: 'Not set',
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _buildStatusChip(
-                  icon: Icons.check_circle,
-                  label: 'Profile Complete',
-                  isVerified: profile.isProfileCompleted ?? false,
+            const SizedBox(height: 16),
+        
+            // Verification Status
+            _buildSectionTitle('Verification Status'),
+            Row(
+              children: [
+                Expanded(
+                  child: _buildStatusChip(
+                    icon: Icons.mail,
+                    label: 'Email Verified',
+                    isVerified: profile.isEmailVerified ?? false,
+                  ),
                 ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _buildStatusChip(
+                    icon: Icons.check_circle,
+                    label: 'Profile Complete',
+                    isVerified: profile.isProfileCompleted ?? false,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+        
+            // Dates Information
+            _buildSectionTitle('Timeline'),
+            if (profile.createdAt != null)
+              _buildTimelineItem(
+                icon: Icons.add_circle,
+                title: 'Created',
+                date: profile.createdAt!,
               ),
-            ],
-          ),
-          const SizedBox(height: 16),
-      
-          // Dates Information
-          _buildSectionTitle('Timeline'),
-          if (profile.createdAt != null)
-            _buildTimelineItem(
-              icon: Icons.add_circle,
-              title: 'Created',
-              date: profile.createdAt!,
-            ),
-          if (profile.activatedAt != null)
-            _buildTimelineItem(
-              icon: Icons.check_circle,
-              title: 'Activated',
-              date: profile.activatedAt!,
-            ),
-          if (profile.lastActiveAt != null)
-            _buildTimelineItem(
-              icon: Icons.access_time,
-              title: 'Last Active',
-              date: profile.lastActiveAt!,
-            ),
-        ],
+            if (profile.activatedAt != null)
+              _buildTimelineItem(
+                icon: Icons.check_circle,
+                title: 'Activated',
+                date: profile.activatedAt!,
+              ),
+            if (profile.lastActiveAt != null)
+              _buildTimelineItem(
+                icon: Icons.access_time,
+                title: 'Last Active',
+                date: profile.lastActiveAt!,
+              ),
+          ],
+        ),
       ),
     );
   }

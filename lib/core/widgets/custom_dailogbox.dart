@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:goexperts/core/app_constants/app_color.dart';
 
 class CustomDialog {
@@ -73,7 +74,9 @@ class CustomDialog {
                   width: double.infinity,
                   height: 52,
                   child: ElevatedButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () => {
+                      if (context.canPop()) {context.pop()},
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: color,
                       foregroundColor: AppColors.white,

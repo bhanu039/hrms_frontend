@@ -53,14 +53,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         email: event.email,
         password: event.password,
       );
+      print("Login response: ${response}");
 
       final ok = response.statusCode == 200 && response.data["success"] == true;
 
       if (!ok) {
+    print("Login failed with response: ${response.data}");
+
         emit(
           state.copyWith(
             status: AuthStatus.error,
-            message: response.data["message"] ?? "Login failed",
+            message: response.statusMessage ?? response.data["message"] ?? "Login failed",
           ),
         );
         return;

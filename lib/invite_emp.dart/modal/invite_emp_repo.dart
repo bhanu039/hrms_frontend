@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import '../../../core/services/api_client.dart';
+import '../../core/services/api_client.dart';
 
 class InviteEmpRepo {
   

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:goexperts/users/company/Screens/employees_list_screen.dart';
 
 import '../../../core/state/auth/auth_bloc.dart';
 import '../../../core/state/auth/auth_event.dart';
@@ -43,6 +42,41 @@ class CompanyDrawer extends StatelessWidget {
                 ),
                
                 DrawerWidgets.sectionTitle('Operations'),
+                 DrawerWidgets.menuTile(
+                  context,
+                  icon: Icons.settings,
+                  title: 'Attendance',
+                  subtitle: 'Attendance management',
+                  subItems: [
+                    MenuSubItem(
+                      icon: Icons.time_to_leave,
+                      title: 'Attendance Records',
+
+                      onTap: () {
+                        context.push('/company/attendance');
+                      },
+                    ),
+                    MenuSubItem(
+                      icon: Icons.people,
+                      title: 'Shifts & Schedules',
+
+                      onTap: () {
+                        DrawerWidgets.showComingSoon(context, 'Shifts & Schedules');
+                      },
+                    ),
+                     
+
+                    MenuSubItem(
+                      icon: Icons.payments,
+                      title: 'Attendance Policies',
+                      onTap: () => DrawerWidgets.showComingSoon(
+                        context,
+                        'Attendance Policies',
+                      ),
+                    ),
+                  ],
+                 ),
+
                 DrawerWidgets.menuTile(
                   context,
                   icon: Icons.people,
@@ -57,6 +91,31 @@ class CompanyDrawer extends StatelessWidget {
                   subtitle: 'Teams and staff records',
                   onTap: () => context.push('/company/employees' ,extra:{'role': 'EMPLOYEE'},),
                 ),
+                 DrawerWidgets.menuTile(
+                  context,
+                  icon: Icons.settings,
+                  title: 'Leaves Management',
+                  subtitle: 'Leave management settings',
+                  subItems: [
+                    MenuSubItem(
+                      icon: Icons.people,
+                      title: 'Leave Types',
+
+                      onTap: () {
+                        context.push("/leaveTypes");
+                      },
+                    ),
+                    MenuSubItem(
+                      icon: Icons.people,
+                      title: 'Leave Applications',
+
+                      onTap: () {
+                        context.push("/Leaves/company");
+                      },
+                    ),
+                    
+                   
+                  ],),
 
                 DrawerWidgets.menuTile(
                   context,
@@ -82,6 +141,7 @@ class CompanyDrawer extends StatelessWidget {
                   title: 'Services & Expertise',
                   subtitle: 'Core strengths and offerings',
                 ),
+                
 
                 DrawerWidgets.sectionTitle('Growth'),
 
@@ -121,11 +181,7 @@ class CompanyDrawer extends StatelessWidget {
                         DrawerWidgets.showComingSoon(context, 'Designations');
                       },
                     ),
-                     MenuSubItem(
-                      icon: Icons.label_outlined,
-                      title: 'leaveTypes Settings',
-                      onTap: () => context.push("/admin/leaveTypes")
-                    ),
+                    
 
                     MenuSubItem(
                       icon: Icons.payments,

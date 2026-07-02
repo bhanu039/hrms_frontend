@@ -51,7 +51,7 @@
 
     <data
         android:scheme="https"
-        android:host="goexperts-hrms.onrender.com"
+        android:host="https://goexperts-hrms-coun.onrender.com/"
         android:pathPrefix="/setup-password"/>
             </intent-filter>
         </activity>

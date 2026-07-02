@@ -40,7 +40,7 @@ class DrawerWidgets {
             name.isEmpty ? 'Company' : name,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              color: AppColors.white,
+              color: AppColors.secondaryColor,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
@@ -50,7 +50,7 @@ class DrawerWidgets {
             email.isEmpty ? 'company@email.com' : email,
             textAlign: TextAlign.center,
             style: const TextStyle(
-              color: AppColors.secondaryColor,
+              color: AppColors.primaryColor,
               fontSize: 13,
             ),
           ),

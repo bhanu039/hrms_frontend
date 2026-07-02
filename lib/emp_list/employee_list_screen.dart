@@ -2,37 +2,45 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:goexperts/core/widgets/custom_dailogbox.dart';
+import 'package:goexperts/users/hr/screens/hr_menu.dart';
+import '../core/state/auth/auth_bloc.dart';
 import '../core/widgets/dropdown_list.dart';
 import '../core/widgets/top_message.dart';
+import '../users/company/Screens/company_menu.dart';
 import 'employee_list_bloc.dart';
 import 'package:goexperts/core/app_constants/app_color.dart';
 
-class EmployeeListScreen extends StatelessWidget {
+class EmployeeListScreen extends StatefulWidget {
   final String role;
 
   const EmployeeListScreen({super.key, required this.role});
 
   @override
+  State<EmployeeListScreen> createState() => _EmployeeListScreenState();
+}
+
+class _EmployeeListScreenState extends State<EmployeeListScreen> {
+  @override
+  void initState() {super.initState();
+  }
+  @override
   Widget build(BuildContext context) {
+    final String mainrole =
+        context.read<AuthBloc>().state.session?.role ??
+        ''; // Capture the role parameter for use in the BlocProvider
+
     String dataType = 'ACTIVE'; // Default value for dataType
     // 1. Locally inject the BLoC provider and immediately fire the initial fetch request
     return BlocProvider(
-      create: (context) =>
-          EmployeeListBloc()
-            ..add(FetchEmployeesEvent(role: role, dataType: dataType ?? '')),
+      create: (context) => EmployeeListBloc()
+        ..add(FetchEmployeesEvent(role: widget.role, dataType: dataType ?? '')),
       child: Scaffold(
         backgroundColor: AppColors.screenBg,
+        drawer: mainrole == 'HR' ? HrDrawer() : CompanyDrawer(),
         appBar: AppBar(
           title: Text(" Employees List"),
           centerTitle: true,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.filter_alt),
-              onPressed: () {
-                // Filter action
-              },
-            ),
-          ],
+         
         ),
 
         // 2. Wrap body inside a Listener to handle one-time popups (Toasts/Dialogs) smoothly
@@ -46,7 +54,9 @@ class EmployeeListScreen extends StatelessWidget {
               icon: state.isActionSuccess
                   ? Icons.join_right_outlined
                   : Icons.error,
-              color: state.isActionSuccess ? AppColors.successColor : AppColors.red,
+              color: state.isActionSuccess
+                  ? AppColors.successColor
+                  : AppColors.red,
             );
           },
           child: BlocBuilder<EmployeeListBloc, EmployeeListState>(
@@ -54,7 +64,7 @@ class EmployeeListScreen extends StatelessWidget {
               // Handle main workflow content layers
               if (state.status == EmployeeListStatus.loading &&
                   !state.isActionLoading) {
-                return  Center(
+                return Center(
                   child: CircularProgressIndicator(color: AppColors.info),
                 );
               }
@@ -73,13 +83,13 @@ class EmployeeListScreen extends StatelessWidget {
                       "ACTIVE"; // Preserve the current dataType for refresh
                   // CRITICAL: We use innerContext here so it finds the Bloc successfully
                   context.read<EmployeeListBloc>().add(
-                    FetchEmployeesEvent(role: role, dataType: "ACTIVE"),
+                    FetchEmployeesEvent(role: widget.role, dataType: "ACTIVE"),
                   );
                   await Future.delayed(const Duration(milliseconds: 800));
                 },
                 // 4. Ensure an empty list state remains scrollable so pull-to-refresh works
                 child: Container(
-                  decoration:  BoxDecoration(color: AppColors.screenBg),
+                  decoration: BoxDecoration(color: AppColors.screenBg),
 
                   child: Stack(
                     children: [
@@ -91,19 +101,43 @@ class EmployeeListScreen extends StatelessWidget {
                             children: [
                               Text(
                                 "Total Employees: ${state.employees.length}",
-                                style:  TextStyle(
+                                style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                   color: AppColors.textDark,
                                 ),
                               ),
-                              SizedBox(width: 10),
+                              SizedBox(width: 5),
+                              
+                              Expanded(
+                                child: Padding(
+                                                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                                                            child: TextField(
+                                onChanged: (query) {
+                                  // Example: context.read<EmployeeListBloc>().add(SearchEmployeeEvent(query));
+                                },
+                                decoration: InputDecoration(
+                                  hintText: 'Search employees...',
+                                  prefixIcon: const Icon(Icons.search),
+                                  filled: true,
+                                  fillColor: AppColors.white.withValues(
+                                    alpha: 0.9,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                    borderSide: BorderSide.none,
+                                  ),
+                                ),
+                                                            ),
+                                                          ),
+                              ),
+                          SizedBox(width: 5),
                               PopupMenuButton<String>(
                                 icon: const Icon(Icons.filter_alt),
                                 onSelected: (value) {
                                   context.read<EmployeeListBloc>().add(
                                     FetchEmployeesEvent(
-                                      role: role,
+                                      role: widget.role,
                                       dataType: value,
                                     ),
                                   );
@@ -125,26 +159,7 @@ class EmployeeListScreen extends StatelessWidget {
                               ),
                             ],
                           ),
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                            child: TextField(
-                              onChanged: (query) {
-                                // Example: context.read<EmployeeListBloc>().add(SearchEmployeeEvent(query));
-                              },
-                              decoration: InputDecoration(
-                                hintText: 'Search employees...',
-                                prefixIcon: const Icon(Icons.search),
-                                filled: true,
-                                fillColor: AppColors.white.withValues(
-                                  alpha: 0.9,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                  borderSide: BorderSide.none,
-                                ),
-                              ),
-                            ),
-                          ),
+                          
                           const SizedBox(height: 8),
 
                           Expanded(
@@ -158,7 +173,7 @@ class EmployeeListScreen extends StatelessWidget {
                                             MediaQuery.of(context).size.height *
                                             0.3,
                                       ),
-                                       Center(
+                                      Center(
                                         child: Text(
                                           "No Employees Found",
                                           style: TextStyle(
@@ -257,7 +272,10 @@ class EmployeeCard extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
               color: AppColors.surfaceElevated,
-              border: Border.all(color: AppColors.grey.withOpacity(0.2), width: 1),
+              border: Border.all(
+                color: AppColors.grey.withOpacity(0.2),
+                width: 1,
+              ),
               boxShadow: [
                 BoxShadow(
                   color: AppColors.shadowSoft,
@@ -323,7 +341,7 @@ class EmployeeCard extends StatelessWidget {
                                       .isEmpty
                                   ? "Unknown Employee"
                                   : "${emp.firstName ?? ""} ${emp.lastName ?? ""}",
-                              style:  TextStyle(
+                              style: TextStyle(
                                 fontSize: 20,
                                 color: AppColors.textDark,
                                 fontWeight: FontWeight.bold,
@@ -342,7 +360,7 @@ class EmployeeCard extends StatelessWidget {
                               ),
                               child: Text(
                                 emp.employeeCode ?? "N/A",
-                                style:  TextStyle(
+                                style: TextStyle(
                                   color: AppColors.textSecondaryColor,
                                 ),
                               ),
@@ -361,7 +379,7 @@ class EmployeeCard extends StatelessWidget {
                               ),
                               child: Text(
                                 emp.designation.title ?? "--",
-                                style:  TextStyle(
+                                style: TextStyle(
                                   color: AppColors.info,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -378,7 +396,7 @@ class EmployeeCard extends StatelessWidget {
                         ),
                         child: IconButton(
                           onPressed: onDelete,
-                          icon:  Icon(
+                          icon: Icon(
                             Icons.delete_outline,
                             color: AppColors.danger,
                           ),
@@ -408,12 +426,12 @@ class EmployeeCard extends StatelessWidget {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                     Icon(
+                                    Icon(
                                       Icons.person,
                                       color: AppColors.textSecondaryColor,
                                     ),
                                     const SizedBox(width: 5),
-                                     Text(
+                                    Text(
                                       "STATUS",
                                       style: TextStyle(
                                         color: AppColors.textSecondaryColor,
@@ -427,7 +445,7 @@ class EmployeeCard extends StatelessWidget {
                                   emp.status == "ACTIVE" ? "ACTIVE" : "PENDING",
                                   style: TextStyle(
                                     color: emp.status == "ACTIVE"
-                                        ? AppColors.successColor  
+                                        ? AppColors.successColor
                                         : AppColors.amberDark,
                                     fontWeight: FontWeight.bold,
                                   ),
@@ -452,13 +470,13 @@ class EmployeeCard extends StatelessWidget {
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                   Icon(
+                                  Icon(
                                     Icons.verified_user,
                                     color: AppColors.info,
                                   ),
                                   const SizedBox(width: 5),
                                   Expanded(
-                                    child:  Text(
+                                    child: Text(
                                       "onboardingCompleted",
                                       style: TextStyle(
                                         color: AppColors.textSecondaryColor,
@@ -471,7 +489,7 @@ class EmployeeCard extends StatelessWidget {
 
                               Text(
                                 emp.bgvStatus ? "Yes" : "No",
-                                style:  TextStyle(
+                                style: TextStyle(
                                   color: AppColors.info,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -501,7 +519,7 @@ class EmployeeCard extends StatelessWidget {
     return Center(
       child: Text(
         initial,
-        style:  TextStyle(
+        style: TextStyle(
           fontSize: 24,
           fontWeight: FontWeight.bold,
           color: AppColors.info,

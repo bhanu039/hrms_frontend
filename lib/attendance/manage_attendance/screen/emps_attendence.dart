@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../core/state/auth/auth_bloc.dart';
+import '../../../core/state/auth/auth_bloc.dart';
 import '../bloc/attendance_bloc.dart';
 import '../bloc/attendance_event.dart';
 import '../bloc/attendance_state.dart';
-import '../../screens/hr_menu.dart';
+import '../../../users/hr/screens/hr_menu.dart';
 import 'package:goexperts/core/app_constants/app_color.dart';
 
 class EmployeeAttendanceScreen extends StatefulWidget {

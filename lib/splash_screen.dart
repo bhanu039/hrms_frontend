@@ -44,7 +44,7 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _navigate() async {
-    await Future.delayed(const Duration(seconds: 50));
+    await Future.delayed(const Duration(seconds: 2));
 
     final session = authBloc.state.session; 
 

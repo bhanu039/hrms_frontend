@@ -295,9 +295,7 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient:  LinearGradient(
-          colors: [AppColors.indigo, AppColors.blue],
-        ),
+        gradient: LinearGradient(colors: [AppColors.indigo, AppColors.blue]),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Text(
@@ -317,10 +315,7 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
         color: AppColors.red.shade50,
         borderRadius: BorderRadius.circular(10),
       ),
-      child: Text(
-        errorMessage ?? "",
-        style:  TextStyle(color: AppColors.red),
-      ),
+      child: Text(errorMessage ?? "", style: TextStyle(color: AppColors.red)),
     );
   }
 
@@ -355,8 +350,19 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
                       ? liveWorkingTimer(d.selfAttendance?.checkInTime ?? "--")
                       : Stream.value(d.selfAttendance!.workingHours!),
                   builder: (context, snapshot) {
+                    final workingHours = d.selfAttendance?.workingHours;
+                    final value = snapshot.data;
+
+                    final displayTime =
+                        (workingHours != null &&
+                            workingHours != "null" &&
+                            workingHours.isNotEmpty)
+                        ? workingHours
+                        : (value != null && value != "null" && value.isNotEmpty)
+                        ? value
+                        : "00:00:00";
                     return Text(
-                      snapshot.data ?? "00:00:00",
+                     displayTime,
                       style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
@@ -491,7 +497,7 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-           Text(
+          Text(
             "Today's Attendance",
             style: TextStyle(color: AppColors.textDark, fontSize: 16),
           ),
@@ -522,7 +528,7 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        Text(label, style:  TextStyle(color: AppColors.textMuted)),
+        Text(label, style: TextStyle(color: AppColors.textMuted)),
       ],
     );
   }
@@ -552,7 +558,7 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-             Text(
+            Text(
               "Work Mode Distribution",
               style: TextStyle(
                 color: AppColors.textDark,
@@ -583,10 +589,10 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style:  TextStyle(color: AppColors.textSecondaryColor)),
+            Text(label, style: TextStyle(color: AppColors.textSecondaryColor)),
             Text(
               "${value.toString()}%",
-              style:  TextStyle(color: AppColors.textDark),
+              style: TextStyle(color: AppColors.textDark),
             ),
           ],
         ),
@@ -611,7 +617,7 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-           Text(
+          Text(
             "Pending Actions",
             style: TextStyle(color: AppColors.textDark, fontSize: 16),
           ),
@@ -631,11 +637,11 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
                 children: [
                   Text(
                     e.label ?? "",
-                    style:  TextStyle(color: AppColors.textSecondaryColor),
+                    style: TextStyle(color: AppColors.textSecondaryColor),
                   ),
                   Text(
                     "${e.count ?? 0}",
-                    style:  TextStyle(color: AppColors.textDark),
+                    style: TextStyle(color: AppColors.textDark),
                   ),
                 ],
               ),
@@ -651,7 +657,7 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-           Text(
+          Text(
             "Recent Activity",
             style: TextStyle(color: AppColors.textDark, fontSize: 16),
           ),
@@ -671,12 +677,12 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
                 children: [
                   Text(
                     e.title ?? "",
-                    style:  TextStyle(color: AppColors.textSecondaryColor),
+                    style: TextStyle(color: AppColors.textSecondaryColor),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     e.type ?? "",
-                    style:  TextStyle(color: AppColors.white38),
+                    style: TextStyle(color: AppColors.white38),
                   ),
                 ],
               ),

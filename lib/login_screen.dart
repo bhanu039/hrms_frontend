@@ -321,7 +321,7 @@ class _ThreeDLoginPanel extends StatelessWidget {
                     child: Image.asset(
                       AppConstants.bannerLogo,
                       height: 100,
-                      
+
                       fit: BoxFit.contain,
                     ),
                   ),
@@ -366,6 +366,7 @@ class _ThreeDLoginPanel extends StatelessWidget {
                           ? Icons.visibility_outlined
                           : Icons.visibility_off_outlined,
                     ),
+                    color: AppColors.iconSecondary,
                     onPressed: () {
                       state.setState(() {
                         state.isPasswordVisible = !state.isPasswordVisible;
@@ -513,17 +514,19 @@ class _GlassBadge extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.white.withValues(alpha: 0.16),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.white.withValues(alpha: 0.26)),
+        border: Border.all(
+          color: AppColors.iconSecondary.withValues(alpha: 0.26),
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, color: AppColors.white, size: 17),
+          Icon(icon, color: AppColors.iconPrimary, size: 17),
           const SizedBox(width: 7),
           Text(
             text,
             style: const TextStyle(
-              color: AppColors.white,
+              color: AppColors.textPrimary,
               fontSize: 12,
               fontWeight: FontWeight.w700,
             ),
@@ -556,23 +559,25 @@ class _LoginTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      style: const TextStyle(color: AppColors.textPrimary),
       controller: controller,
       validator: validator,
       obscureText: obscureText,
       keyboardType: keyboardType,
       decoration: InputDecoration(
         labelText: label,
-        prefixIcon: Icon(icon),
+        labelStyle: const TextStyle(color: AppColors.textSecondary),
+        prefixIcon: Icon(icon, color: AppColors.iconPrimary),
         suffixIcon: suffixIcon,
         filled: true,
         fillColor: AppColors.background,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xffe5e7eb)),
+          borderSide: const BorderSide(color: AppColors.primary),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: Color(0xffe5e7eb)),
+          borderSide: const BorderSide(color: AppColors.brandBlue),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),

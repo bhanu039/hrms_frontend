@@ -9,6 +9,21 @@ class LeaveBloc extends Bloc<LeaveEvent, LeaveState> {
   // Pass your existing network repository here if needed
   LeaveBloc(this.repository) : super(LeaveInitialState()) {
     on<SubmitLeaveRequestEvent>(_onSubmitLeaveRequest);
+    on<FetchLeaveTypesEvent>(_onFetchLeaveTypes);
+  }
+
+  Future<void> _onFetchLeaveTypes(
+    FetchLeaveTypesEvent event,
+    Emitter<LeaveState> emit,
+  ) async {
+    emit(LeaveTypesLoadingState());
+
+    try {
+      final leaveTypes = await repository.getAllLeaveTypes();
+      emit(LeaveTypesLoadedState(leaveTypes));
+    } catch (e) {
+      emit(LeaveTypesErrorState(e.toString()));
+    }
   }
 
   Future<void> _onSubmitLeaveRequest(
@@ -24,8 +39,7 @@ class LeaveBloc extends Bloc<LeaveEvent, LeaveState> {
         DateTime.parse(event.request.toDate),
         event.request.reason
       );
-
-
+      print("Leave request response: $response");
       
       // Simulating network call latency
       await Future.delayed(const Duration(seconds: 2));
@@ -34,8 +48,6 @@ class LeaveBloc extends Bloc<LeaveEvent, LeaveState> {
       }else {
         emit(LeaveSuccessState("Leave request submitted successfully!"));
       }
-     
-
      
     } catch (e) {
       emit(LeaveFailureState(e.toString()));

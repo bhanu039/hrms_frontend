@@ -4,9 +4,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:goexperts/core/widgets/top_message.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../../../core/app_constants/app_constants.dart';
+import '../../../../core/app_constants/app_color.dart';
 import '../../../../core/state/auth/auth_bloc.dart';
 import '../../../../core/state/auth/auth_event.dart';
+import '../../Screens/company_menu.dart';
 import '../bloc/company_profile_bloc.dart';
 import '../data/company_profile_modal.dart';
 import '../widgets/company_documents_widget.dart';
@@ -14,7 +15,6 @@ import '../widgets/company_edit_widget.dart';
 import '../widgets/company_header_widget.dart';
 import '../widgets/company_overview_widget.dart';
 import '../widgets/company_subscription_widget.dart';
-import 'package:goexperts/core/app_constants/app_color.dart';
 
 class CompanyProfileScreen extends StatefulWidget {
   final bool? isEditable;
@@ -55,11 +55,12 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
   void _toggleEditMode() {
     setState(() {
       _isEditMode = !_isEditMode;
-      if (!_isEditMode && _editingProfile != null) {
+      if (!_isEditMode) {
         // Reset to original when canceling
-        _editingProfile =
-            (context.read<CompanyProfileBloc>().state as CompanyProfileLoaded)
-                .profile;
+        final currentState = context.read<CompanyProfileBloc>().state;
+        if (currentState is CompanyProfileLoaded) {
+          _editingProfile = currentState.profile;
+        }
       }
     });
   }
@@ -72,7 +73,7 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
-              backgroundColor: AppColors.red,
+              backgroundColor: AppColors.errorColor,
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -80,7 +81,7 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
-              backgroundColor: AppColors.green,
+              backgroundColor: AppColors.successColor,
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -89,25 +90,29 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
-              backgroundColor: AppColors.green,
+              backgroundColor: AppColors.successColor,
               behavior: SnackBarBehavior.floating,
             ),
           );
         }
       },
+
       child: BlocBuilder<CompanyProfileBloc, CompanyProfileState>(
         builder: (context, state) {
           if (state is CompanyProfileLoading) {
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
+            return Scaffold(body: Center(child: CircularProgressIndicator()));
           }
 
           if (state is CompanyProfileError) {
             return Scaffold(
-              appBar: AppBar(title: const Text('Company Profile', style: TextStyle(color: AppConstants.primaryColor))),
+              appBar: AppBar(
+                title: const Text(
+                  'Company Profile',
+                  style: TextStyle(color: AppColors.primaryColor),
+                ),
+              ),
+              drawer: CompanyDrawer(),
               body: Center(
-                
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -118,23 +123,28 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
                       children: [
                         ElevatedButton(
                           onPressed: _fetchProfile,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.background,
+                            foregroundColor: AppColors.white,
+                          ),
                           child: const Text('Retry'),
                         ),
-                        SizedBox(width: 20),
+                        const SizedBox(width: 20),
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.red,
-                            foregroundColor: Colors
-                                .white, // Ensures text visibility on a red background
+                            backgroundColor: AppColors.errorColor,
+                            foregroundColor: AppColors.white,
                           ),
                           onPressed: () async {
-                            context.read<AuthBloc>().add(AuthLogoutRequested());
+                            final authBloc = context.read<AuthBloc>();
+                            final goRouter = GoRouter.of(context);
 
+                            authBloc.add(AuthLogoutRequested());
                             await Future.delayed(
                               const Duration(milliseconds: 100),
                             );
-
-                            context.go("/login");
+                            if (!mounted) return;
+                            goRouter.go('/login');
                           },
                           child: const Text('Logout'),
                         ),
@@ -150,33 +160,35 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
             _editingProfile = state.profile;
 
             return Scaffold(
+              drawer: CompanyDrawer(),
               appBar: AppBar(
                 elevation: 0,
-                backgroundColor: AppConstants.backgroundColor,
+                backgroundColor: AppColors.backgroundColor,
                 title: const Text(
                   'Company Profile',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: AppConstants.primaryColor,
+                    color: AppColors.primaryColor,
                   ),
                 ),
-                
                 centerTitle: false,
                 actions: [
                   if (widget.isEditable == true)
-                   
-                    Padding(padding: const EdgeInsets.only(right: 16.0),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 16.0),
                       child: Center(
                         child: GestureDetector(
                           onTap: () async {
-                            context.read<AuthBloc>().add(AuthLogoutRequested());
+                            final authBloc = context.read<AuthBloc>();
+                            final goRouter = GoRouter.of(context);
 
+                            authBloc.add(AuthLogoutRequested());
                             await Future.delayed(
                               const Duration(milliseconds: 100),
                             );
-
-                            context.go("/login");
+                            if (!mounted) return;
+                            goRouter.go('/login');
                           },
                           child: Container(
                             padding: const EdgeInsets.symmetric(
@@ -184,7 +196,7 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
                               vertical: 6,
                             ),
                             decoration: BoxDecoration(
-                              color: AppColors.red,
+                              color: AppColors.errorColor,
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: const Text(
@@ -196,24 +208,25 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
                             ),
                           ),
                         ),
-                      ),),
+                      ),
+                    ),
                 ],
               ),
-           floatingActionButton: FloatingActionButton(
-  backgroundColor: AppColors.brandBlue,
-  onPressed: () {
-    if (widget.isEditable == true) {
-      _toggleEditMode();
-    } else {
-      TopMessage.show(
-        context,
-        "You don't have permission to edit.",
-        color: AppColors.red,
-      );
-    }
-  },
-  child: Icon( Icons.edit,  ),
-),
+              floatingActionButton: FloatingActionButton(
+                backgroundColor: AppColors.brandBlue,
+                onPressed: () {
+                  if (widget.isEditable == true) {
+                    _toggleEditMode();
+                  } else {
+                    TopMessage.show(
+                      context,
+                      "You don't have permission to edit.",
+                      color: AppColors.errorColor,
+                    );
+                  }
+                },
+                child: const Icon(Icons.edit),
+              ),
               body: _isEditMode
                   ? CompanyEditWidget(
                       profile: _editingProfile,
@@ -226,6 +239,7 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
           }
 
           return Scaffold(
+            backgroundColor: AppColors.backgroundColor,
             body: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
@@ -233,7 +247,7 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
                 // Shrinks layout box vertically to wrap tightly
                 const Text(
                   'No profile data',
-                  style: TextStyle(color: AppConstants.textColor, fontSize: 16),
+                  style: TextStyle(color: AppColors.textColor, fontSize: 16),
                 ),
                 const SizedBox(
                   height: 16,
@@ -241,9 +255,9 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     backgroundColor:
-                        AppConstants.primaryColor, // Vibrant Red brand code
+                        AppColors.backgroundColor, // Vibrant Red brand code
                     foregroundColor:
-                        AppConstants.backgroundColor, // White text/icon color
+                        AppColors.brandBlue, // White text/icon color
                     padding: const EdgeInsets.symmetric(
                       horizontal: 24,
                       vertical: 12,
@@ -253,11 +267,13 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
                     ),
                   ),
                   onPressed: () async {
-                    context.read<AuthBloc>().add(AuthLogoutRequested());
+                    final authBloc = context.read<AuthBloc>();
+                    final goRouter = GoRouter.of(context);
 
+                    authBloc.add(AuthLogoutRequested());
                     await Future.delayed(const Duration(milliseconds: 100));
-
-                    context.go("/login");
+                    if (!mounted) return;
+                    goRouter.go('/login');
                   },
                   icon: const Icon(Icons.logout),
                   label: const Text(
@@ -274,43 +290,40 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
   }
 
   Widget _buildViewMode(CompanyProfileLoaded state) {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          CompanyHeaderWidget(profile: state.profile),
-          Material(
-            color: AppConstants.backgroundColor, // Set background color here
-            child: TabBar(
-              controller: _tabController,
-
-              indicatorColor: AppColors.brandBlue,
-              labelColor: AppConstants.primaryColor,
-              unselectedLabelColor: AppColors.grey,
-              tabs: const [
-                Tab(icon: Icon(Icons.info_outline), text: 'Overview'),
-                Tab(icon: Icon(Icons.description), text: 'Details'),
-                Tab(icon: Icon(Icons.file_present), text: 'Documents'),
-                Tab(icon: Icon(Icons.card_giftcard), text: 'Subscription'),
-              ],
-            ),
+    return Column(
+      children: [
+        CompanyHeaderWidget(profile: state.profile),
+        Material(
+          color: AppColors.backgroundColor,
+          child: TabBar(
+            controller: _tabController,
+            indicatorColor: AppColors.brandBlue,
+            labelColor: AppColors.primaryColor,
+            unselectedLabelColor: AppColors.grey,
+            tabs: const [
+              Tab(icon: Icon(Icons.info_outline), text: 'Overview'),
+              Tab(icon: Icon(Icons.description), text: 'Details'),
+              Tab(icon: Icon(Icons.file_present), text: 'Documents'),
+              Tab(icon: Icon(Icons.card_giftcard), text: 'Subscription'),
+            ],
           ),
-          SizedBox(
-            height: MediaQuery.of(context).size.height * 0.5,
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                CompanyOverviewWidget(profile: state.profile),
-                CompanyDetailsWidget(profile: state.profile),
-                CompanyDocumentsWidget(
-                  profile: state.profile,
-                  onUploadDocument: _handleUploadDocument,
-                ),
-                CompanySubscriptionWidget(profile: state.profile),
-              ],
-            ),
+        ),
+        SizedBox(
+          height: MediaQuery.of(context).size.height * 0.5,
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              CompanyOverviewWidget(profile: state.profile),
+              CompanyDetailsWidget(profile: state.profile),
+              CompanyDocumentsWidget(
+                profile: state.profile,
+                onUploadDocument: _handleUploadDocument,
+              ),
+              CompanySubscriptionWidget(profile: state.profile),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -414,13 +427,14 @@ class CompanyDetailsWidget extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: Padding(
+        
         padding: const EdgeInsets.all(12),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: AppColors.brandBlue.withOpacity(0.1),
+                color: AppColors.brandBlue.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(icon, color: AppColors.brandBlue, size: 20),
@@ -432,7 +446,7 @@ class CompanyDetailsWidget extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       color: AppColors.grey,
                       fontWeight: FontWeight.w500,
@@ -441,7 +455,7 @@ class CompanyDetailsWidget extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     value,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
                       color: AppColors.black87,
@@ -456,6 +470,3 @@ class CompanyDetailsWidget extends StatelessWidget {
     );
   }
 }
-
-
-

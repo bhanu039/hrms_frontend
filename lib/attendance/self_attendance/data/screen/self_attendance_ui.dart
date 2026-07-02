@@ -384,6 +384,8 @@ class _SelfAttendanceScreenState extends State<SelfAttendanceScreen> {
       return const Center(child: Text('No attendance records found.'));
     }
 
+final history = List.of(state.attendanceResponse!.history)
+  ..sort((a, b) => b.date.compareTo(a.date));
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -403,11 +405,11 @@ class _SelfAttendanceScreenState extends State<SelfAttendanceScreen> {
           ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
-            itemCount: state.attendanceResponse!.history.length,
+            itemCount: history.length,
             separatorBuilder: (_, __) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
               return _buildHistoryCard(
-                state.attendanceResponse!.history[index],
+               history[index],
               );
             },
           ),

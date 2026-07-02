@@ -5,7 +5,7 @@ class AppConstants {
   AppConstants._();
   static const String appName = "GoExperts";
   static const String appVersion = "1.0.0";
-  static const String apiBaseUrl = "http://goexperts-hrms-coun.onrender.com/";
+  static const String apiBaseUrl = "https://goexperts-hrms-coun.onrender.com/";
   static const String apiBaseUrl2 =
       "https://goexperts-hrms-coun.onrender.com/api/";
 

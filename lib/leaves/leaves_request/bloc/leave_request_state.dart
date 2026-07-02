@@ -1,10 +1,10 @@
-
-
 import '../../leave_types/data/leave_type_modal.dart';
 
 abstract class LeaveState {}
 
-class LeaveInitialState extends LeaveState {}
+class LeaveInitialState extends LeaveState {
+  List<LeaveTypeModel>? leaveTypes;
+}
 
 // NEW STATES FOR LOADING DROPDOWN DATA
 class LeaveTypesLoadingState extends LeaveState {}
@@ -21,10 +21,12 @@ class LeaveTypesErrorState extends LeaveState {
 
 // REQUEST SUBMISSION STATES
 class LeaveSubmittingState extends LeaveState {}
+
 class LeaveSuccessState extends LeaveState {
   final String message;
   LeaveSuccessState(this.message);
 }
+
 class LeaveFailureState extends LeaveState {
   final String error;
   LeaveFailureState(this.error);

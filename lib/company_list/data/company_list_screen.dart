@@ -131,7 +131,9 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.filter_alt_outlined),
-            onPressed: () {},
+            onPressed: () {
+              
+            },
           ),
         ],
       ),

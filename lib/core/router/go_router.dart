@@ -2,19 +2,25 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:goexperts/users/company/company_dashbord/companyShell_tabs.dart';
 import 'package:goexperts/users/company/company_fullReg/screens/full_com_Reg_screen.dart';
-import 'package:goexperts/core/invite_emp.dart/bloc/invite_emp_bloc.dart';
-import 'package:goexperts/core/invite_emp.dart/modal/invite_emp_repo.dart';
+import 'package:goexperts/invite_emp.dart/bloc/invite_emp_bloc.dart';
+import 'package:goexperts/invite_emp.dart/modal/invite_emp_repo.dart';
 import 'package:goexperts/core/state/auth/auth_bloc.dart';
 
 import 'package:flutter/material.dart';
 import 'package:goexperts/core/widgets/face_detact.dart';
 import 'package:goexperts/core/set_password_screen.dart';
-import '../../emp_full_reg/bloc/emp_full_bloc.dart';
-import '../../emp_full_reg/screen/emp_full_reg_ui.dart';
+import '../../users/admin/industry_Type/Industry_repo.dart';
+import '../../users/admin/industry_Type/bloc/industry_Type_bloc.dart';
+import '../../users/admin/industry_Type/data/industry_Type_screen.dart';
+import '../../users/employe/emp_full_reg/bloc/emp_full_bloc.dart';
+import '../../users/employe/emp_full_reg/screen/emp_full_reg_ui.dart';
 import '../../leaves/leave_types/bloc/leave_type_bloc.dart';
 import '../../leaves/leave_repo.dart';
 import '../../leaves/leave_types/data/leave_type_screen.dart';
+import '../../leaves/leaves_request/bloc/leave_request_bloc.dart';
 import '../../leaves/leaves_request/data/leave_request_screen.dart';
+import '../../leaves/leaves_views/bloc/leaves_view_bloc.dart';
+import '../../leaves/leaves_views/data/leaves_view.screen.dart';
 import '../../users/admin/Screens/adminSell_tabs.dart';
 import '../../users/admin/Screens/admin_prifile.dart';
 import '../../users/admin/Screens/company_view_screen.dart';
@@ -42,11 +48,11 @@ import '../../users/employe/emp_dashbord/data/repository_emp_dashboard.dart';
 import '../../users/employe/emp_dashbord/empShell_tabs.dart';
 import '../../users/employe/emp_Profile/bloc/emp_profile_bloc.dart';
 import '../../users/employe/emp_Profile/screen/emp_profile_screen.dart';
-import '../../self_attendance/bloc/self_attendance_bloc.dart';
-import '../../self_attendance/data/screen/self_attendance_ui.dart';
-import '../../users/hr/attendance/bloc/attendance_bloc.dart';
-import '../../users/hr/attendance/bloc/attendance_event.dart';
-import '../../users/hr/attendance/screen/emps_attendence.dart';
+import '../../attendance/self_attendance/bloc/self_attendance_bloc.dart';
+import '../../attendance/self_attendance/data/screen/self_attendance_ui.dart';
+import '../../attendance/manage_attendance/bloc/attendance_bloc.dart';
+import '../../attendance/manage_attendance/bloc/attendance_event.dart';
+import '../../attendance/manage_attendance/screen/emps_attendence.dart';
 import '../../emp_acceptence/bloc/emp_acceptence_bloc.dart';
 import '../../emp_acceptence/bloc/emp_acceptence_event.dart';
 import '../../emp_acceptence/data/emp_acceptence_repo.dart';
@@ -65,7 +71,7 @@ import '../../splash_screen.dart';
 
 //employee
 import '../../users/employe/Screens/project_screen.dart';
-import '../invite_emp.dart/modal/invite_emp_screen.dart';
+import '../../invite_emp.dart/modal/invite_emp_screen.dart';
 import '../services/api_service.dart';
 import '../state/auth/auth_state.dart';
 
@@ -160,6 +166,40 @@ GoRouter createRouter(AuthBloc authBloc) {
           );
         },
       ),
+      GoRoute(path:"/leaves/requests",builder: (context, state) {
+        return BlocProvider(
+          create: (_) => LeaveBloc( LeaveRepository()),
+          child: const ApplyLeaveScreen(),
+        );
+      },),
+
+      
+       GoRoute(
+            path: '/leaveTypes',
+            builder: (context, state) => BlocProvider(
+              create: (_) => LeaveBloc( LeaveRepository()),
+              child: const LeaveTypesScreen(),
+            ),
+          ),
+           GoRoute(
+            path: '/IndustryType',
+            builder: (context, state) => BlocProvider(
+              create: (_) => IndustryTypeBloc(repository:  IndustryRepository()),
+              child: const IndustryTypesScreen(),
+            ),
+          ),
+
+           GoRoute(
+            path: '/Leaves/:listType',
+            builder: (context, state) {
+              final listType = state.pathParameters['listType'];
+              return BlocProvider(
+                create: (_) => LeavesViewBloc(repository: LeaveRepository()),
+                child: LeavesViewScreen(listType: listType!),
+              );
+            },
+          ),
+
       GoRoute(
         path: '/hr/onbording',
         builder: (context, state) {
@@ -225,13 +265,7 @@ GoRouter createRouter(AuthBloc authBloc) {
               child: const CompaniesScreen(),
             ),
           ),
-          GoRoute(
-            path: '/admin/leaveTypes',
-            builder: (context, state) => BlocProvider(
-              create: (_) => LeaveTypeBloc(repository: LeaveRepository()),
-              child: const LeaveTypesScreen(),
-            ),
-          ),
+         
           GoRoute(
             path: '/admin/profile',
             builder: (context, state) => BlocProvider<ProfileCubit>(
@@ -303,6 +337,8 @@ GoRouter createRouter(AuthBloc authBloc) {
               );
             },
           ),
+         
+
           GoRoute(
             path: '/company/subscription',
             builder: (_, _) => const SubscriptionPage(),
@@ -422,13 +458,7 @@ GoRouter createRouter(AuthBloc authBloc) {
               );
             },
           ),
-           GoRoute(
-            path: '/emp/leave/request',
-            builder: (context, state) => BlocProvider(
-              create: (_) => LeaveTypeBloc(repository: LeaveRepository()),
-              child: const ApplyLeaveScreen(),
-            ),
-          ),
+          
 
           GoRoute(
             path: '/emp/profile',

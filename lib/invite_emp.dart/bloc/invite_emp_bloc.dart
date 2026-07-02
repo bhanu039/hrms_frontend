@@ -1,5 +1,6 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:goexperts/core/invite_emp.dart/modal/invite_emp_repo.dart';
+import 'package:goexperts/invite_emp.dart/modal/invite_emp_repo.dart';
 
 import 'invite_emp_event.dart';
 import 'invite_emp_start.dart';
@@ -29,8 +30,9 @@ class InviteEmpBloc extends Bloc<InviteEmpEvent, InviteEmpState> {
         loading: false,
         departments: List<Map<String, dynamic>>.from(res.data["data"]),
       ));
-    } catch (e) {
-      emit(state.copyWith(loading: false, error: e.toString()));
+    }on DioException catch (e) {
+      final errorMessage = e.response?.data['message'] ?? 'Failed to load initial data';
+      emit(state.copyWith(loading: false, error: errorMessage));
     }
   }
 
@@ -47,8 +49,9 @@ class InviteEmpBloc extends Bloc<InviteEmpEvent, InviteEmpState> {
         designations: List<Map<String, dynamic>>.from(res.data["data"]),
         selectedDesignationId: null,
       ));
-    } catch (e) {
-      emit(state.copyWith(error: e.toString()));
+    }on DioException catch (e) {
+      final errorMessage = e.response?.data['message'] ?? 'Failed to load initial data';
+      emit(state.copyWith(error: errorMessage));
     }
   }
 
@@ -81,8 +84,9 @@ class InviteEmpBloc extends Bloc<InviteEmpEvent, InviteEmpState> {
       } else {
         emit(state.copyWith(submitting: false, loading: false, error: "Failed"));
       }
-    } catch (e) {
-      emit(state.copyWith(submitting: false, loading: false, error: e.toString()));
+    } on DioException catch (e) {
+      final errorMessage = e.response?.data['message'] ?? 'Failed to load initial data';
+      emit(state.copyWith(submitting: false, loading: false, error: errorMessage));
     }
   }
 }

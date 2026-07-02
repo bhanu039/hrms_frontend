@@ -39,23 +39,7 @@ class _CompanyDashboardScreenState extends State<CompanyDashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: Icon(Icons.menu, color: AppColors.orange),
-            onPressed: () {
-              condition
-                  ? Scaffold.of(context).openDrawer()
-                  : CustomDialog.show(
-                      context: context,
-                      title: "Permission",
-                      message:
-                          " ${errorMessage!} \n If You Want Logout Go TO Profile",
-                      icon: Icons.error,
-                      color: AppColors.red,
-                    );
-            },
-          ),
-        ),
+       
         title: const Text(
           "Company Dashboard",
           style: TextStyle(color: AppColors.white),

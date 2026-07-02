@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/services/api_service.dart';
 import '../../company/models/plan_model.dart';
@@ -85,6 +86,7 @@ class _SubscriptionAdminPageState extends State<SubscriptionAdminPage> {
       builder: (context) {
         bool checker = false;
         return StatefulBuilder(
+          
           builder: (context, setState) {
             return Dialog(
               shape: RoundedRectangleBorder(
@@ -93,7 +95,7 @@ class _SubscriptionAdminPageState extends State<SubscriptionAdminPage> {
               child: Center(
                 child: SafeArea(
                   child: Container(
-                    width: 520,
+                    
                     constraints: const BoxConstraints(maxWidth: 520),
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
@@ -321,9 +323,9 @@ class _SubscriptionAdminPageState extends State<SubscriptionAdminPage> {
                                         if (plan == null) {
                                           await ApiService.createSubscriptionPlan(
                                             title: titleController.text,
-                                            price: int.parse(
-                                              priceController.text,
-                                            ),
+                                            price: 
+                                              double.parse(priceController.text.toString()),
+                                            
                                             duration: int.parse(
                                               durationController.text,
                                             ),
@@ -332,10 +334,11 @@ class _SubscriptionAdminPageState extends State<SubscriptionAdminPage> {
                                         }
                                         // UPDATE
                                         else {
+
                                           await ApiService.updateSubscriptionPlan(
                                             id: plan.id,
                                             title: titleController.text,
-                                            price: int.parse(
+                                            price: double.parse(
                                               priceController.text,
                                             ),
                                             duration: int.parse(
@@ -345,7 +348,7 @@ class _SubscriptionAdminPageState extends State<SubscriptionAdminPage> {
                                           );
                                         }
                   
-                                        Navigator.pop(context);
+                                        context.pop();
                   
                                         fetchPlans();
                   
@@ -361,6 +364,9 @@ class _SubscriptionAdminPageState extends State<SubscriptionAdminPage> {
                                           ),
                                         );
                                       } catch (e) {
+                                         context.pop();
+                  
+                                        fetchPlans();
                                         ScaffoldMessenger.of(
                                           context,
                                         ).showSnackBar(

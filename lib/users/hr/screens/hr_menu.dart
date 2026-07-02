@@ -57,10 +57,43 @@ class HrDrawer extends StatelessWidget {
                 ),
                 DrawerWidgets.menuTile(
                   context,
+                  icon: Icons.settings,
+                  title: 'leaves management',
+                  subtitle: 'Account preferences',
+                  subItems: [
+                    MenuSubItem(
+                      icon: Icons.people,
+                      title: 'leaves Request',
+
+                      onTap: () {
+                        context.push('/leaves/requests');
+                      },
+                    ),
+                    MenuSubItem(
+                      icon: Icons.people,
+                      title: 'employee leave records',
+
+                      onTap: () {
+                        context.push('/leaves/company');
+                      },
+                    ),
+                     MenuSubItem(
+                      icon: Icons.people,
+                      title: ' Own Records',
+
+                      onTap: () {
+                        context.push('/leaves/me');
+                      },
+                    ),
+                  ],
+                ),
+               
+                DrawerWidgets.menuTile(
+                  context,
                   icon: Icons.people,
                   title: 'Employees',
                   subtitle: 'Teams and staff records',
-                  onTap: () => context.push('/company/employees' ,extra: {'role': '', 'department': ''},),
+                  onTap: () => context.push('/hr/employees' ,extra: {'role': '', 'department': ''},),
                 ),
                 DrawerWidgets.menuTile(
                   context,

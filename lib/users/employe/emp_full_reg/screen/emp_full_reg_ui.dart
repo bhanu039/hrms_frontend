@@ -8,12 +8,12 @@ import 'package:goexperts/core/widgets/custom_text_field.dart';
 import 'package:goexperts/core/widgets/top_message.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../../../core/state/auth/auth_bloc.dart';
-import '../../../../core/widgets/File_picker_widget.dart';
-import '../../../../core/widgets/dropdown_list.dart';
-import '../../../../core/widgets/face_detact.dart';
-import '../../../../core/widgets/location_get.dart';
-import '../../../../core/widgets/switch_bool.dart';
+import '../../../../../../core/state/auth/auth_bloc.dart';
+import '../../../../../../core/widgets/File_picker_widget.dart';
+import '../../../../../../core/widgets/dropdown_list.dart';
+import '../../../../../../core/widgets/face_detact.dart';
+import '../../../../../../core/widgets/location_get.dart';
+import '../../../../../../core/widgets/switch_bool.dart';
 import '../bloc/emp_full_bloc.dart';
 import '../bloc/emp_full_event.dart';
 import '../bloc/emp_full_state.dart';

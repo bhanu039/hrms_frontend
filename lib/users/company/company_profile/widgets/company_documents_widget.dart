@@ -90,6 +90,7 @@ class CompanyDocumentsWidget extends StatelessWidget {
             Row(
               children: [
                 Container(
+
                   width: 50,
                   height: 50,
                   decoration: BoxDecoration(
@@ -109,6 +110,7 @@ class CompanyDocumentsWidget extends StatelessWidget {
                 ),
                 const SizedBox(width: 12),
                 Expanded(
+                  
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

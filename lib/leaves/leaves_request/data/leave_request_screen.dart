@@ -32,8 +32,9 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
   @override
   void initState() {
     super.initState();
-    // Dispatch fetch event immediately on load
     context.read<LeaveBloc>().add(FetchLeaveTypesEvent());
+
+
   }
 
   @override
@@ -79,7 +80,11 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
   void _submitApplication() {
     if (!_formKey.currentState!.validate()) return;
     if (_fromDate == null || _toDate == null) {
-      TopMessage.show(context,  'Please select both date parameters.',color:AppColors.error);
+      TopMessage.show(
+        context,
+        'Please select both date parameters.',
+        color: AppColors.error,
+      );
       return;
     }
 
@@ -102,7 +107,7 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
           'Apply Leave',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: AppColors.primary100,
+        backgroundColor: AppColors.primary300,
         foregroundColor: Colors.white,
         elevation: 0,
       ),
@@ -114,13 +119,14 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
             });
           }
           if (state is LeaveSuccessState) {
-            TopMessage.show(context, state.message, color: AppColors.success);
+            TopMessage.show(context, "Leave application submitted successfully.", color: AppColors.success);
             Navigator.pop(context);
           } else if (state is LeaveFailureState) {
-            TopMessage.show(context, state.error, color: AppColors.error);
+            TopMessage.show(context, "Failed to submit leave application.", color: AppColors.error);
           }
         },
         builder: (context, state) {
+          
           // Show fullscreen spinner while fetching dropdown options from API
           if (state is LeaveTypesLoadingState && _apiLeaveTypes.isEmpty) {
             return const Center(
@@ -238,7 +244,6 @@ class _ApplyLeaveScreenState extends State<ApplyLeaveScreen> {
                                     ? AppColors.black87
                                     : (_fromDate != null
                                           ? AppColors.black54
-                                          
                                           : AppColors.black26),
                               ),
                             ),
