@@ -21,8 +21,10 @@ class EmployeeListScreen extends StatefulWidget {
 
 class _EmployeeListScreenState extends State<EmployeeListScreen> {
   @override
-  void initState() {super.initState();
+  void initState() {
+    super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
     final String mainrole =
@@ -37,11 +39,7 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
       child: Scaffold(
         backgroundColor: AppColors.screenBg,
         drawer: mainrole == 'HR' ? HrDrawer() : CompanyDrawer(),
-        appBar: AppBar(
-          title: Text(" Employees List"),
-          centerTitle: true,
-         
-        ),
+        appBar: AppBar(title: Text(" Employees List"), centerTitle: true),
 
         // 2. Wrap body inside a Listener to handle one-time popups (Toasts/Dialogs) smoothly
         body: BlocListener<EmployeeListBloc, EmployeeListState>(
@@ -108,30 +106,35 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
                                 ),
                               ),
                               SizedBox(width: 5),
-                              
+
                               Expanded(
                                 child: Padding(
-                                                            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-                                                            child: TextField(
-                                onChanged: (query) {
-                                  // Example: context.read<EmployeeListBloc>().add(SearchEmployeeEvent(query));
-                                },
-                                decoration: InputDecoration(
-                                  hintText: 'Search employees...',
-                                  prefixIcon: const Icon(Icons.search),
-                                  filled: true,
-                                  fillColor: AppColors.white.withValues(
-                                    alpha: 0.9,
+                                  padding: const EdgeInsets.fromLTRB(
+                                    16,
+                                    16,
+                                    16,
+                                    8,
                                   ),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide.none,
+                                  child: TextField(
+                                    onChanged: (query) {
+                                      // Example: context.read<EmployeeListBloc>().add(SearchEmployeeEvent(query));
+                                    },
+                                    decoration: InputDecoration(
+                                      hintText: 'Search employees...',
+                                      prefixIcon: const Icon(Icons.search),
+                                      filled: true,
+                                      fillColor: AppColors.white.withValues(
+                                        alpha: 0.9,
+                                      ),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                    ),
                                   ),
                                 ),
-                                                            ),
-                                                          ),
                               ),
-                          SizedBox(width: 5),
+                              SizedBox(width: 5),
                               PopupMenuButton<String>(
                                 icon: const Icon(Icons.filter_alt),
                                 onSelected: (value) {
@@ -159,7 +162,7 @@ class _EmployeeListScreenState extends State<EmployeeListScreen> {
                               ),
                             ],
                           ),
-                          
+
                           const SizedBox(height: 8),
 
                           Expanded(
@@ -411,26 +414,27 @@ class EmployeeCard extends StatelessWidget {
                   Row(
                     children: [
                       Expanded(
+                        
                         child: InkWell(
                           onTap: onStatusTap,
                           child: Container(
-                            padding: EdgeInsets.symmetric(vertical: 5),
+                            padding: EdgeInsets.all(10),
                             decoration: BoxDecoration(
                               color: emp.status == "ACTIVE"
                                   ? AppColors.successTint
                                   : AppColors.warningTint,
                               borderRadius: BorderRadius.circular(20),
                             ),
-                            child: Column(
+                            child: Row(
                               children: [
-                                Row(
+                                Icon(
+                                  Icons.person,
+                                  color: AppColors.textSecondaryColor,
+                                ),
+                                const SizedBox(width: 5),
+                                Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(
-                                      Icons.person,
-                                      color: AppColors.textSecondaryColor,
-                                    ),
-                                    const SizedBox(width: 5),
                                     Text(
                                       "STATUS",
                                       style: TextStyle(
@@ -438,17 +442,18 @@ class EmployeeCard extends StatelessWidget {
                                         fontSize: 11,
                                       ),
                                     ),
+                                    Text(
+                                      emp.status == "ACTIVE"
+                                          ? "ACTIVE"
+                                          : "PENDING",
+                                      style: TextStyle(
+                                        color: emp.status == "ACTIVE"
+                                            ? AppColors.successColor
+                                            : AppColors.amberDark,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                                   ],
-                                ),
-
-                                Text(
-                                  emp.status == "ACTIVE" ? "ACTIVE" : "PENDING",
-                                  style: TextStyle(
-                                    color: emp.status == "ACTIVE"
-                                        ? AppColors.successColor
-                                        : AppColors.amberDark,
-                                    fontWeight: FontWeight.bold,
-                                  ),
                                 ),
                               ],
                             ),
@@ -460,39 +465,34 @@ class EmployeeCard extends StatelessWidget {
 
                       Expanded(
                         child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 5),
+                          padding: EdgeInsets.all(10),
                           decoration: BoxDecoration(
                             color: AppColors.blueTint,
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: Column(
+                          child: Row(
                             children: [
-                              Row(
+                              Icon(Icons.verified_user, color: AppColors.info),
+                              const SizedBox(width: 5),
+                              Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(
-                                    Icons.verified_user,
-                                    color: AppColors.info,
+                                  Text(
+                                    "OnboardingCompleted",
+                                    style: TextStyle(
+                                      color: AppColors.textSecondaryColor,
+                                      fontSize: 11,
+                                    ),
                                   ),
-                                  const SizedBox(width: 5),
-                                  Expanded(
-                                    child: Text(
-                                      "onboardingCompleted",
-                                      style: TextStyle(
-                                        color: AppColors.textSecondaryColor,
-                                        fontSize: 11,
-                                      ),
+
+                                  Text(
+                                    emp.bgvStatus ? "Yes" : "No",
+                                    style: TextStyle(
+                                      color: AppColors.info,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ],
-                              ),
-
-                              Text(
-                                emp.bgvStatus ? "Yes" : "No",
-                                style: TextStyle(
-                                  color: AppColors.info,
-                                  fontWeight: FontWeight.bold,
-                                ),
                               ),
                             ],
                           ),

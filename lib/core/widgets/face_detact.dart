@@ -269,8 +269,8 @@ class _FaceCaptureViewState extends State<FaceCaptureView>
                           ? AppColors.  successColor
                           : AppColors.danger;
                       return Container(
-                        width: 270,
-                        height: 350,
+                        width: 400,
+                        height: 400,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(180),
                           border: Border.all(color: statusColor, width: 3.5),
@@ -354,7 +354,7 @@ class _FaceCaptureViewState extends State<FaceCaptureView>
                               ? AppColors.successColor
                               : AppColors.grey.shade900,
                           child: Icon(
-                            Icons.fingerprint,
+                            Icons.face_retouching_natural,
                             color: canCapture
                                 ? AppColors.white
                                 : AppColors.grey.shade600,

@@ -24,7 +24,7 @@ class AdminShell extends StatelessWidget {
         context.go('/admin/dashboard');
         break;
       case 1:
-        context.go('/admin/companies');
+        context.go('/admin/companies/active');
         break;
       case 2:
         context.go('/admin/profile');

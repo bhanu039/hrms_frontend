@@ -8,7 +8,8 @@ abstract class CompanyProfileEvent {
 }
 
 class FetchCompanyProfileEvent extends CompanyProfileEvent {
-  const FetchCompanyProfileEvent();
+  final String? id;
+  const FetchCompanyProfileEvent(this.id);
 
   @override
   List<Object?> get props => [];
@@ -52,4 +53,9 @@ class DeleteCompanyDocumentEvent extends CompanyProfileEvent {
 
   @override
   List<Object?> get props => [documentId];
+}
+
+class AproveCompanyEvent extends CompanyProfileEvent {
+  final String companyid;
+  const AproveCompanyEvent(this.companyid);
 }

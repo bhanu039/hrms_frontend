@@ -15,17 +15,16 @@ class AuthAppStarted extends AuthEvent {}
 class AuthLoginRequested extends AuthEvent {
   final String email;
   final String password;
+  final String fcm;
 
-  AuthLoginRequested({required this.email, required this.password});
+  AuthLoginRequested({required this.email, required this.password,required this.fcm});
 }
 
 class AuthLogoutRequested extends AuthEvent {
   AuthLogoutRequested() {
-    
-    
     SessionService.clearSession();
   }
-} 
+}
 
 class UpdateSession extends AuthEvent {
   final UserSession session;

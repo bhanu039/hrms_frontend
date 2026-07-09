@@ -9,12 +9,17 @@ import 'package:goexperts/core/state/auth/auth_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:goexperts/core/widgets/face_detact.dart';
 import 'package:goexperts/core/set_password_screen.dart';
-import '../../users/admin/industry_Type/Industry_repo.dart';
-import '../../users/admin/industry_Type/bloc/industry_Type_bloc.dart';
-import '../../users/admin/industry_Type/data/industry_Type_screen.dart';
+import '../../List_Types/list_repo.dart';
+import '../../List_Types/bloc/list_Type_bloc.dart';
+import '../../List_Types/data/list_Type_screen.dart';
+import '../../delete/delete_screen.dart';
+import '../../forgot_password_screen.dart';
+import '../../privacy/privacyPolicys/bloc/privacy_policy_bloc.dart';
+import '../../privacy/privacyPolicys/bloc/privacy_policy_event.dart';
+import '../../privacy/privacyPolicys/data/privacy_policy_screen.dart';
+import '../../privacy/privacyPolicys/privacy_policy_repository.dart';
 import '../../users/employe/emp_full_reg/bloc/emp_full_bloc.dart';
 import '../../users/employe/emp_full_reg/screen/emp_full_reg_ui.dart';
-import '../../leaves/leave_types/bloc/leave_type_bloc.dart';
 import '../../leaves/leave_repo.dart';
 import '../../leaves/leave_types/data/leave_type_screen.dart';
 import '../../leaves/leaves_request/bloc/leave_request_bloc.dart';
@@ -23,7 +28,6 @@ import '../../leaves/leaves_views/bloc/leaves_view_bloc.dart';
 import '../../leaves/leaves_views/data/leaves_view.screen.dart';
 import '../../users/admin/Screens/adminSell_tabs.dart';
 import '../../users/admin/Screens/admin_prifile.dart';
-import '../../users/admin/Screens/company_view_screen.dart';
 import '../../users/admin/Screens/dashboard_screen.dart';
 import '../../users/admin/Screens/subscription_plans.dart';
 import '../../users/admin/admin_profile/profile_cubit.dart';
@@ -102,18 +106,12 @@ GoRouter createRouter(AuthBloc authBloc) {
 
       // While auth state is still loading, let splash/login stay.
       if (status == AuthStatus.initial || status == AuthStatus.loading) {
-
-        return  isLogin ? null : '/';
+        return isLogin ? null : '/';
       }
 
       // If auth is resolved and we're on splash, redirect immediately.
 
-      
-
       // 2️⃣ Not logged in → login
-      if (!isLoggedIn) {
-        return isLogin ? null : '/login';
-      }
 
       // If logged in and currently on the login page, redirect to role dashboard
       if (isLogin) {
@@ -149,6 +147,19 @@ GoRouter createRouter(AuthBloc authBloc) {
           return const FaceCaptureView();
         },
       ),
+      GoRoute(
+        path: "/privacy-policy/:data",
+        builder: (context, state) {
+          final String? newData = state.pathParameters['data'];
+
+          return BlocProvider(
+            create: (_) =>
+                PrivacyPolicyBloc(PrivacyPolicyRepository())
+                  ..add(FetchPrivacyPolicy(data: newData)),
+            child: PrivacyPolicyScreen(titles: newData),
+          );
+        },
+      ),
 
       GoRoute(
         path: '/setup-password',
@@ -166,39 +177,73 @@ GoRouter createRouter(AuthBloc authBloc) {
           );
         },
       ),
-      GoRoute(path:"/leaves/requests",builder: (context, state) {
-        return BlocProvider(
-          create: (_) => LeaveBloc( LeaveRepository()),
-          child: const ApplyLeaveScreen(),
-        );
-      },),
+      GoRoute(
+        path: "/leaves/requests",
+        builder: (context, state) {
+          return BlocProvider(
+            create: (_) => LeaveBloc(LeaveRepository()),
+            child: const ApplyLeaveScreen(),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/deleteAccount',
+        builder: (_, _) => const DeleteAccountScreen(),
+      ),
+      GoRoute(
+        path: '/ForgotPassword',
+        builder: (_, _) => const ForgotPasswordScreen(),
+      ),
 
-      
-       GoRoute(
-            path: '/leaveTypes',
-            builder: (context, state) => BlocProvider(
-              create: (_) => LeaveBloc( LeaveRepository()),
-              child: const LeaveTypesScreen(),
-            ),
-          ),
-           GoRoute(
-            path: '/IndustryType',
-            builder: (context, state) => BlocProvider(
-              create: (_) => IndustryTypeBloc(repository:  IndustryRepository()),
-              child: const IndustryTypesScreen(),
-            ),
-          ),
+      GoRoute(
+        path: '/leaveTypes',
+        builder: (context, state) => BlocProvider(
+          create: (_) => LeaveBloc(LeaveRepository()),
+          child: const LeaveTypesScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/IndustryType/:listType',
+        builder: (context, state) => BlocProvider(
+          create: (_) => ListTypeBloc(repository: ListRepository()),
+          child: const ListTypesScreen(listType: "industry"),
+        ),
+      ),
+      GoRoute(
+        path: '/departmentsType/:id/:name',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          final name = state.pathParameters['name']!;
 
-           GoRoute(
-            path: '/Leaves/:listType',
-            builder: (context, state) {
-              final listType = state.pathParameters['listType'];
-              return BlocProvider(
-                create: (_) => LeavesViewBloc(repository: LeaveRepository()),
-                child: LeavesViewScreen(listType: listType!),
-              );
-            },
-          ),
+          return BlocProvider(
+            create: (_) => ListTypeBloc(repository: ListRepository()),
+            child: ListTypesScreen(listTypeid: id, listType: name),
+          );
+        },
+      ),
+      GoRoute(
+        path: '/designationsType/:id/:name',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          final name = state.pathParameters['name']!;
+
+          return BlocProvider(
+            create: (_) => ListTypeBloc(repository: ListRepository()),
+            child: ListTypesScreen(listTypeid: id, listType: name),
+          );
+        },
+      ),
+
+      GoRoute(
+        path: '/Leaves/:listType',
+        builder: (context, state) {
+          final listType = state.pathParameters['listType'];
+          return BlocProvider(
+            create: (_) => LeavesViewBloc(repository: LeaveRepository()),
+            child: LeavesViewScreen(listType: listType!),
+          );
+        },
+      ),
 
       GoRoute(
         path: '/hr/onbording',
@@ -229,10 +274,11 @@ GoRouter createRouter(AuthBloc authBloc) {
       ),
       GoRoute(
         // The colon (:) creates a dynamic path parameter named employeeId
-        path: '/onboarding/review/:employeeId',
+        path: '/onboarding/review/:employeeId/:screen',
         builder: (context, state) {
           // Extract the dynamic parameter value safely from pathParameters
           final String employeeId = state.pathParameters['employeeId'] ?? '';
+          final String screen = state.pathParameters['screen']!;
 
           // Wrap the screen inside BlocProvider to manage local memory states
           return BlocProvider(
@@ -241,7 +287,7 @@ GoRouter createRouter(AuthBloc authBloc) {
                   repository:
                       OnboardingRepository(), // Inject the API repo layer
                 )..add(
-                  LoadOnboardingDetails(employeeId),
+                  LoadOnboardingDetails(employeeId, screen),
                 ), // Instantly triggers the GET API call on load
             child: const OnboardingReviewScreen(),
           );
@@ -259,13 +305,15 @@ GoRouter createRouter(AuthBloc authBloc) {
             builder: (_, _) => const AdminDashboardScreen(),
           ),
           GoRoute(
-            path: '/admin/companies',
+            path: '/admin/companies/:status',
             builder: (context, state) => BlocProvider(
               create: (_) => CompaniesBloc(),
-              child: const CompaniesScreen(),
+              child: CompaniesScreen(
+                data: state.pathParameters['status'] ?? 'active',
+              ),
             ),
           ),
-         
+
           GoRoute(
             path: '/admin/profile',
             builder: (context, state) => BlocProvider<ProfileCubit>(
@@ -273,13 +321,37 @@ GoRouter createRouter(AuthBloc authBloc) {
               child: const AdminProfileScreen(),
             ),
           ),
+           GoRoute(
+            path: '/admin/reviewscreen/:id/:edit',
+            builder: (context, state) {
+              final id = state.pathParameters['id'];
+              print(state.pathParameters['edit']);
+
+              final isEditable = state.uri.queryParameters['edit']=="true"?true:false;
+              print(isEditable);
+
+              return BlocProvider(
+                create: (_) =>
+                    CompanyProfileBloc(apiService: ApiService())
+                      ..add(FetchCompanyProfileEvent(id)),
+                child: CompanyProfileScreen(isEditable:isEditable ,id:id),
+              );
+            },
+          ),
 
           GoRoute(
-            path: '/admin/deletedcompanies',
+            path: '/admin/companies/:status',
             builder: (context, state) => BlocProvider(
               // Injecting the BLoC and immediately triggering the first data fetch
-              create: (context) => CompaniesBloc()..add(FetchCompanies()),
-              child: const CompaniesScreen(),
+              create: (context) => CompaniesBloc()
+                ..add(
+                  FetchCompanies(
+                    data: state.pathParameters['status'] ?? 'active',
+                  ),
+                ),
+              child: CompaniesScreen(
+                data: state.pathParameters['status'] ?? 'active',
+              ),
             ),
           ),
 
@@ -296,14 +368,6 @@ GoRouter createRouter(AuthBloc authBloc) {
                       ..add(LoadIndustries()),
                 child: const AddCompanyScreen(),
               );
-            },
-          ),
-          GoRoute(
-            path: '/company-view',
-            builder: (context, state) {
-              final company = state.extra as Map<String, dynamic>;
-
-              return CompanyViewScreen(company: company);
             },
           ),
         ],
@@ -327,17 +391,22 @@ GoRouter createRouter(AuthBloc authBloc) {
           ),
 
           GoRoute(
-            path: '/company/profile',
+            path: '/company/profile/:id/:edit',
             builder: (context, state) {
+              final id = state.uri.queryParameters['id'];
+              print(state.uri.queryParameters['edit']);
+
+              final isEditable = state.uri.queryParameters['edit'];
+              print(isEditable);
+
               return BlocProvider(
                 create: (_) =>
                     CompanyProfileBloc(apiService: ApiService())
-                      ..add(const FetchCompanyProfileEvent()),
-                child: const CompanyProfileScreen(),
+                      ..add(FetchCompanyProfileEvent(id)),
+                child: CompanyProfileScreen(isEditable: true),
               );
             },
           ),
-         
 
           GoRoute(
             path: '/company/subscription',
@@ -358,6 +427,15 @@ GoRouter createRouter(AuthBloc authBloc) {
               final String? role = data?['role'];
 
               return EmployeeListScreen(role: role!);
+            },
+          ),
+          GoRoute(
+            path: '/company/attendance',
+            builder: (context, state) {
+              return BlocProvider(
+                create: (_) => AttendanceBloc()..add(AttendanceStarted()),
+                child: const EmployeeAttendanceScreen(),
+              );
             },
           ),
           GoRoute(
@@ -458,7 +536,6 @@ GoRouter createRouter(AuthBloc authBloc) {
               );
             },
           ),
-          
 
           GoRoute(
             path: '/emp/profile',

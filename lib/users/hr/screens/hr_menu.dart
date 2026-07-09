@@ -58,12 +58,12 @@ class HrDrawer extends StatelessWidget {
                 DrawerWidgets.menuTile(
                   context,
                   icon: Icons.settings,
-                  title: 'leaves management',
+                  title: 'Leaves Management',
                   subtitle: 'Account preferences',
                   subItems: [
                     MenuSubItem(
                       icon: Icons.people,
-                      title: 'leaves Request',
+                      title: 'Leaves Request',
 
                       onTap: () {
                         context.push('/leaves/requests');
@@ -71,7 +71,7 @@ class HrDrawer extends StatelessWidget {
                     ),
                     MenuSubItem(
                       icon: Icons.people,
-                      title: 'employee leave records',
+                      title: 'Employee Leave Records',
 
                       onTap: () {
                         context.push('/leaves/company');
@@ -113,6 +113,33 @@ class HrDrawer extends StatelessWidget {
                   icon: Icons.insights,
                   title: 'Reports & Analytics',
                   subtitle: 'Performance and activity',
+                ),
+                 DrawerWidgets.menuTile(
+                  context,
+                  icon: Icons.dangerous,
+                  title: 'DeleteAccount',
+                  subtitle: 'DeleteAccount Settings',
+                  onTap: () {
+                     context.push('/deleteAccount');
+                  },
+                ),
+                DrawerWidgets.menuTile(
+                  context,
+                  icon: Icons.pages_outlined,
+                  title: 'Privacy Policy',
+                  subtitle: 'Privacy Settings',
+                  onTap: () {
+                     context.push('/privacy-policy/Privacy');
+                  },
+                ),
+                 DrawerWidgets.menuTile(
+                  context,
+                  icon: Icons.pages,
+                  title: 'Terms & Conditions',
+                  subtitle: 'Terms & Conditions',
+                  onTap: () {
+                     context.push('/privacy-policy/Terms');
+                  },
                 ),
 
                 DrawerWidgets.menuTile(
@@ -208,6 +235,7 @@ class HrDrawer extends StatelessWidget {
               ],
             ),
           ),
+
           Padding(
             padding: const EdgeInsets.all(12),
             child: DrawerWidgets.menuTile(

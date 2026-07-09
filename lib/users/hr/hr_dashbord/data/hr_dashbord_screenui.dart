@@ -130,6 +130,7 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
     );
     if (work != null) {
       setState(() {
+        
         iswork = true;
         workType = work["title"];
         workDis = work["description"];
@@ -362,7 +363,7 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
                         ? value
                         : "00:00:00";
                     return Text(
-                     displayTime,
+                      displayTime,
                       style: const TextStyle(
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
@@ -375,7 +376,9 @@ class _HrDashboardScreenState extends State<HrDashboardScreen> {
                 SwipeCheckInButton(
                   isCheckedIn: isCheckedIn!,
                   isCheckedOut: isCheckedOut!,
+                 
                   onCheckIn: () async {
+                     isLoading = true;
                     _checkIn();
                   },
                   onCheckOut: () async {

@@ -1,40 +1,21 @@
 {
   "project_info": {
-    "project_number": "405276388255",
-    "project_id": "goexperts-employees",
-    "storage_bucket": "goexperts-employees.firebasestorage.app"
+    "project_number": "229268993676",
+    "project_id": "be-vision",
+    "storage_bucket": "be-vision.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:405276388255:android:6ae704ed5e4a89d812ebaa",
+        "mobilesdk_app_id": "1:229268993676:android:33ba6f886c1ece06f36da9",
         "android_client_info": {
-          "package_name": "com.example.goexperts"
+          "package_name": "com.bevision.goexperts"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDDlP1L1t8Ra8Q_P8Ixl5BPgM4c3f7G50c"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:405276388255:android:0d8f47f12df40e8f12ebaa",
-        "android_client_info": {
-          "package_name": "com.goexperts.employees"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyDDlP1L1t8Ra8Q_P8Ixl5BPgM4c3f7G50c"
+          "current_key": "AIzaSyAgRtrXnWellE0PRIeu77k--2OLKH_DxKY"
         }
       ],
       "services": {

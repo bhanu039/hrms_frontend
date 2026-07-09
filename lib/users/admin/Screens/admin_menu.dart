@@ -50,7 +50,7 @@ class AdminDrawer extends StatelessWidget {
                   title: 'Companies List',
                   subtitle: 'View and manage companies',
                   onTap: () {
-                    context.push('/admin/companies');
+                    context.push('/admin/companies/active');
                   },
                 ),
 
@@ -60,7 +60,7 @@ class AdminDrawer extends StatelessWidget {
                   title: ' Deleted Companies',
                   subtitle: 'View and manage companies deleted',
                   onTap: () {
-                    context.push("/admin/deletedcompanies");
+                    context.push("/admin/companies/deleted");
                   },
                 ),
                 DrawerWidgets.sectionTitle('Platform'),
@@ -78,29 +78,12 @@ class AdminDrawer extends StatelessWidget {
                   context,
                   icon: Icons.people,
                   title: 'Industries',
-                  subtitle: 'Manage industries',
+                  subtitle: 'Manage industries & departments& designations',
                   onTap: () {
-                    context.push("/IndustryType");
+                    context.push("/IndustryType/industry");
                   },
                 ),
-                DrawerWidgets.menuTile(
-                  context,
-                  icon: Icons.people,
-                  title: 'Departments',
-                  subtitle: 'Manage departments',
-                  onTap: () {
-                    DrawerWidgets.showComingSoon(context, 'Departments');
-                  },
-                ),
-                DrawerWidgets.menuTile(
-                  context,
-                  icon: Icons.people,
-                  title: 'Designations',
-                  subtitle: 'Manage designations',
-                  onTap: () {
-                    DrawerWidgets.showComingSoon(context, 'Designations');
-                  },
-                ),
+
                 DrawerWidgets.menuTile(
                   context,
                   icon: Icons.bar_chart,
@@ -113,6 +96,34 @@ class AdminDrawer extends StatelessWidget {
                     );
                   },
                 ),
+                DrawerWidgets.menuTile(
+                  context,
+                  icon: Icons.pages_outlined,
+                  title: 'Privacy Policy',
+                  subtitle: 'Privacy Settings',
+                  onTap: () {
+                     context.push('/privacy-policy/Privacy');
+                  },
+                ),
+                 DrawerWidgets.menuTile(
+                  context,
+                  icon: Icons.pages,
+                  title: 'Terms & Conditions',
+                  subtitle: 'Terms & Conditions',
+                  onTap: () {
+                     context.push('/privacy-policy/Terms');
+                  },
+                ),
+                 DrawerWidgets.menuTile(
+                  context,
+                  icon: Icons.dangerous,
+                  title: 'Delete Account',
+                  subtitle: 'DeleteAccount Settings',
+                  onTap: () {
+                     context.push('/deleteAccount');
+                  },
+                ),
+
 
                 DrawerWidgets.menuTile(
                   context,
@@ -138,11 +149,10 @@ class AdminDrawer extends StatelessWidget {
                       },
                     ),
                     MenuSubItem(
-                      icon: Icons.tune,
-                      title: 'General Settings',
+                      icon: Icons.dangerous,
+                      title: 'Deleted Settings',
                       onTap: () {
-                        Navigator.pop(context);
-                        Navigator.pushNamed(context, '/settings');
+                        context.push('/deleteAccount');
                       },
                     ),
                   ],
@@ -173,6 +183,3 @@ class AdminDrawer extends StatelessWidget {
     );
   }
 }
-
-
-

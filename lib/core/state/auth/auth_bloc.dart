@@ -35,6 +35,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       email: await SessionService.getEmail() ?? "",
       isFullRegistered: await SessionService.getisFullRegistered(),
       createdAt: "",
+
       companyid: await SessionService.getCompanyID() ?? "",
     );
 
@@ -50,6 +51,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     try {
       final response = await ApiService.login(
+        fcm:event.fcm,
         email: event.email,
         password: event.password,
       );

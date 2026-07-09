@@ -74,7 +74,7 @@ class CompanyShell extends StatelessWidget {
                   icon: Icons.person_rounded,
                   label: "Profile",
                   active: index == 3,
-                  onTap: () => context.go('/company/profile'),
+                  onTap: () => context.go('/company/profile/id:/edit:true'),
                 ),
               ],
             ),

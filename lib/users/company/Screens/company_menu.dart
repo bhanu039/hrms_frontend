@@ -37,7 +37,7 @@ class CompanyDrawer extends StatelessWidget {
                   subtitle: 'Details, address, logo',
                   onTap: () {
                     // Navigator.pop(context);
-                    context.push('/company/profile');
+                    context.push('/company/profile/id/true');
                   },
                 ),
                
@@ -161,26 +161,38 @@ class CompanyDrawer extends StatelessWidget {
                 ),
                 DrawerWidgets.menuTile(
                   context,
+                  icon: Icons.dangerous,
+                  title: 'DeleteAccount',
+                  subtitle: 'DeleteAccount Settings',
+                  onTap: () {
+                     context.push('/deleteAccount');
+                  },
+                ),
+                DrawerWidgets.menuTile(
+                  context,
+                  icon: Icons.pages_outlined,
+                  title: 'Privacy Policy',
+                  subtitle: 'Privacy Settings',
+                  onTap: () {
+                     context.push('/privacy-policy/Privacy');
+                  },
+                ),
+                 DrawerWidgets.menuTile(
+                  context,
+                  icon: Icons.pages,
+                  title: 'Terms & Conditions',
+                  subtitle: 'Terms & Conditions',
+                  onTap: () {
+                     context.push('/privacy-policy/Terms');
+                  },
+                ),
+                DrawerWidgets.menuTile(
+                  context,
                   icon: Icons.settings,
                   title: 'Settings',
                   subtitle: 'Account preferences',
                   subItems: [
-                    MenuSubItem(
-                      icon: Icons.people,
-                      title: 'Departments',
-
-                      onTap: () {
-                        DrawerWidgets.showComingSoon(context, 'Departments');
-                      },
-                    ),
-                    MenuSubItem(
-                      icon: Icons.people,
-                      title: 'Designations',
-
-                      onTap: () {
-                        DrawerWidgets.showComingSoon(context, 'Designations');
-                      },
-                    ),
+                   
                     
 
                     MenuSubItem(

@@ -5,13 +5,14 @@ class AppConstants {
   AppConstants._();
   static const String appName = "GoExperts";
   static const String appVersion = "1.0.0";
-  static const String apiBaseUrl = "https://goexperts-hrms-coun.onrender.com/";
+  static const String apiBaseUrl = "https://bevisionhrms.goexperts.in/";
   static const String apiBaseUrl2 =
-      "https://goexperts-hrms-coun.onrender.com/api/";
+      "https://bevisionhrms.goexperts.in/api/";
 
-  static const String logo = "assets/images/newLogo.png";
-  static const String bannerLogo = "assets/images/bannerlogo.png";
-  static const String fulllogo = "assets/images/FullLogo.png";
+  static const String logo = "assets/images/Be-VisionIcon.png";
+  static const String bannerLogo = "assets/images/FullLogo-Be-Vision.png";
+  static const String fulllogo = "assets/images/fulllogonew.png";
+  static const String appVideo='assets/images/splash.mp4';
 
   static const Color primaryColor = AppColors.primary;
   static const Color secondaryColor = AppColors.secondary;

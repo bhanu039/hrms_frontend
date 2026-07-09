@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../core/services/api_service.dart';
+import '../company_list_repo.dart';
 import 'company_list_event.dart';
 import 'company_list_state.dart';
 
@@ -25,7 +26,7 @@ class CompaniesBloc extends Bloc<CompaniesEvent, CompaniesState> {
   ) async {
     emit(CompaniesLoading());
     try {
-      var result = await ApiService.getdeletedCompanies();
+      var result = await CompanyListRepo.getCompanies(event.data);
       _allCompanies = result["companies"] ?? [];
       emit(CompaniesLoaded(
         companies: _allCompanies,
@@ -62,11 +63,10 @@ class CompaniesBloc extends Bloc<CompaniesEvent, CompaniesState> {
     Emitter<CompaniesState> emit,
   ) async {
     try {
-      final ApiService apiService = ApiService();
-      bool success = await apiService.restoreCompany(event.companyId);
+      bool success = await CompanyListRepo.restoreCompany(event.companyId);
       if (success) {
         emit(DeletedCompaniesActionSuccess("Company restored successfully"));
-        add(FetchCompanies());
+        add(FetchCompanies(data: 'active'));
       } else {
         emit(DeletedCompaniesError("Restore failed"));
       }
@@ -80,10 +80,10 @@ class CompaniesBloc extends Bloc<CompaniesEvent, CompaniesState> {
     Emitter<CompaniesState> emit,
   ) async {
     try {
-      bool success = await ApiService.deleteCompany(event.companyId);
+      bool success = await CompanyListRepo.deleteCompany(event.status, event.companyId);
       if (success) {
         emit(DeletedCompaniesActionSuccess("Company deleted permanently"));
-        add(FetchCompanies());
+        add(FetchCompanies(data: 'active'));
       } else {
         emit(DeletedCompaniesError("Delete failed"));
       }

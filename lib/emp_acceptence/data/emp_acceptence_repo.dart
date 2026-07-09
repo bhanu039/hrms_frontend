@@ -4,12 +4,14 @@ import 'package:goexperts/core/services/api_client.dart';
 class OnboardingRepository {
   /// API 1: GET /api/onboarding/review/:employeeId
   /// Fetches the complete profile and verification document list
-  Future<Map<String, dynamic>> getEmployeeReviewData(String employeeId) async {
+  Future<Map<String, dynamic>> getReviewData(String id, String? screen) async {
     try {
-      print(employeeId);
-      final response = await ApiClient.dio.get(
-        'api/onboarding/review/$employeeId',
-      );print(response);
+      final endpoint = screen == "company"
+          ? 'api/onboarding/review/$id'
+          : 'api/onboarding/review/$id';
+      print(id);
+      final response = await ApiClient.dio.get(endpoint);
+      print(response);
 
       if (response.statusCode == 200) {
         print(response);
@@ -24,6 +26,11 @@ class OnboardingRepository {
       print(errorMsg);
       throw Exception(errorMsg);
     }
+  }
+
+  static Future<Response> activateCompany(String id) async {
+    final response = await ApiClient.dio.post("api/company/activate/$id");
+    return response;
   }
 
   /// API 2: POST /api/onboarding/document-status

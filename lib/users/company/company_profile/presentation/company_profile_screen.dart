@@ -17,9 +17,10 @@ import '../widgets/company_overview_widget.dart';
 import '../widgets/company_subscription_widget.dart';
 
 class CompanyProfileScreen extends StatefulWidget {
+  final String? id;
   final bool? isEditable;
 
-  const CompanyProfileScreen({Key? key, this.isEditable = true})
+  const CompanyProfileScreen({Key? key, this.isEditable, this.id})
     : super(key: key);
 
   @override
@@ -43,7 +44,7 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
   }
 
   void _fetchProfile() {
-    context.read<CompanyProfileBloc>().add(const FetchCompanyProfileEvent());
+    context.read<CompanyProfileBloc>().add(FetchCompanyProfileEvent(widget.id));
   }
 
   @override
@@ -106,12 +107,12 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
           if (state is CompanyProfileError) {
             return Scaffold(
               appBar: AppBar(
-                title: const Text(
-                  'Company Profile',
+                title: Text(
+                  widget.id == null ? 'Company Profile' : "Review Screen",
                   style: TextStyle(color: AppColors.primaryColor),
                 ),
               ),
-              drawer: CompanyDrawer(),
+              drawer: widget.id == null ? CompanyDrawer() : null,
               body: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -160,12 +161,12 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
             _editingProfile = state.profile;
 
             return Scaffold(
-              drawer: CompanyDrawer(),
+              drawer: widget.id == null ? CompanyDrawer() : null,
               appBar: AppBar(
                 elevation: 0,
                 backgroundColor: AppColors.backgroundColor,
-                title: const Text(
-                  'Company Profile',
+                title: Text(
+                  widget.id == null ? 'Company Profile' : "Review Screen",
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -174,67 +175,103 @@ class _CompanyProfileScreenState extends State<CompanyProfileScreen>
                 ),
                 centerTitle: false,
                 actions: [
-                  if (widget.isEditable == true)
-                    Padding(
-                      padding: const EdgeInsets.only(right: 16.0),
-                      child: Center(
-                        child: GestureDetector(
-                          onTap: () async {
-                            final authBloc = context.read<AuthBloc>();
-                            final goRouter = GoRouter.of(context);
+                  widget.id == null
+                      ? Padding(
+                          padding: const EdgeInsets.only(right: 16.0),
+                          child: Center(
+                            child: GestureDetector(
+                              onTap: () async {
+                                final authBloc = context.read<AuthBloc>();
+                                final goRouter = GoRouter.of(context);
 
-                            authBloc.add(AuthLogoutRequested());
-                            await Future.delayed(
-                              const Duration(milliseconds: 100),
-                            );
-                            if (!mounted) return;
-                            goRouter.go('/login');
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
+                                authBloc.add(AuthLogoutRequested());
+                                await Future.delayed(
+                                  const Duration(milliseconds: 100),
+                                );
+                                if (!mounted) return;
+                                goRouter.go('/login');
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.errorColor,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Text(
+                                  'Logout',
+                                  style: TextStyle(
+                                    color: AppColors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
                             ),
-                            decoration: BoxDecoration(
-                              color: AppColors.errorColor,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: const Text(
-                              'Logout',
-                              style: TextStyle(
-                                color: AppColors.white,
-                                fontWeight: FontWeight.bold,
+                          ),
+                        )
+                      : Padding(
+                          padding: const EdgeInsets.only(right: 16.0),
+                          child: Center(
+                            child: GestureDetector(
+                              onTap: () async {
+                                context.read<CompanyProfileBloc>().add(AproveCompanyEvent(widget.id!));
+                                TopMessage.show(
+                                  context,
+                                  "wait for 24 hrs ",
+                                  color: AppColors.accent,
+                                );
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.errorColor,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Text(
+                                  'Approve',
+                                  style: TextStyle(
+                                    color: AppColors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
-                    ),
                 ],
               ),
-              floatingActionButton: FloatingActionButton(
-                backgroundColor: AppColors.brandBlue,
-                onPressed: () {
-                  if (widget.isEditable == true) {
-                    _toggleEditMode();
-                  } else {
-                    TopMessage.show(
-                      context,
-                      "You don't have permission to edit.",
-                      color: AppColors.errorColor,
-                    );
-                  }
-                },
-                child: const Icon(Icons.edit),
+              floatingActionButton: widget.id == null
+    ? FloatingActionButton(
+        backgroundColor: AppColors.brandBlue,
+        onPressed: () {
+          if (widget.isEditable == true) {
+            _toggleEditMode();
+          } else {
+            TopMessage.show(
+              context,
+              "You don't have permission to edit.",
+              color: AppColors.errorColor,
+            );
+          }
+        },
+        child: const Icon(Icons.edit),
+      )
+    : null,
+              body: SingleChildScrollView(
+                child: _isEditMode
+                    ? CompanyEditWidget(
+                        profile: _editingProfile,
+                        onSave: _handleSaveProfile,
+                        onLogoSelected: _handleLogoSelected,
+                        industryTypes: state.industryTypes,
+                      )
+                    : _buildViewMode(state),
               ),
-              body: _isEditMode
-                  ? CompanyEditWidget(
-                      profile: _editingProfile,
-                      onSave: _handleSaveProfile,
-                      onLogoSelected: _handleLogoSelected,
-                      industryTypes: state.industryTypes,
-                    )
-                  : _buildViewMode(state),
             );
           }
 
@@ -427,7 +464,6 @@ class CompanyDetailsWidget extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8),
       child: Padding(
-        
         padding: const EdgeInsets.all(12),
         child: Row(
           children: [

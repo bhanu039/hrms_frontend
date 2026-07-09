@@ -15,6 +15,7 @@ class CompanyProfileBloc
     on<UpdateCompanyProfileEvent>(_onUpdateProfile);
     on<UploadCompanyDocumentEvent>(_onUploadDocument);
     on<DeleteCompanyDocumentEvent>(_onDeleteDocument);
+    on<AproveCompanyEvent>(_onAproveCompanyEvent);
   }
 
   Future<void> _onFetchProfile(
@@ -23,7 +24,7 @@ class CompanyProfileBloc
   ) async {
     emit(const CompanyProfileLoading());
     try {
-      final profile = await ApiService.getCompanyProfile();
+      final profile = await ApiService.getCompanyProfile(event.id);
       if (profile != null) {
         emit(CompanyProfileLoaded(profile: profile, industryTypes: const []));
       } else {
@@ -33,8 +34,6 @@ class CompanyProfileBloc
       emit(CompanyProfileError(message: e.toString()));
     }
   }
-
-
 
   Future<void> _onUpdateProfile(
     UpdateCompanyProfileEvent event,
@@ -77,7 +76,6 @@ class CompanyProfileBloc
       );
       emit(const CompanyDocumentUploaded());
       // Refresh profile to get updated documents
-      add(const FetchCompanyProfileEvent());
     } catch (e) {
       emit(CompanyProfileError(message: e.toString()));
     }
@@ -91,6 +89,21 @@ class CompanyProfileBloc
       // Call delete endpoint when available
       // await ApiService.deleteCompanyDocument(event.documentId);
       emit(const CompanyDocumentUploaded(message: "Document deleted"));
+    } catch (e) {
+      emit(CompanyProfileError(message: e.toString()));
+    }
+  }
+
+  Future<void> _onAproveCompanyEvent(
+    AproveCompanyEvent event,
+    Emitter<CompanyProfileState> emit,
+  ) async {
+    try {
+       await ApiService.activateCompany(event.companyid);
+
+      // Call delete endpoint when available
+      // await ApiService.deleteCompanyDocument(event.documentId);
+      emit(const CompanyDocumentUploaded(message: "Successfully Approved "));
     } catch (e) {
       emit(CompanyProfileError(message: e.toString()));
     }

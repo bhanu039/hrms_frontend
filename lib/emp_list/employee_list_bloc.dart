@@ -77,7 +77,7 @@ class EmployeeListBloc extends Bloc<EmployeeListEvent, EmployeeListState> {
       final data = await ApiService.getEmployees(event.role, event.dataType);
       emit(state.copyWith(status: EmployeeListStatus.success, employees: data));
     } catch (e) {
-      emit(state.copyWith(status: EmployeeListStatus.failure));
+      emit(state.copyWith(status: EmployeeListStatus.failure,alertMessage: "Failed to load profile"));
     }
   }
 

@@ -22,42 +22,15 @@ class ApiService {
 
   // 🔐 LOGIN
   static Future<Response> login({
+    required String fcm,
     required String email,
     required String password,
   }) async {
     return await ApiClient.dio.post(
       "api/auth/login",
-      data: {"email": email, "password": password},
+      data: {"email": email, "password": password, "fcmToken": fcm},
       options: Options(validateStatus: (status) => true),
     );
-  }
-
-  static Future<Map<String, dynamic>> getCompanies() async {
-    try {
-      final response = await ApiClient.dio.get("api/company");
-      print("response: ${response.data}");
-      if (response.statusCode == 200 && response.data["success"] == true) {
-        return {"companies": response.data["data"] ?? []};
-      } else {
-        throw Exception("Failed to load companies");
-      }
-    } catch (e) {
-      throw Exception("Error fetching companies: $e");
-    }
-  }
-
-  static Future<Map<String, dynamic>> getdeletedCompanies() async {
-    try {
-      final response = await ApiClient.dio.get("api/company/soft-deleted");
-      print("response: ${response.data}");
-      if (response.statusCode == 200 && response.data["success"] == true) {
-        return {"companies": response.data["data"] ?? []};
-      } else {
-        throw Exception("Failed to load companies");
-      }
-    } catch (e) {
-      throw Exception("Error fetching companies: $e");
-    }
   }
 
   // 🔵 GET ALL PLANS
@@ -118,24 +91,6 @@ class ApiService {
   // 🔴 DELETE PLAN
   static Future<Response> deleteSubscriptionPlan(String id) async {
     return await ApiClient.dio.delete("api/subscription/plans/$id");
-  }
-
-  static Future<bool> softDeleteCompany(String id) async {
-    try {
-      final response = await ApiClient.dio.delete("api/company/$id");
-      return response.statusCode == 200 && response.data["success"] == true;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  static Future<bool> deleteCompany(String id) async {
-    try {
-      final response = await ApiClient.dio.delete("api/company/$id?type=hard");
-      return response.statusCode == 200 && response.data["success"] == true;
-    } catch (e) {
-      return false;
-    }
   }
 
   static Future updateProfile({
@@ -206,9 +161,12 @@ class ApiService {
   }
 
   /// GET COMPANY PROFILE
-  static Future<CompanyProfileData?> getCompanyProfile() async {
+  static Future<CompanyProfileData?> getCompanyProfile(String? id) async {
     try {
-      final response = await ApiClient.dio.get("api/company/profile");
+      final endpoint = id == null
+          ? "api/company/profile"
+          : "api/company/profile/$id";
+      final response = await ApiClient.dio.get(endpoint);
       print("Company Profile Response: ${response.data}");
 
       if (response.statusCode == 200 && response.data["success"] == true) {
@@ -358,12 +316,6 @@ class ApiService {
     final response = await ApiClient.dio.post(
       "api/onboarding/finalize-joining/$id",
     );
-    print("CREATE EMPLOYEE RESPONSE => ${response.data}");
-    return response.data["success"];
-  }
-
-  Future<bool> restoreCompany(String? id) async {
-    final response = await ApiClient.dio.post("api/company/restore/$id");
     print("CREATE EMPLOYEE RESPONSE => ${response.data}");
     return response.data["success"];
   }

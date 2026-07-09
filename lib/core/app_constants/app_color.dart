@@ -41,46 +41,56 @@ extension AppColorShadesExtension on Color {
 class AppColors {
   AppColors._();
 
-  //═══════════════════════════════════════════════
-  // BRAND COLORS
-  //═══════════════════════════════════════════════
-
-  static const Color primary = Color(0xFF044071);
-  static const Color secondary = Color(0xFFFF460C);
+  static const Color primary = Color(0xFF033D8F);      // Brand Blue
+  static const Color secondary = Color(0xFFFF6A00);    // Brand Orange
+  static const Color accent = Color(0xFF12C7B5);       // Brand Teal
 
   //═══════════════════════════════════════════════
   // PRIMARY SHADES
   //═══════════════════════════════════════════════
 
-  static const Color primary50 = Color(0xFFEAF4FB);
-  static const Color primary100 = Color(0xFFD5E8F5);
-  static const Color primary200 = Color(0xFFA8D0EB);
-  static const Color primary300 = Color(0xFF7BB8E1);
-  static const Color primary400 = Color(0xFF4E9FD7);
+  static const Color primary50 = Color(0xFFEAF2FD);
+  static const Color primary100 = Color(0xFFD6E5FB);
+  static const Color primary200 = Color(0xFFACCBF7);
+  static const Color primary300 = Color(0xFF82B1F2);
+  static const Color primary400 = Color(0xFF5897EE);
   static const Color primary500 = primary;
-  static const Color primary600 = Color(0xFF033862);
-  static const Color primary700 = Color(0xFF022E52);
-  static const Color primary800 = Color(0xFF022541);
-  static const Color primary900 = Color(0xFF011A2E);
+  static const Color primary600 = Color(0xFF02367E);
+  static const Color primary700 = Color(0xFF022E6C);
+  static const Color primary800 = Color(0xFF01265A);
+  static const Color primary900 = Color(0xFF011C45);
 
   //═══════════════════════════════════════════════
   // SECONDARY SHADES
   //═══════════════════════════════════════════════
 
-  static const Color secondary50 = Color(0xFFFFF2EC);
-  static const Color secondary100 = Color(0xFFFFE1D5);
-  static const Color secondary200 = Color(0xFFFFC3AB);
-  static const Color secondary300 = Color(0xFFFFA581);
-  static const Color secondary400 = Color(0xFFFF8757);
+  static const Color secondary50 = Color(0xFFFFF3E8);
+  static const Color secondary100 = Color(0xFFFFE2CC);
+  static const Color secondary200 = Color(0xFFFFC599);
+  static const Color secondary300 = Color(0xFFFFA866);
+  static const Color secondary400 = Color(0xFFFF8B33);
   static const Color secondary500 = secondary;
-  static const Color secondary600 = Color(0xFFE63E0B);
-  static const Color secondary700 = Color(0xFFCC370A);
-  static const Color secondary800 = Color(0xFFB33008);
-  static const Color secondary900 = Color(0xFF992907);
-
+  static const Color secondary600 = Color(0xFFE65F00);
+  static const Color secondary700 = Color(0xFFCC5500);
+  static const Color secondary800 = Color(0xFFB34A00);
+  static const Color secondary900 = Color(0xFF993F00);
   //═══════════════════════════════════════════════
   // BACKGROUND
   //═══════════════════════════════════════════════
+   //═══════════════════════════════════════════════
+  // TEAL SHADES
+  //═══════════════════════════════════════════════
+
+  static const Color teal50 = Color(0xFFE8FBF8);
+  static const Color teal100 = Color(0xFFCFF7F1);
+  static const Color teal200 = Color(0xFFA0EEE3);
+  static const Color teal300 = Color(0xFF71E5D5);
+  static const Color teal400 = Color(0xFF42DCC7);
+  static const Color teal500 = accent;
+  static const Color teal600 = Color(0xFF0FAF9F);
+  static const Color teal700 = Color(0xFF0C9587);
+  static const Color teal800 = Color(0xFF0A7A70);
+  static const Color teal900 = Color(0xFF075C54);
 
   static const Color background = Color(0xFFF8FAFC);
   static const Color scaffold = Color(0xFFF5F7FA);

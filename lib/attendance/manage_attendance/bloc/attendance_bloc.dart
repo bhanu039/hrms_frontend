@@ -8,8 +8,8 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
   final AttendenceRepository repository;
 
   AttendanceBloc({AttendenceRepository? repository})
-      : repository = repository ?? AttendenceRepository(),
-        super(const AttendanceState()) {
+    : repository = repository ?? AttendenceRepository(),
+      super(const AttendanceState()) {
     on<AttendanceStarted>(_onStarted);
 
     on<AttendanceSearchChanged>((event, emit) {
@@ -49,12 +49,9 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
     Emitter<AttendanceState> emit,
   ) async {
     try {
-      emit(state.copyWith(
-        isLoading: true,
-        currentPage: 1,
-      ));
+      emit(state.copyWith(isLoading: true, currentPage: 1));
 
-      final response = await repository.getEmployeesAttendence(
+      final response = await repository.getEmployeesAttendance(
         currentPage: 1,
         search: state.search,
         status: state.status,
@@ -70,11 +67,7 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
         ),
       );
     } catch (e) {
-      emit(
-        state.copyWith(
-          isLoading: false,
-        ),
-      );
+      emit(state.copyWith(isLoading: false));
     }
   }
 
@@ -89,18 +82,16 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
         eid: event.employeeId,
       );
 
-      emit(
-        state.copyWith(
-          isLoading: false,
-          fullAttendence: response,
-        ),
-      );
-    } catch (e) {
-      emit(
-        state.copyWith(
-          isLoading: false,
-        ),
-      );
+      print("Response: $response");
+
+      emit(state.copyWith(isLoading: false, fullAttendence: response));
+
+      print("State updated");
+    } catch (e, stackTrace) {
+      print("Error: $e");
+      print(stackTrace);
+
+      emit(state.copyWith(isLoading: false));
     }
   }
 
@@ -109,10 +100,8 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
     Emitter<AttendanceState> emit,
   ) async {
     try {
-      
-
-      final response = await repository.getEmployeesAttendence(
-        currentPage:  event.currentPage,
+      final response = await repository.getEmployeesAttendance(
+        currentPage: event.currentPage,
         search: state.search,
         status: state.status,
         fromDate: state.fromDate,
@@ -122,7 +111,7 @@ class AttendanceBloc extends Bloc<AttendanceEvent, AttendanceState> {
       emit(
         state.copyWith(
           attendanceResponse: response,
-          currentPage:  event.currentPage,
+          currentPage: event.currentPage,
         ),
       );
     } catch (_) {}

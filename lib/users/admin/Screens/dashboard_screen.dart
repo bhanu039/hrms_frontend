@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:goexperts/users/admin/Screens/companys_list.dart';
+import '../../../company_list/company_list_repo.dart';
 import '../../../core/services/api_service.dart';
 import 'admin_menu.dart';
-import 'company_reg.dart';
+
 import 'package:goexperts/core/app_constants/app_color.dart';
 
 class AdminDashboardScreen extends StatefulWidget {
@@ -37,7 +37,7 @@ class _DashboardScreenState extends State<AdminDashboardScreen> {
   Future<void> fetchCompanies() async {
     isLoading = true;
     try {
-      var result = await ApiService.getCompanies();
+      var result = await CompanyListRepo.getCompanies("all");
       print("Fetched ${result["companies"]?.length ?? 0} companies");
 
       setState(() {
@@ -193,14 +193,7 @@ class _DashboardScreenState extends State<AdminDashboardScreen> {
                             companies.length.toString(),
                             AppColors.blue,
                             onPress: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const CompanyListScreen(
-                                    status: "ALL",
-                                  ), // 👈 create this screen
-                                ),
-                              );
+                              context.push("/admin/companies/all");
                             },
                           ),
                           buildCard(
@@ -212,13 +205,7 @@ class _DashboardScreenState extends State<AdminDashboardScreen> {
                                 .toString(),
                             AppColors.green,
                             onPress: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      const CompanyListScreen(status: "ACTIVE"),
-                                ),
-                              );
+                             context.push("/admin/companies/active");
                             },
                           ),
 
@@ -231,14 +218,7 @@ class _DashboardScreenState extends State<AdminDashboardScreen> {
                                 .toString(),
                             AppColors.red,
                             onPress: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => const CompanyListScreen(
-                                    status: "INACTIVE",
-                                  ),
-                                ),
-                              );
+                             context.push("/admin/companies/inactive");
                             },
                           ),
 
@@ -251,11 +231,7 @@ class _DashboardScreenState extends State<AdminDashboardScreen> {
                                 .toString(),
                             AppColors.orange,
                             onPress: () {
-                              setState(() {
-                                filteredCompanies = companies
-                                    .where((c) => c["status"] == "INVITED")
-                                    .toList();
-                              });
+                              context.push("/admin/companies/invited");
                             },
                           ),
                         ],

@@ -7,17 +7,28 @@ import '../bloc/company_list_state.dart';
 import 'package:goexperts/core/app_constants/app_color.dart';
 
 class CompaniesScreen extends StatefulWidget {
-  const CompaniesScreen({super.key});
+  final String data;
+  const CompaniesScreen({super.key, required this.data});
 
   @override
   State<CompaniesScreen> createState() => _CompaniesScreenState();
 }
 
 class _CompaniesScreenState extends State<CompaniesScreen> {
+  String get data => widget.data;
+
   final TextEditingController searchController = TextEditingController();
+  @override
+  void initState() {
+    
+    context.read<CompaniesBloc>().add(FetchCompanies(data: data));
+    super.initState();
+  }
+
 
   @override
   void dispose() {
+
     searchController.dispose();
     super.dispose();
   }
@@ -95,7 +106,7 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
   }
 
   Widget _subscriptionChip(Map company) {
-    final active = company['isSubscriptionActive'] == true;
+    final active = (company['subscriptionStatus']=="ACTIVE" ? true : false);
     final status = active ? 'Subscribed' : 'Not Subscribed';
 
     return Container(
@@ -131,9 +142,7 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.filter_alt_outlined),
-            onPressed: () {
-              
-            },
+            onPressed: () {},
           ),
         ],
       ),
@@ -277,8 +286,8 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
                                 const SizedBox(height: 12),
                             itemBuilder: (context, index) {
                               final c = state.filteredCompanies[index];
-                              final companyName = c['name'] ?? '';
-                              final email = c['email'] ?? '';
+                              final companyName = c['companyName'] ?? '';
+                              final email = c['companyEmail'] ?? '';
                               final companyLogo = c['companyLogo'];
                               final location =
                                   c['location'] ?? 'Location not set';
@@ -290,10 +299,12 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
                                 child: InkWell(
                                   borderRadius: BorderRadius.circular(18),
                                   onTap: () {
-                                    context.push(
-                                      '/admin/company-view',
-                                      extra: c,
-                                    );
+                                   
+                                          context.push(
+                                            '/admin/reviewscreen/${c['id']}/false',
+                                          );
+                                        
+                                  
                                   },
                                   child: Padding(
                                     padding: const EdgeInsets.all(14),
@@ -320,7 +331,7 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
                                                         companyName,
                                                       ),
                                                       style: TextStyle(
-                                                        color: primaryColor,
+                                                        color: AppColors.primary,
                                                         fontWeight:
                                                             FontWeight.bold,
                                                         fontSize: 18,
@@ -398,6 +409,7 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
                                             ),
                                             Row(
                                               children: [
+                                                if(data=="deleted")
                                                 IconButton(
                                                   icon: const Icon(
                                                     Icons.restore,
@@ -420,6 +432,7 @@ class _CompaniesScreenState extends State<CompaniesScreen> {
                                                   onPressed: () {
                                                     context.read().add(
                                                       DeleteCompanyPermanentEvent(
+                                                        data,
                                                         c['id'].toString(),
                                                       ),
                                                     );

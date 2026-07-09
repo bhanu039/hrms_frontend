@@ -64,15 +64,7 @@ class EmployeeDrawer extends StatelessWidget {
                       
                 ),
                 DrawerWidgets.sectionTitle('Work'),
-                // DrawerWidgets.menuTile(
-                //   context,
-                //   icon: Icons.how_to_reg_rounded,
-                //   title: 'Onboarding',
-                //   subtitle: 'Complete your profile and documents',
-                //   onTap: () {
-                //     context.go('/emp/onbording');
-                //   },
-                // ),
+                
                 DrawerWidgets.menuTile(
                   context,
                   icon: Icons.bar_chart,
@@ -89,7 +81,35 @@ class EmployeeDrawer extends StatelessWidget {
                   subtitle: 'View attendance and activity reports',
                   onTap: () => DrawerWidgets.showComingSoon(context, 'Reports'),
                 ),
+                
                 DrawerWidgets.sectionTitle('Settings'),
+                 DrawerWidgets.menuTile(
+                  context,
+                  icon: Icons.dangerous,
+                  title: 'DeleteAccount',
+                  subtitle: 'DeleteAccount Settings',
+                  onTap: () {
+                     context.push('/deleteAccount');
+                  },
+                ),
+                DrawerWidgets.menuTile(
+                  context,
+                  icon: Icons.pages_outlined,
+                  title: 'Privacy Policy',
+                  subtitle: 'Privacy Settings',
+                  onTap: () {
+                     context.push('/privacy-policy/Privacy');
+                  },
+                ),
+                 DrawerWidgets.menuTile(
+                  context,
+                  icon: Icons.pages,
+                  title: 'Terms & Conditions',
+                  subtitle: 'Terms & Conditions',
+                  onTap: () {
+                     context.push('/privacy-policy/Terms');
+                  },
+                ),
                 DrawerWidgets.menuTile(
                   context,
                   icon: Icons.settings,

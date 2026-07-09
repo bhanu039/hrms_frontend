@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:goexperts/core/app_constants/app_color.dart';
 import 'package:goexperts/core/widgets/top_message.dart';
+import 'package:goexperts/notifications/notification_repo.dart';
 
 import 'core/app_constants/app_constants.dart';
 import 'core/state/auth/auth_bloc.dart';
@@ -27,11 +28,14 @@ class _LoginScreenState extends State<LoginScreen> {
   bool isPasswordVisible = false;
   bool valide = true;
 
-  void login() {
+  void login() async {
+    final fcmToken = await NotificationService.getFcm();
+
     if (!_formKey.currentState!.validate()) return;
 
     context.read<AuthBloc>().add(
       AuthLoginRequested(
+        fcm:fcmToken,
         email: emailController.text.trim().toLowerCase(),
         password: passwordController.text.trim(),
       ),
@@ -119,7 +123,7 @@ class _LoginBackground extends StatelessWidget {
           decoration: const BoxDecoration(
             image: DecorationImage(
               image: AssetImage(AppConstants.bannerLogo),
-              fit: BoxFit.cover,
+              fit: BoxFit.fill,
             ),
           ),
           child: Container(
@@ -230,7 +234,7 @@ class _ThreeDBrandPanel extends StatelessWidget {
                   children: [
                     Transform.translate(
                       offset: const Offset(0, -12),
-                      child: Image.asset(AppConstants.fulllogo, height: 110),
+                      child: Image.asset(AppConstants.fulllogo, height: 200),
                     ),
                     const SizedBox(height: 24),
                     const Text(
@@ -315,24 +319,36 @@ class _ThreeDLoginPanel extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Center(
-                  child: Transform.translate(
-                    offset: const Offset(0, -8),
-                    child: Image.asset(
-                      AppConstants.bannerLogo,
-                      height: 100,
+                Container(
+                height: 120,
+                decoration: BoxDecoration(
+                  image: DecorationImage(image: AssetImage(AppConstants.fulllogo,),fit:BoxFit.cover )
+                ),
 
-                      fit: BoxFit.contain,
-                    ),
-                  ),
+                  // child: Center(
+                  //   child: Transform.translate(
+                  //     offset: const Offset(0, -8),
+                  //     child: Image.asset(
+                  //       AppConstants.fulllogo,
+                  //       height: 200,
+                  //       width: 300,
+                        
+                  
+                  //       fit: BoxFit.contain,
+                  //     ),
+                  //   ),
+                  // ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Welcome Back',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
+                Center(
+                  child: const Text(
+                    'Welcome Back 👋',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                      
+                    ),
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -383,7 +399,7 @@ class _ThreeDLoginPanel extends StatelessWidget {
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () {
-                      context.push("///");
+                      context.push("/ForgotPassword");
                     },
                     child: const Text('Forgot Password?'),
                   ),

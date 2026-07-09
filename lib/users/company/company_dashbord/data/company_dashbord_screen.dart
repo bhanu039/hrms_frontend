@@ -5,6 +5,9 @@ import 'package:goexperts/core/widgets/custom_dailogbox.dart';
 import 'package:goexperts/core/widgets/top_message.dart';
 
 import '../../../../core/state/auth/auth_bloc.dart';
+import '../../../../notifications/bloc/notification_bloc.dart';
+import '../../../../notifications/bloc/notification_event.dart';
+import '../../../../notifications/data/notification_screen.dart';
 import '../../Screens/company_menu.dart';
 import '../bloc/company_dashbord_bloc.dart';
 import '../bloc/company_dashbord_state.dart';
@@ -39,7 +42,6 @@ class _CompanyDashboardScreenState extends State<CompanyDashboardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-       
         title: const Text(
           "Company Dashboard",
           style: TextStyle(color: AppColors.white),
@@ -56,8 +58,26 @@ class _CompanyDashboardScreenState extends State<CompanyDashboardScreen> {
             ),
           ),
         ),
-        actions: const [
-          Icon(Icons.notifications, color: AppColors.white),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.notifications_outlined),
+            onPressed: () {
+              context.read<NotificationBloc>().add(GetNotifications());
+
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                useSafeArea: true,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                ),
+                builder: (_) => BlocProvider.value(
+                  value: context.read<NotificationBloc>(),
+                  child: const NotificationModal(),
+                ),
+              );
+            },
+          ),
           SizedBox(width: 12),
         ],
       ),

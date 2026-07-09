@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/services/sessionservice.dart';
@@ -37,36 +38,36 @@ class EmpProfileBloc extends Bloc<EmpProfileEvent, EmpProfileState> {
     required bool keepCurrentData,
   }) async {
     try {
-      final id = (employeeId?.trim().isNotEmpty ?? false)
-          ? employeeId!.trim()
-          : (await SessionService.getID()) ?? '';
+      // final id = (employeeId?.trim().isNotEmpty ?? false)
+      //     ? employeeId!.trim()
+      //     : (await SessionService.getID()) ?? '';
 
-      if (id.isEmpty) {
-        emit(
-          state.copyWith(
-            status: EmpProfileStatus.failure,
-            message: 'Employee id not found',
-            isLoadingDetails: false,
-          ),
-        );
-        return;
-      }
+      // if (id.isEmpty) {
+      //   emit(
+      //     state.copyWith(
+      //       status: EmpProfileStatus.failure,
+      //       message: 'Employee id not found',
+      //       isLoadingDetails: false,
+      //     ),
+      //   );
+      //   return;
+      // }
 
-      emit(
-        keepCurrentData
-            ? state.copyWith(
-                status: EmpProfileStatus.loading,
-                employeeId: id,
-                message: '',
-              )
-            : EmpProfileState(status: EmpProfileStatus.loading, employeeId: id),
-      );
+      // emit(
+      //   keepCurrentData
+      //       ? state.copyWith(
+      //           status: EmpProfileStatus.loading,
+      //           employeeId: id,
+      //           message: '',
+      //         )
+      //       : EmpProfileState(status: EmpProfileStatus.loading, employeeId: id),
+      // );
 
-      final basic = await repository.fetchBasic(id);
+      final basic = await repository.fetchBasic();
       emit(
         state.copyWith(
           status: EmpProfileStatus.loaded,
-          employeeId: id,
+          
           basic: basic,
           isLoadingDetails: true,
           message: '',
@@ -74,10 +75,10 @@ class EmpProfileBloc extends Bloc<EmpProfileEvent, EmpProfileState> {
       );
 
       final details = await Future.wait([
-        repository.fetchPersonal(id),
-        repository.fetchProfessional(id),
-        repository.fetchFinancial(id),
-        repository.fetchDocuments(id),
+        repository.fetchPersonal(),
+        repository.fetchProfessional(),
+        repository.fetchFinancial(),
+        repository.fetchDocuments(),
       ]);
 
       emit(
@@ -92,14 +93,16 @@ class EmpProfileBloc extends Bloc<EmpProfileEvent, EmpProfileState> {
           successMessage: '',
         ),
       );
-    } catch (error) {
+    } on DioException catch (error) {
+      final errormsg =
+          error.response?.statusMessage ?? "Failed to load Details";
       emit(
         state.copyWith(
           status: state.hasBasic
               ? EmpProfileStatus.loaded
               : EmpProfileStatus.failure,
           isLoadingDetails: false,
-          message: error.toString(),
+          message: errormsg,
         ),
       );
     }
@@ -134,7 +137,7 @@ class EmpProfileBloc extends Bloc<EmpProfileEvent, EmpProfileState> {
           );
           emit(
             state.copyWith(
-              basic: await repository.fetchBasic(state.employeeId),
+              basic: await repository.fetchBasic(),
               updatingSection: '',
               successMessage: 'Basic details updated',
             ),
@@ -144,7 +147,7 @@ class EmpProfileBloc extends Bloc<EmpProfileEvent, EmpProfileState> {
           await repository.updatePersonal(state.employeeId, event.values);
           emit(
             state.copyWith(
-              personal: await repository.fetchPersonal(state.employeeId),
+              personal: await repository.fetchPersonal(),
               updatingSection: '',
               successMessage: 'Personal details updated',
             ),
@@ -154,9 +157,7 @@ class EmpProfileBloc extends Bloc<EmpProfileEvent, EmpProfileState> {
           await repository.updateProfessional(state.employeeId, event.values);
           emit(
             state.copyWith(
-              professional: await repository.fetchProfessional(
-                state.employeeId,
-              ),
+              professional: await repository.fetchProfessional( ),
               updatingSection: '',
               successMessage: 'Professional details updated',
             ),
@@ -166,7 +167,7 @@ class EmpProfileBloc extends Bloc<EmpProfileEvent, EmpProfileState> {
           await repository.updateFinancial(state.employeeId, event.values);
           emit(
             state.copyWith(
-              financial: await repository.fetchFinancial(state.employeeId),
+              financial: await repository.fetchFinancial(),
               updatingSection: '',
               successMessage: 'Financial details updated',
             ),
@@ -217,7 +218,7 @@ class EmpProfileBloc extends Bloc<EmpProfileEvent, EmpProfileState> {
 
       emit(
         state.copyWith(
-          documents: await repository.fetchDocuments(state.employeeId),
+          documents: await repository.fetchDocuments(),
           updatingSection: '',
           successMessage: 'Document uploaded',
         ),
@@ -233,4 +234,3 @@ class EmpProfileBloc extends Bloc<EmpProfileEvent, EmpProfileState> {
     }
   }
 }
-

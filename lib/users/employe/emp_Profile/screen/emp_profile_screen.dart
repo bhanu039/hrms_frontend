@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:goexperts/core/widgets/top_message.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/state/auth/auth_bloc.dart';
@@ -23,11 +24,10 @@ class _EmpProfileScreenState extends State<EmpProfileScreen> {
 
   @override
   void initState() {
-     empId=context.read<AuthBloc>().state.session?.id;
+    empId = context.read<AuthBloc>().state.session?.id;
 
-    context.read<EmpProfileBloc>().add(LoadEmpProfile(employeeId:empId));
+    context.read<EmpProfileBloc>().add(LoadEmpProfile(employeeId: empId));
     super.initState();
-   
   }
 
   @override
@@ -41,14 +41,12 @@ class _EmpProfileScreenState extends State<EmpProfileScreen> {
             ? state.successMessage
             : state.message;
         if (text.isEmpty) return;
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_cleanError(text)),
-            backgroundColor: state.successMessage.isNotEmpty
-                ? AppColors.emeraldLight  : AppColors.redAccent,
-          ),
+        TopMessage.show(
+          context,
+          state.successMessage,
+          color: AppColors.emeraldLight
         );
+
       },
       builder: (context, state) {
         return DefaultTabController(
@@ -254,7 +252,7 @@ class _ProfileHeader extends StatelessWidget {
                             displayName.isEmpty
                                 ? 'E'
                                 : displayName[0].toUpperCase(),
-                            style:  TextStyle(
+                            style: TextStyle(
                               color: AppColors.info,
                               fontSize: 26,
                               fontWeight: FontWeight.w800,
@@ -283,7 +281,7 @@ class _ProfileHeader extends StatelessWidget {
                       displayName,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style:  TextStyle(
+                      style: TextStyle(
                         fontSize: 21,
                         fontWeight: FontWeight.w900,
                         color: AppColors.textDark,
@@ -294,7 +292,7 @@ class _ProfileHeader extends StatelessWidget {
                       role,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style:  TextStyle(
+                      style: TextStyle(
                         color: AppColors.textMuted,
                         fontWeight: FontWeight.w600,
                       ),
@@ -617,7 +615,7 @@ class _DocumentsTab extends StatelessWidget {
               ]);
 
               return Container(
-                padding:  EdgeInsets.all(14),
+                padding: EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   color: AppColors.white,
                   borderRadius: BorderRadius.circular(8),
@@ -632,7 +630,7 @@ class _DocumentsTab extends StatelessWidget {
                         color: AppColors.successTint,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child:  Icon(
+                      child: Icon(
                         Icons.description_outlined,
                         color: AppColors.emeraldLight,
                       ),
@@ -646,7 +644,7 @@ class _DocumentsTab extends StatelessWidget {
                             title,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style:  TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.w800,
                               color: AppColors.textDark,
                             ),
@@ -656,7 +654,7 @@ class _DocumentsTab extends StatelessWidget {
                             status.isEmpty ? 'Uploaded document' : status,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style:  TextStyle(
+                            style: TextStyle(
                               color: AppColors.textMuted,
                               fontSize: 12,
                             ),
@@ -777,13 +775,13 @@ class _EditSheetState extends State<_EditSheet> {
                           fillColor: AppColors.lightBg,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide:  BorderSide(
+                            borderSide: BorderSide(
                               color: AppColors.borderColor,
                             ),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide:  BorderSide(
+                            borderSide: BorderSide(
                               color: AppColors.borderColor,
                             ),
                           ),
@@ -928,7 +926,7 @@ class _BasicEditSheetState extends State<_BasicEditSheet> {
                               ? FileImage(_photoFile!)
                               : _networkImage(currentPhoto),
                           child: _photoFile == null && currentPhoto.isEmpty
-                              ?  Icon(
+                              ? Icon(
                                   Icons.person_outline_rounded,
                                   size: 42,
                                   color: AppColors.info,
@@ -1201,7 +1199,7 @@ class _SectionFrame extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  style:  TextStyle(
+                  style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w900,
                     color: AppColors.textDark,
@@ -1247,7 +1245,7 @@ class _InfoRow extends StatelessWidget {
             width: 128,
             child: Text(
               _prettyLabel(label),
-              style:  TextStyle(
+              style: TextStyle(
                 color: AppColors.textMuted,
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
@@ -1257,7 +1255,7 @@ class _InfoRow extends StatelessWidget {
           Expanded(
             child: Text(
               value,
-              style:  TextStyle(
+              style: TextStyle(
                 color: AppColors.textDark,
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
@@ -1279,7 +1277,7 @@ class _InfoChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding:  EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
         color: AppColors.surfaceMuted,
         borderRadius: BorderRadius.circular(8),
@@ -1294,7 +1292,7 @@ class _InfoChip extends StatelessWidget {
             child: Text(
               text,
               overflow: TextOverflow.ellipsis,
-              style:  TextStyle(
+              style: TextStyle(
                 color: AppColors.slate700,
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
@@ -1324,12 +1322,12 @@ class _InlineNotice extends StatelessWidget {
       ),
       child: Row(
         children: [
-           Icon(Icons.info_outline_rounded, color: AppColors.amberDark),
+          Icon(Icons.info_outline_rounded, color: AppColors.amberDark),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               message,
-              style:  TextStyle(
+              style: TextStyle(
                 color: AppColors.amberDarker,
                 fontWeight: FontWeight.w700,
               ),
@@ -1354,7 +1352,7 @@ class _FailureView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-             Icon(
+            Icon(
               Icons.cloud_off_outlined,
               size: 44,
               color: AppColors.redAccent,
@@ -1368,7 +1366,7 @@ class _FailureView extends StatelessWidget {
             Text(
               _cleanError(message),
               textAlign: TextAlign.center,
-              style:  TextStyle(color: AppColors.textMuted),
+              style: TextStyle(color: AppColors.textMuted),
             ),
             const SizedBox(height: 14),
             FilledButton.icon(
@@ -1401,7 +1399,7 @@ class _EmptySection extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             message,
-            style:  TextStyle(
+            style: TextStyle(
               color: AppColors.textMuted,
               fontWeight: FontWeight.w800,
             ),
@@ -1424,7 +1422,7 @@ class _MiniEmpty extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Text(
         message,
-        style:  TextStyle(
+        style: TextStyle(
           color: AppColors.textMuted,
           fontWeight: FontWeight.w700,
         ),
@@ -1627,6 +1625,3 @@ String _cleanError(String value) {
       .replaceFirst('Exception: ', '')
       .replaceFirst('DioException ', '');
 }
-
-
-

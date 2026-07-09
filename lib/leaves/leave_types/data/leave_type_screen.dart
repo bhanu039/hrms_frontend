@@ -327,7 +327,7 @@ class _LeaveTypesScreenState extends State<LeaveTypesScreen> {
                   final int days = int.parse(daysController.text.trim());
                   final String name = nameController.text.trim();
                   if (isEditMode) {
-                    blocContext.read().add(
+                    blocContext.read<LeaveTypeBloc>().add(
                       UpdateLeaveTypeEvent(
                         id: leaveType.id,
                         name: name,
@@ -335,7 +335,7 @@ class _LeaveTypesScreenState extends State<LeaveTypesScreen> {
                       ),
                     );
                   } else {
-                    blocContext.read().add(
+                    blocContext.read<LeaveTypeBloc>().add(
                       CreateLeaveTypeEvent(name: name, maxDays: days),
                     );
                   }

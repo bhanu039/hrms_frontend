@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../data/emp_acceptence_modal.dart';
@@ -7,7 +8,7 @@ import 'emp_acceptence_state.dart';
 
 class OnboardingReviewBloc
     extends Bloc<OnboardingReviewEvent, OnboardingReviewState> {
-  final OnboardingRepository repository; 
+  final OnboardingRepository repository;
 
   OnboardingReviewBloc({required this.repository})
     : super(OnboardingReviewState()) {
@@ -22,8 +23,10 @@ class OnboardingReviewBloc
   ) async {
     emit(state.copyWith(status: ReviewStatus.loading));
     try {
-      final Map<String, dynamic> response = await repository
-          .getEmployeeReviewData(event.employeeId);
+      final Map<String, dynamic> response = await repository.getReviewData(
+        event.employeeId,
+        event.screen,
+      );
 
       final dynamic rawData = response['data'];
       Map<String, dynamic> employeeMap = {};
@@ -40,12 +43,13 @@ class OnboardingReviewBloc
 
       final employee = EmployeeReviewModel.fromJson(employeeMap);
       emit(state.copyWith(status: ReviewStatus.success, employee: employee));
-    } catch (e) {
+    } on DioException catch (e) {
+     final error = e.response?.statusMessage ?? "Failed to load profile";
       print("Fetch Error: $e");
       emit(
         state.copyWith(
           status: ReviewStatus.failure,
-          message: e.toString().replaceAll('Exception: ', ''),
+          message:error,
         ),
       );
     }
@@ -68,7 +72,9 @@ class OnboardingReviewBloc
       );
 
       // 2. Map updated verification flags across the local documents array cache safely
-      final List<ReviewDocument> updatedDocs = currentEmployee.documents.map((doc) {
+      final List<ReviewDocument> updatedDocs = currentEmployee.documents.map((
+        doc,
+      ) {
         return doc.id == event.docId
             ? ReviewDocument(
                 id: doc.id,
@@ -80,37 +86,36 @@ class OnboardingReviewBloc
       }).toList();
 
       // 3. FIX: Safely parse and preserve model data parameters avoiding cast linter breakdowns
-     emit(
-  state.copyWith(
-    employee: EmployeeReviewModel(
-      id: currentEmployee.id,
-      employeeCode: currentEmployee.employeeCode,
-      firstName: currentEmployee.firstName,
-      lastName: currentEmployee.lastName,
-      status: currentEmployee.status,
-      bgvStatus: currentEmployee.bgvStatus,
-      joiningDate: currentEmployee.joiningDate,
-      employmentType: currentEmployee.employmentType,
-      workModel: currentEmployee.workModel,
-      profilePhoto: currentEmployee.profilePhoto,
-      department: currentEmployee.department,
-      designation: currentEmployee.designation,
-      education: List.from(currentEmployee.education),
-      experience: List.from(currentEmployee.experience),
-      documents: updatedDocs, // Your modified documents list
-      
-      // FIX: Added the missing required data objects from current state
-      skills: currentEmployee.skills,
-      bankDetails: currentEmployee.bankDetails,
-      nominee: currentEmployee.nominee,
-      compliance: currentEmployee.compliance,
-    ),
-  ),
-);
-
-    } catch (e) {
+      emit(
+        state.copyWith(
+          employee: EmployeeReviewModel(
+            id: currentEmployee.id,
+            employeeCode: currentEmployee.employeeCode,
+            firstName: currentEmployee.firstName,
+            lastName: currentEmployee.lastName,
+            status: currentEmployee.status,
+            bgvStatus: currentEmployee.bgvStatus,
+            joiningDate: currentEmployee.joiningDate,
+            employmentType: currentEmployee.employmentType,
+            workModel: currentEmployee.workModel,
+            profilePhoto: currentEmployee.profilePhoto,
+            department: currentEmployee.department,
+            designation: currentEmployee.designation,
+            education: List.from(currentEmployee.education),
+            experience: List.from(currentEmployee.experience),
+            documents: updatedDocs, // Your modified documents list
+            // FIX: Added the missing required data objects from current state
+            skills: currentEmployee.skills,
+            bankDetails: currentEmployee.bankDetails,
+            nominee: currentEmployee.nominee,
+            compliance: currentEmployee.compliance,
+          ),
+        ),
+      );
+    } on DioException catch (e) {
+     final error = e.response?.statusMessage ?? "Failed to load profile";
       print("Update Error: $e");
-      emit(state.copyWith(message: e.toString().replaceAll('Exception: ', '')));
+      emit(state.copyWith(message: error));
     }
   }
 }

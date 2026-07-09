@@ -13,7 +13,7 @@
      <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
 
     <application
-        android:label="Goexperts"
+        android:label="Be-Vision"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:enableOnBackInvokedCallback="true">
@@ -51,7 +51,7 @@
 
     <data
         android:scheme="https"
-        android:host="https://goexperts-hrms-coun.onrender.com/"
+        android:host="bevisionhrms.goexperts.in"
         android:pathPrefix="/setup-password"/>
             </intent-filter>
         </activity>

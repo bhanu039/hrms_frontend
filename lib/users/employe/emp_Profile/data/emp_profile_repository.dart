@@ -5,44 +5,38 @@ import 'package:dio/dio.dart';
 import '../../../../core/services/api_client.dart';
 
 class EmpProfileRepository {
-  EmpProfileRepository({
-    Dio? dio,
-    this.baseUrl = '/api/employee/self',
-  }) : _dio = dio ?? ApiClient.dio;
+  final endpoint = "/api/employee/self";
 
-  final Dio _dio;
-  final String baseUrl;
-
-  Future<Map<String, dynamic>> fetchBasic(String employeeId) async {
-    final response = await _dio.get('$baseUrl/$employeeId/basic');
+  Future<Map<String, dynamic>> fetchBasic() async {
+    final response = await ApiClient.dio.get('$endpoint/basic');
+    print("besicdata $response");
     return _unwrapMap(response.data);
   }
 
-  Future<Map<String, dynamic>> fetchPersonal(String employeeId) async {
-    final response = await _dio.get('$baseUrl/$employeeId/personal');
+  Future<Map<String, dynamic>> fetchPersonal() async {
+    final response = await ApiClient.dio.get('$endpoint/personal');
     return _unwrapMap(response.data);
   }
 
-  Future<Map<String, dynamic>> fetchProfessional(String employeeId) async {
+  Future<Map<String, dynamic>> fetchProfessional() async {
     try {
-      final response = await _dio.get('$baseUrl/$employeeId/professional');
+      final response = await ApiClient.dio.get('$endpoint/professional');
       return _unwrapMap(response.data);
     } on DioException catch (error) {
       final status = error.response?.statusCode ?? 0;
       if (status != 404) rethrow;
 
-      final response = await _dio.get('$baseUrl/$employeeId/professiona');
-      return _unwrapMap(response.data);
+      return _unwrapMap(error);
     }
   }
 
-  Future<Map<String, dynamic>> fetchFinancial(String employeeId) async {
-    final response = await _dio.get('$baseUrl/$employeeId/financial');
+  Future<Map<String, dynamic>> fetchFinancial() async {
+    final response = await ApiClient.dio.get('$endpoint/financial');
     return _unwrapMap(response.data);
   }
 
-  Future<List<Map<String, dynamic>>> fetchDocuments(String employeeId) async {
-    final response = await _dio.get('$baseUrl/$employeeId/documents');
+  Future<List<Map<String, dynamic>>> fetchDocuments() async {
+    final response = await ApiClient.dio.get('$endpoint/documents');
     return _deduplicateDocuments(_unwrapList(response.data));
   }
 
@@ -60,8 +54,8 @@ class EmpProfileRepository {
         ),
     });
 
-    final response = await _dio.patch(
-      '$baseUrl/$employeeId/basic',
+    final response = await ApiClient.dio.patch(
+      '$endpoint',
       data: body,
       options: Options(contentType: 'multipart/form-data'),
     );
@@ -72,8 +66,8 @@ class EmpProfileRepository {
     String employeeId,
     Map<String, dynamic> values,
   ) async {
-    final response = await _dio.patch(
-      '$baseUrl/$employeeId/personal',
+    final response = await ApiClient.dio.patch(
+      '$endpoint/personal',
       data: values,
     );
     return _unwrapMap(response.data);
@@ -84,8 +78,8 @@ class EmpProfileRepository {
     Map<String, dynamic> values,
   ) async {
     try {
-      final response = await _dio.patch(
-        '$baseUrl/$employeeId/professional',
+      final response = await ApiClient.dio.patch(
+        '$endpoint/professional',
         data: values,
       );
       return _unwrapMap(response.data);
@@ -93,8 +87,8 @@ class EmpProfileRepository {
       final status = error.response?.statusCode ?? 0;
       if (status != 404) rethrow;
 
-      final response = await _dio.patch(
-        '$baseUrl/$employeeId/professiona',
+      final response = await ApiClient.dio.patch(
+        '$endpoint/professiona',
         data: values,
       );
       return _unwrapMap(response.data);
@@ -105,8 +99,8 @@ class EmpProfileRepository {
     String employeeId,
     Map<String, dynamic> values,
   ) async {
-    final response = await _dio.patch(
-      '$baseUrl/$employeeId/financial',
+    final response = await ApiClient.dio.patch(
+      '$endpoint/financial',
       data: values,
     );
     return _unwrapMap(response.data);
@@ -127,8 +121,8 @@ class EmpProfileRepository {
     });
 
     try {
-      final response = await _dio.post(
-        '$baseUrl/$employeeId/documents',
+      final response = await ApiClient.dio.post(
+        '$endpoint/documents',
         data: body,
         options: Options(contentType: 'multipart/form-data'),
       );
@@ -137,8 +131,8 @@ class EmpProfileRepository {
       final status = error.response?.statusCode ?? 0;
       if (status != 404 && status != 405) rethrow;
 
-      final response = await _dio.patch(
-        '$baseUrl/$employeeId/documents',
+      final response = await ApiClient.dio.patch(
+        '$endpoint/documents',
         data: body,
         options: Options(contentType: 'multipart/form-data'),
       );
@@ -222,4 +216,3 @@ class EmpProfileRepository {
     return deduped;
   }
 }
-
