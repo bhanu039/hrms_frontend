@@ -13,6 +13,8 @@ class AppConstants {
   static const String bannerLogo = "assets/images/FullLogo-Be-Vision.png";
   static const String fulllogo = "assets/images/fulllogonew.png";
   static const String appVideo='assets/images/splash.mp4';
+  static const String appVideo1='assets/images/splash1.mp4';
+
 
   static const Color primaryColor = AppColors.primary;
   static const Color secondaryColor = AppColors.secondary;

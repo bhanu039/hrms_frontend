@@ -478,15 +478,17 @@ class EmployeeCard extends StatelessWidget {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
-                                    "OnboardingCompleted",
+                                    "Onboarding",
+                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
+                                      fontWeight:FontWeight.bold,
                                       color: AppColors.textSecondaryColor,
-                                      fontSize: 11,
+                                      fontSize: 15,
                                     ),
                                   ),
 
                                   Text(
-                                    emp.bgvStatus ? "Yes" : "No",
+                                    emp.bgvStatus ? "Completed" : "Pending",
                                     style: TextStyle(
                                       color: AppColors.info,
                                       fontWeight: FontWeight.bold,

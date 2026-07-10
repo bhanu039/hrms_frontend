@@ -1,0 +1,54 @@
+mutation SeedData @transaction {
+  role_insertMany(data: [
+    {
+      id: "00000000-0000-0000-0000-000000000001",
+      title: "Engineer",
+      accessLevel: 1
+    },
+    {
+      id: "00000000-0000-0000-0000-000000000002",
+      title: "Manager",
+      accessLevel: 2
+    }
+  ])
+  department_insertMany(data: [
+    {
+      id: "00000000-0000-0000-0000-000000000010",
+      name: "Engineering",
+      costCenter: "ENG-001"
+    }
+  ])
+  employee_insertMany(data: [
+    {
+      id: "00000000-0000-0000-0000-000000000100",
+      firstName: "Jane",
+      lastName: "Doe",
+      email: "jane.doe@example.com",
+      hireDate: "2023-01-15",
+      roleId: "00000000-0000-0000-0000-000000000001"
+    },
+    {
+      id: "00000000-0000-0000-0000-000000000101",
+      firstName: "John",
+      lastName: "Smith",
+      email: "john.smith@example.com",
+      hireDate: "2022-06-01",
+      roleId: "00000000-0000-0000-0000-000000000002"
+    }
+  ])
+  project_insertMany(data: [
+    {
+      id: "00000000-0000-0000-0000-000000000200",
+      name: "Cloud Migration",
+      startDate: "2024-01-01",
+      status: "Active"
+    }
+  ])
+  assignment_insertMany(data: [
+    {
+      employeeId: "00000000-0000-0000-0000-000000000100",
+      projectId: "00000000-0000-0000-0000-000000000200",
+      roleOnProject: "Lead Developer"
+    }
+  ])
+}

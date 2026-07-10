@@ -3,14 +3,14 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:goexperts/core/app_constants/app_color.dart';
+import 'package:goexperts/core/state/auth/auth_bloc.dart';
 import 'package:goexperts/core/widgets/top_message.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../../core/state/auth/auth_bloc.dart';
 import '../bloc/emp_profile_bloc.dart';
 import '../bloc/emp_profile_event.dart';
 import '../bloc/emp_profile_state.dart';
-import 'package:goexperts/core/app_constants/app_color.dart';
 
 class EmpProfileScreen extends StatefulWidget {
   const EmpProfileScreen({super.key});
@@ -25,7 +25,6 @@ class _EmpProfileScreenState extends State<EmpProfileScreen> {
   @override
   void initState() {
     empId = context.read<AuthBloc>().state.session?.id;
-
     context.read<EmpProfileBloc>().add(LoadEmpProfile(employeeId: empId));
     super.initState();
   }
@@ -44,9 +43,8 @@ class _EmpProfileScreenState extends State<EmpProfileScreen> {
         TopMessage.show(
           context,
           state.successMessage,
-          color: AppColors.emeraldLight
+          color: AppColors.emeraldLight,
         );
-
       },
       builder: (context, state) {
         return DefaultTabController(
@@ -60,7 +58,10 @@ class _EmpProfileScreenState extends State<EmpProfileScreen> {
                 foregroundColor: AppColors.textDark,
                 title: const Text(
                   'My Profile',
-                  style: TextStyle(fontWeight: FontWeight.w800),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.3,
+                  ),
                 ),
                 actions: [
                   IconButton(
@@ -74,29 +75,28 @@ class _EmpProfileScreenState extends State<EmpProfileScreen> {
                   ),
                 ],
                 bottom: PreferredSize(
-                  preferredSize: const Size.fromHeight(54),
+                  preferredSize: const Size.fromHeight(62),
                   child: Padding(
-                    padding: const EdgeInsets.all(8.0),
+                    padding: const EdgeInsets.all(10),
                     child: Container(
-                      height: 44,
-                      margin: const EdgeInsets.fromLTRB(16, 0, 16, 10),
-                      padding: const EdgeInsets.all(4),
+                      height: 48,
                       decoration: BoxDecoration(
                         color: AppColors.white,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: AppColors.borderColor),
                       ),
                       child: TabBar(
                         indicator: BoxDecoration(
                           color: AppColors.textDark,
-                          borderRadius: BorderRadius.circular(6),
+                          borderRadius: BorderRadius.circular(10),
                         ),
                         indicatorSize: TabBarIndicatorSize.tab,
                         labelColor: AppColors.white,
                         unselectedLabelColor: AppColors.textMuted,
                         labelStyle: const TextStyle(
-                          fontSize: 12,
+                          fontSize: 13,
                           fontWeight: FontWeight.w700,
+                          letterSpacing: 0.2,
                         ),
                         tabs: const [
                           Tab(text: 'Personal'),
@@ -153,40 +153,41 @@ class _ProfileBody extends StatelessWidget {
           RefreshEmpProfile(employeeId: state.employeeId),
         );
       },
-      child: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 10, 16, 120),
-        children: [
-          _ProfileHeader(state: state),
-          if (state.isLoadingDetails) const LinearProgressIndicator(),
-          if (state.message.isNotEmpty)
-            _InlineNotice(message: _cleanError(state.message)),
-          const SizedBox(height: 14),
-          SizedBox(
-            height: MediaQuery.of(context).size.height * 0.68,
-            child: TabBarView(
-              children: [
-                _PersonalTab(state: state),
-                _EducationTab(state: state),
-                _DocumentsTab(state: state),
-              ],
-            ),
+      child: SafeArea(
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 20),
+          child: Column(
+            children: [
+              _ProfileHeader(state: state),
+              if (state.isLoadingDetails)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: const LinearProgressIndicator(),
+                  ),
+                ),
+              if (state.message.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 12),
+                  child: _InlineNotice(message: _cleanError(state.message)),
+                ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: TabBarView(
+                  children: [
+                    _PersonalTab(state: state),
+                    _EducationTab(state: state),
+                    _DocumentsTab(state: state),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
-}
-
-void _showBasicEditSheet(BuildContext context, Map<String, dynamic> basic) {
-  showModalBottomSheet(
-    context: context,
-    builder: (_) {
-      return const SizedBox(
-        height: 300,
-        child: Center(child: Text('Edit Profile')),
-      );
-    },
-  );
 }
 
 class _ProfileHeader extends StatelessWidget {
@@ -229,10 +230,10 @@ class _ProfileHeader extends StatelessWidget {
     ]);
 
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.borderColor),
       ),
       child: Column(
@@ -244,7 +245,7 @@ class _ProfileHeader extends StatelessWidget {
                 clipBehavior: Clip.none,
                 children: [
                   CircleAvatar(
-                    radius: 34,
+                    radius: 38,
                     backgroundColor: AppColors.blueTint,
                     backgroundImage: _networkImage(photo),
                     child: photo.isEmpty
@@ -254,40 +255,53 @@ class _ProfileHeader extends StatelessWidget {
                                 : displayName[0].toUpperCase(),
                             style: TextStyle(
                               color: AppColors.info,
-                              fontSize: 26,
-                              fontWeight: FontWeight.w800,
+                              fontSize: 28,
+                              fontWeight: FontWeight.w900,
                             ),
                           )
                         : null,
                   ),
-                  Positioned(
-                    right: -4,
-                    bottom: -4,
-                    child: _RoundIconButton(
-                      tooltip: 'Edit profile',
-                      icon: Icons.edit_outlined,
-
-                      onTap: () => _showBasicEditSheet(context, state.basic),
-                    ),
-                  ),
+                  // Positioned(
+                  //   right: -6,
+                  //   bottom: -6,
+                  //   child: _RoundIconButton(
+                  //     tooltip: 'Edit profile',
+                  //     icon: Icons.edit_outlined,
+                  //     onTap: () => _showEditBottomSheet(
+                  //       context,
+                  //       title: 'Update Basic Info',
+                  //       section: 'basic',
+                  //       data: state.basic,
+                  //       fields: const [
+                  //         'firstName',
+                  //         'lastName',
+                  //         'employmentType',
+                  //         'workModel',
+                  //         'probationPeriod',
+                  //         'noticePeriod',
+                  //       ],
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       displayName,
-                      maxLines: 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontSize: 21,
+                        fontSize: 22,
                         fontWeight: FontWeight.w900,
                         color: AppColors.textDark,
+                        letterSpacing: 0.2,
                       ),
                     ),
-                    const SizedBox(height: 5),
+                    const SizedBox(height: 6),
                     Text(
                       role,
                       maxLines: 1,
@@ -295,27 +309,44 @@ class _ProfileHeader extends StatelessWidget {
                       style: TextStyle(
                         color: AppColors.textMuted,
                         fontWeight: FontWeight.w600,
+                        fontSize: 13,
                       ),
                     ),
                   ],
                 ),
               ),
               IconButton(
-                tooltip: 'Edit basic details',
+                tooltip: 'Edit',
                 onPressed: state.updatingSection == 'basic'
                     ? null
-                    : () => _showBasicEditSheet(context, state.basic),
+                    : () => _showEditBottomSheet(
+                        context,
+                        title: 'Update Basic Info',
+                        section: 'basic',
+                        data: state.basic,
+                        fields: const [
+                          'firstName',
+                          'lastName',
+                          'employmentType',
+                          'workModel',
+                          'probationPeriod',
+                          'noticePeriod',
+                        ],
+                      ),
                 icon: state.updatingSection == 'basic'
                     ? const SizedBox(
                         width: 18,
                         height: 18,
-                        child: CircularProgressIndicator(strokeWidth: 2),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation(AppColors.info),
+                        ),
                       )
                     : const Icon(Icons.manage_accounts_outlined),
               ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -340,42 +371,78 @@ class _PersonalTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.only(top: 2),
-      children: [
-        _InfoSection(
-          title: 'Basic Info',
-          icon: Icons.person_outline_rounded,
-          data: state.basic,
-          isUpdating: state.updatingSection == 'basic',
-          onEdit: () => _showBasicEditSheet(context, state.basic),
-          preferredKeys: const [
-            'employeeCode',
-            'name',
-            'firstName',
-            'lastName',
-            'email',
-            'department',
-            'designation',
-            'joiningDate',
-            'employmentType',
-            'workModel',
-            'probationPeriod',
-            'noticePeriod',
-            'status',
-          ],
-        ),
-        _InfoSection(
-          title: 'Address & Emergency',
-          icon: Icons.home_work_outlined,
-          data: state.personal,
-          isUpdating: state.updatingSection == 'personal',
-          onEdit: () => _showEditSheet(
-            context: context,
-            title: 'Update Personal Details',
-            section: 'personal',
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 20),
+      child: ListView(
+        padding: const EdgeInsets.only(top: 4),
+        children: [
+          _InfoSection(
+            title: 'Basic Info',
+            icon: Icons.person_outline_rounded,
+            data: state.basic,
+            isUpdating: state.updatingSection == 'basic',
+            onEdit: () => _showEditBottomSheet(
+              context,
+              title: 'Update Basic Info',
+              section: 'basic',
+              data: state.basic,
+              fields: const [
+                'employeeCode',
+                'name',
+                'firstName',
+                'lastName',
+                'email',
+                'department',
+                'designation',
+                'joiningDate',
+                'employmentType',
+                'workModel',
+                'probationPeriod',
+                'noticePeriod',
+                'status',
+              ],
+            ),
+            preferredKeys: const [
+              'employeeCode',
+              'name',
+              'firstName',
+              'lastName',
+              'email',
+              'department',
+              'designation',
+              'joiningDate',
+              'employmentType',
+              'workModel',
+              'probationPeriod',
+              'noticePeriod',
+              'status',
+            ],
+          ),
+          _InfoSection(
+            title: 'Address & Emergency',
+            icon: Icons.home_work_outlined,
             data: state.personal,
-            fields: const [
+            isUpdating: state.updatingSection == 'personal',
+            onEdit: () => _showEditBottomSheet(
+              context,
+              title: 'Update Personal Details',
+              section: 'personal',
+              data: state.personal,
+              fields: const [
+                'phone',
+                'alternatePhone',
+                'addressLine1',
+                'addressLine2',
+                'city',
+                'state',
+                'country',
+                'pincode',
+                'emergencyContactName',
+                'emergencyContact',
+                'relationship',
+              ],
+            ),
+            preferredKeys: const [
               'phone',
               'alternatePhone',
               'addressLine1',
@@ -389,31 +456,29 @@ class _PersonalTab extends StatelessWidget {
               'relationship',
             ],
           ),
-          preferredKeys: const [
-            'phone',
-            'alternatePhone',
-            'addressLine1',
-            'addressLine2',
-            'city',
-            'state',
-            'country',
-            'pincode',
-            'emergencyContactName',
-            'emergencyContact',
-            'relationship',
-          ],
-        ),
-        _InfoSection(
-          title: 'Financial Info',
-          icon: Icons.account_balance_outlined,
-          data: state.financial,
-          isUpdating: state.updatingSection == 'financial',
-          onEdit: () => _showEditSheet(
-            context: context,
-            title: 'Update Financial Info',
-            section: 'financial',
+          _InfoSection(
+            title: 'Financial Info',
+            icon: Icons.account_balance_outlined,
             data: state.financial,
-            fields: const [
+            isUpdating: state.updatingSection == 'financial',
+            onEdit: () => _showEditBottomSheet(
+              context,
+              title: 'Update Financial Info',
+              section: 'financial',
+              data: state.financial,
+              fields: const [
+                'bankName',
+                'accountHolderName',
+                'accountNumber',
+                'ifscCode',
+                'branchName',
+                'upiId',
+                'pfNumber',
+                'uanNumber',
+                'esiNumber',
+              ],
+            ),
+            preferredKeys: const [
               'bankName',
               'accountHolderName',
               'accountNumber',
@@ -425,19 +490,8 @@ class _PersonalTab extends StatelessWidget {
               'esiNumber',
             ],
           ),
-          preferredKeys: const [
-            'bankName',
-            'accountHolderName',
-            'accountNumber',
-            'ifscCode',
-            'branchName',
-            'upiId',
-            'pfNumber',
-            'uanNumber',
-            'esiNumber',
-          ],
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -461,19 +515,18 @@ class _EducationTab extends StatelessWidget {
         : professional;
 
     return ListView(
-      padding: const EdgeInsets.only(top: 2),
+      padding: const EdgeInsets.only(top: 4),
       children: [
         _ListSection(
           title: 'Education Details',
           icon: Icons.school_outlined,
           items: education,
           isUpdating: state.updatingSection == 'professional',
-          onEdit: () => _showEditSheet(
-            context: context,
+          onEdit: () => _showEditBottomSheet(
+            context,
             title: 'Update Education Details',
             section: 'professional',
             data: education.isNotEmpty ? education.first : state.professional,
-            payloadWrapper: 'education',
             fields: const [
               'degree',
               'specialization',
@@ -483,6 +536,7 @@ class _EducationTab extends StatelessWidget {
               'percentage',
               'passingYear',
             ],
+            payloadWrapper: 'education',
           ),
           emptyMessage: 'No education details found',
         ),
@@ -491,12 +545,11 @@ class _EducationTab extends StatelessWidget {
           icon: Icons.auto_awesome_outlined,
           data: skills,
           isUpdating: state.updatingSection == 'professional',
-          onEdit: () => _showEditSheet(
-            context: context,
+          onEdit: () => _showEditBottomSheet(
+            context,
             title: 'Update Skills',
             section: 'professional',
             data: skills,
-            payloadWrapper: 'skills',
             fields: const [
               'primarySkills',
               'secondarySkills',
@@ -504,6 +557,7 @@ class _EducationTab extends StatelessWidget {
               'linkedinUrl',
               'portfolioUrl',
             ],
+            payloadWrapper: 'skills',
           ),
           preferredKeys: const [
             'primarySkills',
@@ -518,12 +572,11 @@ class _EducationTab extends StatelessWidget {
           icon: Icons.work_outline_rounded,
           items: experience,
           isUpdating: state.updatingSection == 'professional',
-          onEdit: () => _showEditSheet(
-            context: context,
+          onEdit: () => _showEditBottomSheet(
+            context,
             title: 'Update Experience',
             section: 'professional',
             data: experience.isNotEmpty ? experience.first : state.professional,
-            payloadWrapper: 'experience',
             fields: const [
               'companyName',
               'role',
@@ -532,6 +585,7 @@ class _EducationTab extends StatelessWidget {
               'endDate',
               'technologies',
             ],
+            payloadWrapper: 'experience',
           ),
           emptyMessage: 'No experience details found',
         ),
@@ -560,10 +614,13 @@ class _DocumentsTab extends StatelessWidget {
               ? const SizedBox(
                   width: 16,
                   height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation(AppColors.white),
+                  ),
                 )
               : const Icon(Icons.upload_file_rounded),
-          label: const Text('Upload'),
+          label: const Text('Upload Document'),
         ),
       );
     }
@@ -582,7 +639,10 @@ class _DocumentsTab extends StatelessWidget {
                   ? const SizedBox(
                       width: 16,
                       height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation(AppColors.white),
+                      ),
                     )
                   : const Icon(Icons.upload_file_rounded),
               label: Text(isUploading ? 'Uploading...' : 'Upload Document'),
@@ -593,7 +653,7 @@ class _DocumentsTab extends StatelessWidget {
           child: ListView.separated(
             padding: const EdgeInsets.only(top: 2),
             itemCount: documents.length,
-            separatorBuilder: (_, _) => const SizedBox(height: 10),
+            separatorBuilder: (_, __) => const SizedBox(height: 10),
             itemBuilder: (context, index) {
               final document = documents[index];
               final title = _firstText(document, [
@@ -615,24 +675,25 @@ class _DocumentsTab extends StatelessWidget {
               ]);
 
               return Container(
-                padding: EdgeInsets.all(14),
+                padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
                   color: AppColors.white,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(10),
                   border: Border.all(color: AppColors.borderColor),
                 ),
                 child: Row(
                   children: [
                     Container(
-                      width: 42,
-                      height: 42,
+                      width: 44,
+                      height: 44,
                       decoration: BoxDecoration(
                         color: AppColors.successTint,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(10),
                       ),
                       child: Icon(
                         Icons.description_outlined,
                         color: AppColors.emeraldLight,
+                        size: 22,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -647,6 +708,7 @@ class _DocumentsTab extends StatelessWidget {
                             style: TextStyle(
                               fontWeight: FontWeight.w800,
                               color: AppColors.textDark,
+                              fontSize: 14,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -657,6 +719,7 @@ class _DocumentsTab extends StatelessWidget {
                             style: TextStyle(
                               color: AppColors.textMuted,
                               fontSize: 12,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ],
@@ -665,7 +728,7 @@ class _DocumentsTab extends StatelessWidget {
                     IconButton(
                       tooltip: 'Open',
                       onPressed: url.isEmpty ? null : () => _openUrl(url),
-                      icon: const Icon(Icons.open_in_new_rounded),
+                      icon: const Icon(Icons.open_in_new_rounded, size: 20),
                     ),
                   ],
                 ),
@@ -676,6 +739,34 @@ class _DocumentsTab extends StatelessWidget {
       ],
     );
   }
+}
+
+void _showEditBottomSheet(
+  BuildContext context, {
+  required String title,
+  required String section,
+  required Map<String, dynamic> data,
+  required List<String> fields,
+  String? payloadWrapper,
+}) {
+  showModalBottomSheet<void>(
+    context: context,
+
+    backgroundColor: AppColors.white,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    builder: (_) => BlocProvider.value(
+      value: context.read<EmpProfileBloc>(),
+      child: _EditSheet(
+        title: title,
+        section: section,
+        data: data,
+        fields: fields,
+        payloadWrapper: payloadWrapper,
+      ),
+    ),
+  );
 }
 
 class _EditSheet extends StatefulWidget {
@@ -699,6 +790,7 @@ class _EditSheet extends StatefulWidget {
 
 class _EditSheetState extends State<_EditSheet> {
   late final Map<String, TextEditingController> _controllers;
+  File? _photoFile;
 
   @override
   void initState() {
@@ -717,285 +809,6 @@ class _EditSheetState extends State<_EditSheet> {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<EmpProfileBloc, EmpProfileState>(
-      builder: (context, state) {
-        final isSaving = state.updatingSection == widget.section;
-
-        return SafeArea(
-          child: Padding(
-            padding: EdgeInsets.only(
-              left: 16,
-              right: 16,
-              top: 12,
-              bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          widget.title,
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        tooltip: 'Close',
-                        onPressed: isSaving
-                            ? null
-                            : () => Navigator.pop(context),
-                        icon: const Icon(Icons.close_rounded),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  ...widget.fields.map(
-                    (field) => Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: TextField(
-                        controller: _controllers[field],
-                        enabled: !isSaving,
-                        minLines: field.toLowerCase().contains('address')
-                            ? 2
-                            : 1,
-                        maxLines: field.toLowerCase().contains('address')
-                            ? 3
-                            : 1,
-                        decoration: InputDecoration(
-                          labelText: _prettyLabel(field),
-                          filled: true,
-                          fillColor: AppColors.lightBg,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(
-                              color: AppColors.borderColor,
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(
-                              color: AppColors.borderColor,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: isSaving ? null : _save,
-                      icon: isSaving
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.save_outlined),
-                      label: Text(isSaving ? 'Saving...' : 'Save Changes'),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  void _save() {
-    final values = {
-      for (final entry in _controllers.entries)
-        entry.key: entry.value.text.trim(),
-    }..removeWhere((_, value) => value.isEmpty);
-
-    final payload = widget.payloadWrapper == null
-        ? values
-        : {widget.payloadWrapper!: values};
-
-    context.read<EmpProfileBloc>().add(
-      UpdateEmpProfileSection(section: widget.section, values: payload),
-    );
-    Navigator.pop(context);
-  }
-}
-
-class _BasicEditSheet extends StatefulWidget {
-  const _BasicEditSheet({required this.data});
-
-  final Map<String, dynamic> data;
-
-  @override
-  State<_BasicEditSheet> createState() => _BasicEditSheetState();
-}
-
-class _BasicEditSheetState extends State<_BasicEditSheet> {
-  static const _fields = [
-    'firstName',
-    'lastName',
-    'employmentType',
-    'workModel',
-    'probationPeriod',
-    'noticePeriod',
-  ];
-
-  late final Map<String, TextEditingController> _controllers;
-  File? _photoFile;
-
-  @override
-  void initState() {
-    super.initState();
-    _controllers = {
-      for (final field in _fields)
-        field: TextEditingController(text: _valueForKey(widget.data, field)),
-    };
-  }
-
-  @override
-  void dispose() {
-    for (final controller in _controllers.values) {
-      controller.dispose();
-    }
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<EmpProfileBloc, EmpProfileState>(
-      builder: (context, state) {
-        final isSaving = state.updatingSection == 'basic';
-        final currentPhoto = _firstText(widget.data, [
-          'profilePhoto',
-          'profileLogo',
-          'avatar',
-          'image',
-        ]);
-
-        return SafeArea(
-          child: Padding(
-            padding: EdgeInsets.only(
-              left: 16,
-              right: 16,
-              top: 12,
-              bottom: MediaQuery.of(context).viewInsets.bottom + 16,
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      const Expanded(
-                        child: Text(
-                          'Update Basic Info',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        tooltip: 'Close',
-                        onPressed: isSaving
-                            ? null
-                            : () => Navigator.pop(context),
-                        icon: const Icon(Icons.close_rounded),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Center(
-                    child: Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        CircleAvatar(
-                          radius: 44,
-                          backgroundColor: AppColors.blueTint,
-                          backgroundImage: _photoFile != null
-                              ? FileImage(_photoFile!)
-                              : _networkImage(currentPhoto),
-                          child: _photoFile == null && currentPhoto.isEmpty
-                              ? Icon(
-                                  Icons.person_outline_rounded,
-                                  size: 42,
-                                  color: AppColors.info,
-                                )
-                              : null,
-                        ),
-                        Positioned(
-                          right: -6,
-                          bottom: -6,
-                          child: _RoundIconButton(
-                            tooltip: 'Change photo',
-                            icon: Icons.photo_camera_outlined,
-                            onTap: isSaving ? null : _pickProfilePhoto,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  ..._fields.map(
-                    (field) => Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: TextField(
-                        controller: _controllers[field],
-                        enabled: !isSaving,
-                        decoration: InputDecoration(
-                          labelText: _prettyLabel(field),
-                          filled: true,
-                          fillColor: AppColors.lightBg,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(
-                              color: AppColors.borderColor,
-                            ),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: const BorderSide(
-                              color: AppColors.borderColor,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: isSaving ? null : _save,
-                      icon: isSaving
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.save_outlined),
-                      label: Text(isSaving ? 'Saving...' : 'Save Basic Info'),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   Future<void> _pickProfilePhoto() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
@@ -1010,15 +823,233 @@ class _BasicEditSheetState extends State<_BasicEditSheet> {
     });
   }
 
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<EmpProfileBloc, EmpProfileState>(
+      builder: (context, state) {
+        final isSaving = state.updatingSection == widget.section;
+        final isBasicEdit = widget.section == 'basic';
+        final currentPhoto = isBasicEdit
+            ? _firstText(widget.data, [
+                'profilePhoto',
+                'profileLogo',
+                'avatar',
+                'image',
+              ])
+            : '';
+
+        return SafeArea(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.only(
+                left: 18,
+                right: 18,
+                top: 18,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header with close button
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          widget.title,
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: 'Close',
+                        onPressed: isSaving
+                            ? null
+                            : () => Navigator.pop(context),
+                        icon: const Icon(Icons.close_rounded),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+
+                  // Photo section for basic edit
+                  if (isBasicEdit) ...[
+                    Center(
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          CircleAvatar(
+                            radius: 52,
+                            backgroundColor: AppColors.blueTint,
+                            backgroundImage: _photoFile != null
+                                ? FileImage(_photoFile!)
+                                : _networkImage(currentPhoto),
+                            child: _photoFile == null && currentPhoto.isEmpty
+                                ? Icon(
+                                    Icons.person_outline_rounded,
+                                    size: 52,
+                                    color: AppColors.info,
+                                  )
+                                : null,
+                          ),
+                          Positioned(
+                            right: -10,
+                            bottom: -10,
+                            child: _RoundIconButton(
+                              tooltip: 'Change photo',
+                              icon: Icons.photo_camera_outlined,
+                              onTap: isSaving ? null : _pickProfilePhoto,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+
+                  // Form fields
+                  ..._buildFormFields(isSaving),
+
+                  const SizedBox(height: 6),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: FilledButton.icon(
+                      onPressed: isSaving ? null : _save,
+                      style: FilledButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      icon: isSaving
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.5,
+                                valueColor: AlwaysStoppedAnimation(
+                                  AppColors.white,
+                                ),
+                              ),
+                            )
+                          : const Icon(Icons.save_outlined, size: 20),
+                      label: Text(
+                        isSaving ? 'Saving...' : 'Save Changes',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  List<Widget> _buildFormFields(bool isSaving) {
+    return widget.fields.map((field) {
+      final isAddressField =
+          field.toLowerCase().contains('address') ||
+          field.toLowerCase().contains('description');
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              _prettyLabel(field),
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textMuted,
+                letterSpacing: 0.2,
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _controllers[field],
+              enabled: !isSaving,
+              minLines: isAddressField ? 2 : 1,
+              maxLines: isAddressField ? 5 : 1,
+              decoration: InputDecoration(
+                hintText: 'Enter ${_prettyLabel(field).toLowerCase()}',
+                hintStyle: TextStyle(
+                  color: AppColors.textMuted.withOpacity(0.6),
+                  fontSize: 14,
+                ),
+                filled: true,
+                fillColor: isSaving ? AppColors.lightBg : AppColors.white,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: AppColors.borderColor,
+                    width: 1.2,
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: AppColors.borderColor,
+                    width: 1.2,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(color: AppColors.info, width: 1.8),
+                ),
+                disabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide(
+                    color: AppColors.borderColor,
+                    width: 1.2,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }).toList();
+  }
+
   void _save() {
     final values = {
       for (final entry in _controllers.entries)
         entry.key: entry.value.text.trim(),
-      if (_photoFile != null) 'profilePhoto': _photoFile!,
+      if (_photoFile != null && widget.section == 'basic')
+        'profilePhoto': _photoFile!,
     }..removeWhere((_, value) => value is String && value.isEmpty);
 
+    if (values.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Please fill in at least one field'),
+          backgroundColor: AppColors.amberDark,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    final payload = widget.payloadWrapper == null
+        ? values
+        : {widget.payloadWrapper!: values};
+
     context.read<EmpProfileBloc>().add(
-      UpdateEmpProfileSection(section: 'basic', values: values),
+      UpdateEmpProfileSection(section: widget.section, values: payload),
     );
     Navigator.pop(context);
   }
@@ -1046,7 +1077,7 @@ class _RoundIconButton extends StatelessWidget {
           customBorder: const CircleBorder(),
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(12),
             child: Icon(icon, color: AppColors.white, size: 18),
           ),
         ),
@@ -1085,9 +1116,27 @@ class _InfoSection extends StatelessWidget {
           ? const _MiniEmpty(message: 'No details found')
           : Column(
               children: rows
-                  .map((row) => _InfoRow(label: row.key, value: row.value))
+                  .asMap()
+                  .entries
+                  .map(
+                    (entry) => _buildInfoRow(
+                      entry.value,
+                      isLast: entry.key == rows.length - 1,
+                    ),
+                  )
                   .toList(),
             ),
+    );
+  }
+
+  Widget _buildInfoRow(MapEntry<String, String> row, {required bool isLast}) {
+    return Column(
+      children: [
+        row.key == "id" || row.key == "employeeId"
+            ? const Divider(height: 0)
+            : _InfoRow(label: row.key, value: row.value),
+        if (!isLast) const Divider(height: 18),
+      ],
     );
   }
 }
@@ -1123,14 +1172,15 @@ class _ListSection extends StatelessWidget {
                   .map(
                     (item) => Container(
                       width: double.infinity,
-                      margin: const EdgeInsets.only(bottom: 10),
-                      padding: const EdgeInsets.all(12),
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: AppColors.lightBg,
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(10),
                         border: Border.all(color: AppColors.borderColor),
                       ),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children:
                             _rowsFor(item, const [
                                   'degree',
@@ -1147,10 +1197,37 @@ class _ListSection extends StatelessWidget {
                                   'endDate',
                                   'technologies',
                                 ])
+                                .asMap()
+                                .entries
                                 .map(
-                                  (row) => _InfoRow(
-                                    label: row.key,
-                                    value: row.value,
+                                  (entry) => Column(
+                                    children: [
+                                      entry.value.key == "id" ||
+                                              entry.value.key == "employeeId"
+                                          ? const Divider(height: 0)
+                                          : _InfoRow(
+                                              label: entry.value.key,
+                                              value: entry.value.value,
+                                            ),
+                                      if (entry.key !=
+                                          _rowsFor(item, const [
+                                                'degree',
+                                                'specialization',
+                                                'college',
+                                                'university',
+                                                'cgpa',
+                                                'percentage',
+                                                'passingYear',
+                                                'companyName',
+                                                'role',
+                                                'designation',
+                                                'startDate',
+                                                'endDate',
+                                                'technologies',
+                                              ]).length -
+                                              1)
+                                        const Divider(height: 14),
+                                    ],
                                   ),
                                 )
                                 .toList(),
@@ -1182,11 +1259,11 @@ class _SectionFrame extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.borderColor),
       ),
       child: Column(
@@ -1194,15 +1271,16 @@ class _SectionFrame extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(icon, size: 20, color: AppColors.info),
-              const SizedBox(width: 8),
+              Icon(icon, size: 22, color: AppColors.info),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   title,
                   style: TextStyle(
-                    fontSize: 15,
+                    fontSize: 16,
                     fontWeight: FontWeight.w900,
                     color: AppColors.textDark,
+                    letterSpacing: 0.2,
                   ),
                 ),
               ),
@@ -1214,13 +1292,16 @@ class _SectionFrame extends StatelessWidget {
                       ? const SizedBox(
                           width: 18,
                           height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation(AppColors.info),
+                          ),
                         )
                       : const Icon(Icons.edit_outlined, size: 20),
                 ),
             ],
           ),
-          const Divider(height: 22),
+          const Divider(height: 20),
           child,
         ],
       ),
@@ -1237,18 +1318,19 @@ class _InfoRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 128,
+            width: 140,
             child: Text(
               _prettyLabel(label),
               style: TextStyle(
                 color: AppColors.textMuted,
-                fontSize: 12,
+                fontSize: 13,
                 fontWeight: FontWeight.w700,
+                letterSpacing: 0.2,
               ),
             ),
           ),
@@ -1257,8 +1339,9 @@ class _InfoRow extends StatelessWidget {
               value,
               style: TextStyle(
                 color: AppColors.textDark,
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.1,
               ),
             ),
           ),
@@ -1277,25 +1360,26 @@ class _InfoChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: AppColors.surfaceMuted,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 15, color: AppColors.slate700),
-          const SizedBox(width: 6),
+          Icon(icon, size: 16, color: AppColors.slate700),
+          const SizedBox(width: 8),
           ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 220),
+            constraints: const BoxConstraints(maxWidth: 200),
             child: Text(
               text,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 color: AppColors.slate700,
-                fontSize: 12,
+                fontSize: 13,
                 fontWeight: FontWeight.w700,
+                letterSpacing: 0.2,
               ),
             ),
           ),
@@ -1313,23 +1397,27 @@ class _InlineNotice extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(top: 10),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.warningTint,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(color: AppColors.warningColor),
       ),
       child: Row(
         children: [
-          Icon(Icons.info_outline_rounded, color: AppColors.amberDark),
-          const SizedBox(width: 10),
+          Icon(
+            Icons.info_outline_rounded,
+            color: AppColors.amberDark,
+            size: 20,
+          ),
+          const SizedBox(width: 12),
           Expanded(
             child: Text(
               message,
               style: TextStyle(
                 color: AppColors.amberDarker,
                 fontWeight: FontWeight.w700,
+                fontSize: 13,
               ),
             ),
           ),
@@ -1348,27 +1436,31 @@ class _FailureView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(28),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               Icons.cloud_off_outlined,
-              size: 44,
+              size: 48,
               color: AppColors.redAccent,
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             const Text(
               'Unable to load profile',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+              style: TextStyle(
+                fontSize: 19,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 0.2,
+              ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 8),
             Text(
               _cleanError(message),
               textAlign: TextAlign.center,
-              style: TextStyle(color: AppColors.textMuted),
+              style: TextStyle(color: AppColors.textMuted, fontSize: 14),
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 18),
             FilledButton.icon(
               onPressed: () =>
                   context.read<EmpProfileBloc>().add(const LoadEmpProfile()),
@@ -1395,16 +1487,17 @@ class _EmptySection extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 42, color: AppColors.emeraldLight),
-          const SizedBox(height: 10),
+          Icon(icon, size: 48, color: AppColors.emeraldLight),
+          const SizedBox(height: 12),
           Text(
             message,
             style: TextStyle(
               color: AppColors.textMuted,
               fontWeight: FontWeight.w800,
+              fontSize: 15,
             ),
           ),
-          if (action != null) ...[const SizedBox(height: 14), action!],
+          if (action != null) ...[const SizedBox(height: 16), action!],
         ],
       ),
     );
@@ -1419,18 +1512,20 @@ class _MiniEmpty extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 12),
       child: Text(
         message,
         style: TextStyle(
           color: AppColors.textMuted,
           fontWeight: FontWeight.w700,
+          fontSize: 14,
         ),
       ),
     );
   }
 }
 
+// Helper functions
 NetworkImage? _networkImage(String value) {
   final uri = Uri.tryParse(value);
   if (uri == null || !uri.hasScheme) return null;
@@ -1441,34 +1536,6 @@ Future<void> _openUrl(String value) async {
   final uri = Uri.tryParse(value);
   if (uri == null) return;
   await launchUrl(uri, mode: LaunchMode.externalApplication);
-}
-
-void _showEditSheet({
-  required BuildContext context,
-  required String title,
-  required String section,
-  required Map<String, dynamic> data,
-  required List<String> fields,
-  String? payloadWrapper,
-}) {
-  showModalBottomSheet<void>(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: AppColors.white,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
-    ),
-    builder: (_) => BlocProvider.value(
-      value: context.read<EmpProfileBloc>(),
-      child: _EditSheet(
-        title: title,
-        section: section,
-        data: data,
-        fields: fields,
-        payloadWrapper: payloadWrapper,
-      ),
-    ),
-  );
 }
 
 Future<void> _pickAndUploadDocument(BuildContext context) async {

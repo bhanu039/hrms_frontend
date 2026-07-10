@@ -1,0 +1,29 @@
+mutation CreateEmployee($data: Employee_Data!) @auth(level: USER) {
+  employee_insert(data: $data)
+}
+
+query GetEmployeesByDepartment($departmentId: UUID!) @auth(level: USER) {
+  employees(where: { departmentId: { eq: $departmentId } }) {
+    firstName
+    lastName
+    email
+    role {
+      title
+    }
+  }
+}
+
+mutation AssignProject($employeeId: UUID!, $projectId: UUID!, $role: String!) @auth(level: USER) {
+  assignment_insert(data: {
+    employee: { id: $employeeId },
+    project: { id: $projectId },
+    roleOnProject: $role
+  })
+}
+
+query SearchRoles @auth(level: USER) {
+  roles(orderBy: [{ accessLevel: DESC }]) {
+    title
+    accessLevel
+  }
+}

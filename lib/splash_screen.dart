@@ -32,7 +32,7 @@ class _SplashScreenState extends State<SplashScreen>
       authBloc = context.read<AuthBloc>();
 
     _controller = VideoPlayerController.asset(
-      AppConstants.appVideo,
+      AppConstants.appVideo1,
     )
       ..initialize().then((_) {
         setState(() {});
